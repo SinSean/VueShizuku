@@ -2,45 +2,75 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { ref } from 'vue'
 
-import Menubar from 'primevue/menubar'
+const handleCartClick = () => {
+  alert('打開購物車！')
+}
+
+const handleNotificationClick = () => {
+  alert('最新消息')
+}
 
 const items = ref([
   {
-    label: 'Home',
-    icon: 'pi pi-home',
+    label: '測試大頁面',
+    root: true,
+    items: [
+      [
+        {
+          items: [
+            { label: 'Features', icon: 'pi pi-list', subtext: 'Subtext of item' },
+            { label: 'Customers', icon: 'pi pi-users', subtext: 'Subtext of item' },
+            { label: 'Case Studies', icon: 'pi pi-file', subtext: 'Subtext of item' },
+          ],
+        },
+      ],
+      [
+        {
+          items: [
+            { label: 'Solutions', icon: 'pi pi-shield', subtext: 'Subtext of item' },
+            { label: 'Faq', icon: 'pi pi-question', subtext: 'Subtext of item' },
+            { label: 'Library', icon: 'pi pi-search', subtext: 'Subtext of item' },
+          ],
+        },
+      ],
+      [
+        {
+          items: [
+            { label: 'Community', icon: 'pi pi-comments', subtext: 'Subtext of item' },
+            { label: 'Rewards', icon: 'pi pi-star', subtext: 'Subtext of item' },
+            { label: 'Investors', icon: 'pi pi-globe', subtext: 'Subtext of item' },
+          ],
+        },
+      ],
+      [
+        {
+          items: [
+            {
+              image: 'https://primefaces.org/cdn/primevue/images/uikit/uikit-system.png',
+              label: 'GET STARTED',
+              subtext: 'Build spectacular apps in no time.',
+            },
+          ],
+        },
+      ],
+    ],
   },
   {
-    label: 'Projects',
-    icon: 'pi pi-search',
-    badge: 3,
-    items: [
-      {
-        label: 'Core',
-        icon: 'pi pi-bolt',
-        shortcut: '⌘+S',
-      },
-      {
-        label: 'Blocks',
-        icon: 'pi pi-server',
-        shortcut: '⌘+B',
-      },
-      {
-        separator: true,
-      },
-      {
-        label: 'UI Kit',
-        icon: 'pi pi-pencil',
-        shortcut: '⌘+U',
-      },
-    ],
+    label: '第二頁',
+    root: true,
+  },
+  {
+    label: '第三頁',
+    root: true,
   },
 ])
 </script>
+
 <template>
-  <div class="card">
-    <Menubar :model="items">
+  <div class="fixed top-0 left-0 w-full z-50">
+    <MegaMenu :model="items" class="p-4 bg-gray-100/90 backdrop-blur-md border-b border-gray-200">
+      <!-- 導覽列的頭 -->
       <template #start>
-        <!-- LOGOicon -->
         <svg
           width="35"
           height="40"
@@ -59,38 +89,58 @@ const items = ref([
           />
         </svg>
       </template>
-      <template #item="{ item, props, hasSubmenu, root }">
-        <a v-ripple class="flex items-center" v-bind="props.action">
+      <!-- 導覽列內容物 -->
+      <template #item="{ item }">
+        <a
+          v-if="item.root"
+          class="flex items-center cursor-pointer px-4 py-2 overflow-hidden relative font-semibold text-lg uppercase"
+        >
           <span>{{ item.label }}</span>
-          <Badge
-            v-if="item.badge"
-            :class="{ 'ml-auto': !root, 'ml-2': root }"
-            :value="item.badge"
-          />
-          <span
-            v-if="item.shortcut"
-            class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1"
-            >{{ item.shortcut }}</span
-          >
-          <i
-            v-if="hasSubmenu"
-            :class="[
-              'pi pi-angle-down ml-auto',
-              { 'pi-angle-down': root, 'pi-angle-right': !root },
-            ]"
-          ></i>
         </a>
+        <a v-else-if="!item.image" class="flex items-center p-4 cursor-pointer mb-2 gap-3">
+          <span
+            class="inline-flex items-center justify-center rounded-full bg-primary text-primary-contrast w-12 h-12"
+          >
+            <i :class="[item.icon, 'text-lg']"></i>
+          </span>
+          <span class="inline-flex flex-col gap-1">
+            <span class="font-bold text-lg">{{ item.label }}</span>
+            <span class="whitespace-nowrap">{{ item.subtext }}</span>
+          </span>
+        </a>
+        <div v-else class="flex flex-col items-start gap-4 p-2">
+          <img alt="megamenu-demo" :src="item.image" class="w-full" />
+          <span>{{ item.subtext }}</span>
+          <Button :label="item.label" variant="outlined" />
+        </div>
       </template>
+      <!-- 導覽列的尾 -->
       <template #end>
-        <div class="flex items-center gap-2">
-          <InputText placeholder="Search" type="text" class="w-32 sm:w-auto" />
+        <div class="flex items-center gap-3">
+          <Button
+            icon="pi pi-bell"
+            variant="text"
+            severity="secondary"
+            rounded
+            aria-label="Notifications"
+            @click="handleNotificationClick"
+          />
+
+          <Button
+            icon="pi pi-shopping-cart"
+            variant="text"
+            severity="secondary"
+            rounded
+            aria-label="Cart"
+            @click="handleCartClick"
+          />
           <Avatar
             image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
             shape="circle"
           />
         </div>
       </template>
-    </Menubar>
+    </MegaMenu>
   </div>
 </template>
 
