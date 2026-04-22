@@ -5,6 +5,7 @@ import Aura from '@primevue/themes/aura'
 import MegaMenu from 'primevue/megamenu'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
+import Menu from 'primevue/menu'
 
 import App from './App.vue'
 const app = createApp(App)
@@ -14,6 +15,7 @@ app.use(PrimeVue, {
     preset: Aura,
   },
 })
+app.component('Menu', Menu)
 app.component('MegaMenu', MegaMenu)
 app.component('Avatar', Avatar)
 app.component('Button', Button)
