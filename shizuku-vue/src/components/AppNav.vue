@@ -62,8 +62,8 @@
   justify-content: space-between;
   padding: 0 32px;
   height: 64px;
-  max-width: 1280px;
-  margin: 0 auto;
+  /* max-width: 1280px; */
+  /* margin: 0 auto; */
 }
 
 .nav-logo {

@@ -189,8 +189,8 @@ const products = ref([
 /* ---- Page Body ---- */
 .page-body {
   display: flex;
-  max-width: 1280px;
-  margin: 0 auto;
+  /* max-width: 1280px; */
+  /* margin: 0 auto; */
   padding: 0 24px;
   gap: 0;
   align-items: flex-start;
