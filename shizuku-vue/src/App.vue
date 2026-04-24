@@ -8,5 +8,3 @@ import AppFooter from './components/AppFooter.vue'
 <template>
       <RouterView /> 
 </template>
-
-6544
