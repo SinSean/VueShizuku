@@ -11,9 +11,9 @@ const handleSubscribe = () => {
 </script>
 
 <template>
-  <footer class="bg-white border-t border-gray-100 pt-16 pb-8 px-4 md:px-12 mt-auto">
-    <div class="max-w-7xl mx-auto">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+  <footer class="bg-white border-t border-gray-100 pt-16 pb-8 mt-auto ">
+    <div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12 p-24">
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
             <img src="../assets/img/LOGO.png" alt="shizuku" class="w-8 h-8 object-contain" />
@@ -56,9 +56,10 @@ const handleSubscribe = () => {
           <div class="flex flex-col gap-2">
             <InputGroup>
               <InputText v-model="newsletterEmail" placeholder="您的電子郵件" class="text-sm" />
-              <Button label="訂閱" severity="contrast" @click="handleSubscribe" />
             </InputGroup>
             <span class="text-[10px] text-gray-400">我們尊重您的隱私，不會發送垃圾郵件。</span>
+
+            <Button label="訂閱" severity="contrast" @click="handleSubscribe" />
           </div>
         </div>
       </div>
