@@ -5,9 +5,19 @@ import HomeView from '@/views/HomeView.vue';
 </script>
 
 <template>
-  <nav><AppNav/></nav>
+  <nav>
+    <AppNav />
+  </nav>
   <main>
     <HomeView />
+
+    <HomeView />
+
+    <HomeView />
+
+    <HomeView />
   </main>
-  <footer><AppFooter/></footer>
+  <footer>
+    <AppFooter />
+  </footer>
 </template>

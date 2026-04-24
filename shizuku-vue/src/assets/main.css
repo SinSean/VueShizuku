@@ -2,7 +2,8 @@
 @import './base.css';
 
 #app {
-  max-width: 1440px;
+  width: 100%;
+  /* max-width: 1440px; */
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
@@ -33,4 +34,9 @@ a,
     grid-template-columns: 1fr;
     padding: 0 2rem;
   }
+}
+
+footer {
+  margin: 0 !important;
+  padding: 0 !important;
 }
