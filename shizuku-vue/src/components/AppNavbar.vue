@@ -15,7 +15,7 @@ const toggle = (event) => {
 </script>
 
 <template>
-  <nav class="relative border-t border-b border-gray-100 py-4">
+  <nav class="fixed top-0 left-0 w-full z-50 bg-white border-t border-b border-gray-100 py-4">
     <div class="flex justify-center items-center px-4">
       <div class="absolute left-4 lg:left-8">
         <span class="text-2xl font-bold italic tracking-tighter cursor-pointer">Shizuku</span>
