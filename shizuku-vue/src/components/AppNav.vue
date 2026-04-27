@@ -1,6 +1,6 @@
 <template>
 
-  <nav class="bg-gray-100 relative py-4">
+  <nav class="fixed top-0 left-0 w-full z-50 bg-gray-100 py-4">
     <div class="flex justify-center items-center px-4 py-6">
       <!-- <div class="absolute left-4 lg:left-8">
         <span class="text-2xl font-bold italic tracking-tighter cursor-pointer text-black">Shizuku</span>
@@ -10,7 +10,7 @@
           <img src="../assets/img/logo3.png" alt="Shizuku" class="inline-block" />
         </span>
       </div>
-      <ul class="left-4 flex justify-center gap-8 text-[13px] font-bold tracking-widest uppercase text-gray-700">
+      <ul class="left-4 flex justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700">
         <li class="hover:text-gray-400 cursor-pointer">首頁</li>
         <li class="hover:text-gray-400 cursor-pointer">所有商品</li>
         <li class="hover:text-gray-400 cursor-pointer ">風格搭配 ▽</li>
