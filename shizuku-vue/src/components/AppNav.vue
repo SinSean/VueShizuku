@@ -35,9 +35,13 @@
           <span class="text-xs font-bold">0</span>
         </button>
 
-        <button class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
+        <!-- <button class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
           登入/註冊
-        </button>
+        </button> -->
+        <router-link to="/member"
+          class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors inline-block">
+          登入/註冊
+        </router-link>
       </div>
     </div>
   </nav>
