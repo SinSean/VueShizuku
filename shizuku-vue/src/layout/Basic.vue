@@ -2,6 +2,7 @@
 import AppNav from '../components/AppNav.vue'
 import AppFooter from '@/components/AppFooter.vue';
 import HomeView from '@/views/HomeView.vue';
+import MemberView from '@/views/MemberView.vue';
 </script>
 
 <template>
@@ -9,7 +10,7 @@ import HomeView from '@/views/HomeView.vue';
     <AppNav />
   </nav>
   <main>
-    <HomeView />
+    <MemberView />
   </main>
   <footer>
     <AppFooter />
