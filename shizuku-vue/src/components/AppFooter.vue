@@ -38,10 +38,14 @@ const handleSubscribe = () => {
             <li class="hover:text-primary cursor-pointer transition-colors">常見問題 FAQ</li>
           </ul>
         </div>
-        <div>
+      <div>
           <h4 class="font-bold text-gray-900 mb-6">會員服務</h4>
           <ul class="flex flex-col gap-4 text-sm text-gray-600">
-            <li class="hover:text-primary cursor-pointer transition-colors">我的帳戶</li>
+            <li>
+              <RouterLink to="/customer" class="hover:text-primary cursor-pointer transition-colors block">
+                聯絡我們
+              </RouterLink>
+            </li>
             <li class="hover:text-primary cursor-pointer transition-colors">訂單查詢</li>
             <li class="hover:text-primary cursor-pointer transition-colors">隱私權政策</li>
             <li class="hover:text-primary cursor-pointer transition-colors">服務條款</li>

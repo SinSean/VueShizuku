@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-
+import CustomerView from '../views/CustomerView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -23,6 +23,11 @@ const router = createRouter({
     //   name: 'customer',
     //   component: () => import('../views/CustomerView.vue')
     // }
+  {
+      path: '/customer',
+      name: 'customer',
+      component: CustomerView // 這裡的名字要跟上面 import 的一樣
+    }
   ]
 })
 
