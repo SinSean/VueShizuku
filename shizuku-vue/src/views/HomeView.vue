@@ -1,8 +1,13 @@
 <script setup>
-import TheWelcome from '@/components/TheWelcome.vue';
-import Main from '@/components/Main.vue';
+import HeroCarousel from '../components/AppHeroCarousel.vue';
+import HomeProducts from '../components/AppHomeProducts.vue';
 </script>
 
 <template>
-  <Main />
+  <main class="w-full">
+    <HeroCarousel />
+
+
+    <HomeProducts />
+  </main>
 </template>
