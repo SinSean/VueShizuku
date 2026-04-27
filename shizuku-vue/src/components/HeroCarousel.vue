@@ -14,7 +14,7 @@
                         <h1 class="text-5xl md:text-7xl font-extrabold text-white mt-4 tracking-tighter">{{
                             banners[currentIndex].fTitle }}</h1>
                         <p class="text-xl text-gray-100 mt-6 max-w-xl font-light">{{ banners[currentIndex].fDescription
-                            }}</p>
+                        }}</p>
                         <div class="mt-12 flex gap-4">
                             <button
                                 class="bg-white text-gray-950 px-10 py-4 rounded-full font-bold hover:bg-sky-400 hover:text-white transition-all">立即選購</button>
@@ -53,7 +53,12 @@ const currentIndex = ref(0);
 let timer = null;
 
 const banners = ref([
-    { fId: 101, fSubtitle: '2024 春夏系列', fTitle: '煥然一新：探索極簡主義時尚', fDescription: '本季精選天然材質，打造舒適與風格兼具的日常穿搭。', fImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop' },
+    //https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop
+    // { fId: 101, fSubtitle: '2024 春夏系列', fTitle: '煥然一新：探索極簡主義時尚', fDescription: '本季精選天然材質，打造舒適與風格兼具的日常穿搭。', fImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1600&auto=format&fit=crop' },
+    // { fId: 102, fSubtitle: '限時特賣', fTitle: '週年慶典：精選商品 7 折起', fDescription: '僅此三天！快來搶購你心儀已久的時尚單品。', fImage: 'https://images.unsplash.com/photo-1441996643126-505809ce132c?q=80&w=1600&auto=format&fit=crop' },
+    // { fId: 103, fSubtitle: '機能工裝', fTitle: '穿梭都市：全新機能系列上架', fDescription: '防潑水材質與多口袋設計，滿足你對探索的渴望。', fImage: 'https://images.unsplash.com/photo-1507680434567-5739c80be1ac?q=80&w=1600&auto=format&fit=crop' }
+
+    { fId: 101, fSubtitle: '2024 春夏系列', fTitle: '煥然一新：探索極簡主義時尚', fDescription: '本季精選天然材質，打造舒適與風格兼具的日常穿搭。', fImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop' },
     { fId: 102, fSubtitle: '限時特賣', fTitle: '週年慶典：精選商品 7 折起', fDescription: '僅此三天！快來搶購你心儀已久的時尚單品。', fImage: 'https://images.unsplash.com/photo-1441996643126-505809ce132c?q=80&w=1600&auto=format&fit=crop' },
     { fId: 103, fSubtitle: '機能工裝', fTitle: '穿梭都市：全新機能系列上架', fDescription: '防潑水材質與多口袋設計，滿足你對探索的渴望。', fImage: 'https://images.unsplash.com/photo-1507680434567-5739c80be1ac?q=80&w=1600&auto=format&fit=crop' }
 ]);
