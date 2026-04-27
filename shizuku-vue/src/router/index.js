@@ -13,6 +13,27 @@ const router = createRouter({
           name: 'home',
           component: () => import('../views/HomeView.vue'),
         },
+        // 會員頁面
+        {
+          path: '/member',
+          component: () => import('../views/MemberView.vue'),
+          children: [
+            {
+              path: '',
+              redirect: { name: 'MemberProfile' }
+            },
+            {
+              path: 'profile',
+              name: 'MemberProfile',
+              component: () => import('../views/MemberProfileView.vue'),
+            },
+            {
+              path: 'address',
+              name: 'MemberAddress',
+              component: () => import('../views/MemberAddressView.vue'),
+            },
+          ],
+        },
       ],
     },
   ],

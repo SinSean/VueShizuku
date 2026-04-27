@@ -10,7 +10,7 @@ import MemberView from '@/views/MemberView.vue';
     <AppNav />
   </nav>
   <main>
-    <MemberView />
+    <RouterView />
   </main>
   <footer>
     <AppFooter />
