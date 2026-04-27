@@ -17,7 +17,7 @@
                         }}</p>
                         <div class="mt-12 flex gap-4">
                             <button
-                                class="bg-white text-gray-950 px-10 py-4 rounded-full font-bold hover:bg-sky-400 hover:text-white transition-all">立即選購</button>
+                                class="border border-white bg-transparent text-white px-8 py-3 text-sm hover:bg-white hover:text-black transition-colors duration-300">立即選購</button>
                         </div>
                     </div>
                 </div>
