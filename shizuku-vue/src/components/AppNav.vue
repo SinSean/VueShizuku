@@ -7,7 +7,7 @@
       </div> -->
       <div class="absolute left-4 lg:left-8">
         <span class="text-2xl font-bold italic tracking-tighter cursor-pointer text-black">
-          <img src="../assets/img/logo3.png" alt="Shizuku" class="inline-block" />
+          <img src="../assets/img/logo.png" alt="Shizuku" class="inline-block" />
         </span>
       </div>
       <ul class="left-4 flex justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700">
