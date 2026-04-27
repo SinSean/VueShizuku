@@ -6,8 +6,7 @@ import HomeProducts from '../components/AppHomeProducts.vue';
 <template>
   <main class="w-full">
     <HeroCarousel />
-
-
     <HomeProducts />
+   
   </main>
 </template>
