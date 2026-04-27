@@ -16,7 +16,7 @@ const handleSubscribe = () => {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12 ps-24 pe-24">
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
-            <img src="../assets/img/LOGO.png" alt="shizuku" class="w-8 h-8 object-contain" />
+            <!-- <img src="../assets/img/LOGO.png" alt="shizuku" class="w-8 h-8 object-contain" /> -->
             <span class="text-lg font-bold tracking-tighter text-gray-900 uppercase">
               shizuku
             </span>
