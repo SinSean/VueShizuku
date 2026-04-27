@@ -63,9 +63,9 @@ const handleSubscribe = () => {
           </div>
         </div>
       </div>
-      <Divider />
+      <Divider style="--p-divider-border-color: gray" />
       <div class="flex flex-col md:flex-row justify-between items-center gap-4 mt-8">
-        <p class="text-xs text-gray-400">© 2026 shizuku Fashion Group. All rights reserved.</p>
+        <p class="text-xs text-gray-400 mx-auto">© 2026 shizuku Fashion Group. All rights reserved.</p>
         <div class="flex items-center gap-6">
           <i class="pi pi-paypal text-xl text-gray-300"></i>
           <i class="pi pi-apple text-xl text-gray-300"></i>
