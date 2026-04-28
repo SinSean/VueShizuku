@@ -47,7 +47,11 @@ const handleLogin = () => {
                         <input v-model="isRemember" type="checkbox" class="accent-emerald-600">
                         記住我
                     </label>
-                    <a href="#" class="hover:text-emerald-700 hover:underline transition">忘記密碼？</a>
+
+                    <RouterLink :to="{ name: 'ForgotPassword' }"
+                        class="hover:text-emerald-700 hover:underline transition">
+                        忘記密碼？
+                    </RouterLink>
                 </div>
 
                 <button type="submit"

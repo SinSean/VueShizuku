@@ -92,6 +92,11 @@ const router = createRouter({
           path: 'register',
           name: 'Register',
           component: () => import('../components/AppRegister.vue'),
+        },
+        {
+          path: 'forgot-password', // 新增這個路由
+          name: 'ForgotPassword',
+          component: () => import('../components/AppForgotPassword.vue'),
         }
       ]
     },
