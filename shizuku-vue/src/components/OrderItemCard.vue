@@ -1,11 +1,18 @@
 <script setup>
+// 每一行程式碼的中文註解：
+
+// 從 vue-router 拿出電梯司機工具
 import { useRouter } from 'vue-router'
-import Card from 'primevue/card'
+
+// 這次我們只跟 PrimeVue 借標籤 (Tag) 和按鈕 (Button)
+// 外框我們自己用 Tailwind 畫，會更漂亮！
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 
+// 呼叫司機待命
 const router = useRouter()
 
+// 接收經理 (列表頁) 傳進來的一筆訂單資料
 const props = defineProps({
   order: {
     type: Object,
@@ -13,6 +20,21 @@ const props = defineProps({
   },
 })
 
+// ====== 核心邏輯區塊：自動決定標籤顏色 ======
+// 這是一個小工具，我們給它「狀態文字」，它會還給我們「PrimeVue 專屬的顏色代碼」
+const getSeverity = (status) => {
+  // 如果狀態是已完成，回傳 'success' (綠色)
+  if (status === '已完成') return 'success'
+  // 如果狀態是處理中，回傳 'info' (藍色)
+  if (status === '處理中') return 'info'
+  // 如果狀態是已出貨，回傳 'warning' (黃色/橘色)
+  if (status === '已出貨') return 'warning'
+  // 其他狀況 (例如已取消)，回傳 'danger' (紅色)
+  return 'danger'
+}
+// ==========================================
+
+// 跳轉到詳情頁的動作
 const goToDetail = () => {
   router.push({
     name: 'order-detail',
@@ -22,36 +44,37 @@ const goToDetail = () => {
 </script>
 
 <template>
-  <Card
-    class="shadow-sm border border-gray-100 rounded-xl mb-4 hover:border-blue-300 transition-all"
+  <div
+    class="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-300 hover:-translate-y-1 flex flex-col md:flex-row md:items-center justify-between gap-4"
   >
-    <template #content>
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex-1">
-          <div class="flex items-center gap-3">
-            <span class="text-lg font-bold text-gray-800">{{ props.order.id }}</span>
-            <Tag :value="props.order.status" severity="success" class="text-xs" />
-          </div>
-          <p class="text-sm text-gray-400 mt-1">訂購時間：{{ props.order.date }}</p>
-        </div>
-
-        <div class="flex items-center md:px-10">
-          <span class="text-2xl font-black text-blue-800">$ {{ props.order.total }}</span>
-        </div>
-
-        <div class="flex items-center">
-          <Button
-            label="查看詳情"
-            icon="pi pi-angle-right"
-            iconPos="right"
-            outlined
-            @click="goToDetail"
-            class="p-button-sm px-6"
-          />
-        </div>
+    <div class="flex items-center gap-4">
+      <div
+        class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shrink-0"
+      >
+        <i class="pi pi-shopping-bag text-xl"></i>
       </div>
-    </template>
-  </Card>
-</template>
 
-<style scoped></style>
+      <div>
+        <h3 class="text-lg font-extrabold text-gray-800">{{ props.order.id }}</h3>
+        <p class="text-sm text-gray-400 mt-1">訂購時間：{{ props.order.date }}</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col md:items-end gap-2 md:pr-8">
+      <Tag :value="props.order.status" :severity="getSeverity(props.order.status)" rounded />
+      <span class="text-xl font-black text-gray-700">$ {{ props.order.total }}</span>
+    </div>
+
+    <div class="flex items-center">
+      <Button
+        label="查看詳情"
+        icon="pi pi-angle-right"
+        iconPos="right"
+        outlined
+        rounded
+        @click="goToDetail"
+        class="w-full md:w-auto"
+      />
+    </div>
+  </div>
+</template>
