@@ -21,7 +21,7 @@ const menuItems = [
             { name: '地址', routeName: 'MemberAddress' },  //已完成畫面
             { name: '更改密碼', routeName: 'MemberSetPassword' },//已完成畫面
             { name: '通知設置', routeName: 'MemberNotificationSet' },//已完成畫面
-            { name: '隱私設定', routeName: 'MemberEmpty' }
+            { name: '隱私設定', routeName: 'MemberPrivacySetting' }//已完成畫面
         ]
     },
     { title: '購買清單', icon: 'pi pi-list', routeName: 'MemberEmpty' },
