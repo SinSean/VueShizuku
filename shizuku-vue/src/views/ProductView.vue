@@ -1,3 +1,10 @@
 <script setup>
-ProductView</script>
-<template></template>
+
+
+</script>
+<template>
+    
+    <div>
+ProductView
+</div>
+</template>

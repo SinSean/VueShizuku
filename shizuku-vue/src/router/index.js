@@ -16,7 +16,7 @@ const router = createRouter({
       ],     
     },
     {
-      path: '/',
+      path: '/all', //<--- 這裡定義了「路徑名稱」
       name: 'ProductView',
       component: () => import('../views/ProductView.vue')
     },
