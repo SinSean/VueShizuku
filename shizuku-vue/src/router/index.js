@@ -88,11 +88,11 @@ const router = createRouter({
           name: 'Login',
           component: () => import('../components/AppLogin.vue'),
         },
-        // {
-        //   path: 'register',
-        //   name: 'Register',
-        //   component: () => import('../views/auth/RegisterView.vue'),
-        // }
+        {
+          path: 'register',
+          name: 'Register',
+          component: () => import('../components/AppRegister.vue'),
+        }
       ]
     },
     // 輸入錯誤路徑，導回首頁

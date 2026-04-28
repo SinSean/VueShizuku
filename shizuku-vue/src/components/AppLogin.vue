@@ -57,7 +57,10 @@ const handleLogin = () => {
             </form>
 
             <div class="mt-8 text-center text-sm text-slate-600">
-                還不是會員？ <a href="#" class="font-bold text-emerald-700 hover:underline">立即註冊</a>
+                還不是會員？
+                <RouterLink :to="{ name: 'Register' }" class="font-bold text-emerald-700 hover:underline">
+                    立即註冊
+                </RouterLink>
             </div>
         </div>
     </div>
