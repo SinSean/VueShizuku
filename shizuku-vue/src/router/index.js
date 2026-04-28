@@ -32,6 +32,11 @@ const router = createRouter({
               name: 'MemberAddress',
               component: () => import('../components/MemberAddress.vue'),
             },
+            {
+              path: 'empty',
+              name: 'MemberEmpty',
+              component: () => import('../components/MemberEmpty.vue'),
+            },
           ],
         },
       ],

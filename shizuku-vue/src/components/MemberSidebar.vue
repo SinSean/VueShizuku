@@ -17,18 +17,18 @@ const menuItems = [
         icon: 'pi pi-user',
         children: [
             { name: '個人檔案', routeName: 'MemberProfile' }, //已完成畫面
-            { name: '銀行帳號 / 信用卡', routeName: 'MemberAddress' },
+            { name: '銀行帳號 / 信用卡', routeName: 'MemberEmpty' },
             { name: '地址', routeName: 'MemberAddress' },  //已完成畫面
-            { name: '更改密碼', routeName: 'MemberAddress' },
-            { name: '通知設置', routeName: 'MemberAddress' },
-            { name: '隱私設定', routeName: 'MemberAddress' }
+            { name: '更改密碼', routeName: 'MemberEmpty' },
+            { name: '通知設置', routeName: 'MemberEmpty' },
+            { name: '隱私設定', routeName: 'MemberEmpty' }
         ]
     },
-    { title: '購買清單', icon: 'pi pi-list', routeName: 'MemberAddress' },
-    { title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberAddress' },
-    { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberAddress' },
-    { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberAddress' },
-    { title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberAddress' }
+    { title: '購買清單', icon: 'pi pi-list', routeName: 'MemberEmpty' },
+    { title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
+    { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberEmpty' },
+    { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberEmpty' },
+    { title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberEmpty' }
 ];
 </script>
 
