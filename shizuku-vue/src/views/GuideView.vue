@@ -1,0 +1,35 @@
+<script setup>
+import AppGuideFlow from '../components/AppGuideFlow.vue';
+import AppGuidePayment from '../components/AppGuidePayment.vue';
+import AppGuideShipping from '../components/AppGuideShipping.vue';
+</script>
+
+<style scoped>
+.animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+.animate-fade-in-up { opacity: 0; animation: fadeInUp 0.8s ease-out forwards; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+</style>
+
+
+<template>
+  <div class="max-w-4xl mx-auto px-6 pt-40 font-sans">
+    
+    <div class="mb-20 text-center animate-fade-in">
+      <h1 class="text-4xl font-bold text-gray-900 tracking-[0.25em] uppercase">Shopping Guide</h1>
+      <div class="w-10 h-1 bg-black mx-auto mt-4"></div>
+    </div>
+
+    <div class="space-y-24">
+      <AppGuideFlow />
+      <AppGuidePayment />
+      <AppGuideShipping />
+    </div>
+
+  </div>
+</template>
+

@@ -4,6 +4,7 @@ import CustomerView from '../views/CustomerView.vue'
 // ⚠️ 重點 1：記得引入 FaqView
 import FaqView from '../views/FaqView.vue'
 import AboutView from '../views/AboutView.vue' // 引入品牌故事
+import GuideView from '../views/GuideView.vue' // 引入購物指南
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +24,11 @@ const router = createRouter({
           path: 'about',
           name: 'about',
           component: AboutView
+        },
+        { 
+          path: 'guide', 
+          name: 'guide', 
+          component: GuideView 
         }
       ]
     },

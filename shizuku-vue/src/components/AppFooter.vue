@@ -47,7 +47,11 @@ const handleSubscribe = () => {
         <div>
           <h4 class="font-bold text-gray-900 mb-6">購物指南</h4>
           <ul class="flex flex-col gap-4 text-sm text-gray-600">
-            <li class="hover:text-primary cursor-pointer transition-colors">如何購買</li>
+            <li>
+  <RouterLink :to="{ name: 'guide' }" class="hover:text-primary transition-colors block">
+    如何購買
+  </RouterLink>
+</li>
             <li class="hover:text-primary cursor-pointer transition-colors">運送政策</li>
             <li class="hover:text-primary cursor-pointer transition-colors">退換貨說明</li>
             <li>

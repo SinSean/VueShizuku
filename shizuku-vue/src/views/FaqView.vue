@@ -7,6 +7,12 @@ import AppFaqList from '../components/AppFaqList.vue';
 <template>
   <div class="max-w-4xl mx-auto px-6 py-16 font-sans">
     
+    <div class="mb-8">
+      <RouterLink :to="{ name: 'home' }" class="text-sm text-gray-400 hover:text-gray-900 transition-colors inline-flex items-center gap-2">
+        <span>&lt;</span> 回首頁
+      </RouterLink>
+    </div>
+
     <AppFaqSearch />
 
     <AppFaqList />

@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { RouterLink } from 'vue-router'; // 🌟 記得引入 RouterLink
 
 // 引入你剛剛切出去的兩個小積木
 import AppCustomerForm from '@/components/AppCustomerForm.vue';
@@ -9,23 +10,17 @@ import AppCustomerChatbot from '@/components/AppCustomerChatbot.vue';
 const currentView = ref('menu');
 </script>
 
-<style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
-
-
-
 <template>
   <div class="max-w-5xl mx-auto px-6 py-12 font-sans">
     
-    <div class="border-b border-gray-200 pb-4 mb-8 flex justify-between items-end">
-      <h1 class="text-3xl font-bold text-gray-900 tracking-widest">聯絡 SHIZUKU 台灣</h1>
+    <div class="border-b border-gray-200 pb-4 mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+      
+      <div>
+        <RouterLink :to="{ name: 'home' }" class="text-sm text-gray-400 hover:text-gray-900 transition-colors inline-flex items-center gap-2 mb-4">
+          <span>&lt;</span> 回首頁
+        </RouterLink>
+        <h1 class="text-3xl font-bold text-gray-900 tracking-widest">聯絡 SHIZUKU 台灣</h1>
+      </div>
       
       <button 
         v-if="currentView !== 'menu'" 
@@ -34,6 +29,7 @@ const currentView = ref('menu');
       >
         <span>&lt; 返回客服選單</span>
       </button>
+
     </div>
 
     <div v-if="currentView === 'menu'" class="bg-gray-50 p-6 md:p-12 animate-fade-in">
@@ -65,3 +61,13 @@ const currentView = ref('menu');
 
   </div>
 </template>
+
+<style scoped>
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
