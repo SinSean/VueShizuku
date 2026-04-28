@@ -12,8 +12,15 @@
       </div>
       <ul class="left-4 flex justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700">
         <li class="hover:text-gray-400 cursor-pointer">首頁</li>
-        <li class="hover:text-gray-400 cursor-pointer">所有商品</li>
-        
+        <li class="cursor-pointer">
+  <RouterLink 
+    to="/all" 
+     class="hover:text-gray-900 transition-colors duration-200"
+    active-class="!text-red-500 !border-b-2 !border-red-500">
+    所有商品
+  </RouterLink>
+</li>
+   
         <li class="hover:text-gray-400 cursor-pointer ">風格搭配 ▽</li>
         <li class="hover:text-gray-400 cursor-pointer ">聯名款商品 ▽</li>
         <li class="hover:text-gray-400 cursor-pointer ">"限時折扣專區"</li>

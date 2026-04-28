@@ -1,10 +1,12 @@
 <script setup>
-
+import ProductAllitem from '@/components/ProductAllitem.vue';
 
 </script>
+
 <template>
-    
-    <div>
-ProductView
-</div>
+<main class="w-full">
+  <ProductAllitem/>
+ 
+  </main>
+          
 </template>
