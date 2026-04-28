@@ -1,11 +1,11 @@
 <script setup>
-import AppNav from '../components/AppNav.vue'
+import MemberNav from '@/components/MemberNav.vue';
 import AppFooter from '@/components/AppFooter.vue';
 </script>
 
 <template>
     <nav>
-        <AppNav />
+        <MemberNav />
     </nav>
     <main>
         <RouterView />
