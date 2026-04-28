@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Basic from '@/layout/Basic.vue'
+import AuthLayout from '@/layout/AuthLayout.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,6 +60,11 @@ const router = createRouter({
               name: 'MemberPointsDashboard',
               component: () => import('../components/MemberPointsDashboard.vue'),
             },
+            {
+              path: 'vouchers',
+              name: 'MemberVouchers',
+              component: () => import('../components/MemberVouchers.vue'),
+            },
             {//空白頁面，表示未做vue
               path: 'empty',
               name: 'MemberEmpty',
@@ -68,6 +74,32 @@ const router = createRouter({
         },
       ],
     },
+    // 2. 這是登入/註冊專區 (獨立於 Basic 之外)
+    {
+      path: '/auth',
+      component: AuthLayout, // 只有背景與表單的 Layout
+      children: [
+        {
+          path: '',
+          redirect: { name: 'Login' }
+        },
+        {
+          path: 'login',
+          name: 'Login',
+          component: () => import('../components/AppLogin.vue'),
+        },
+        // {
+        //   path: 'register',
+        //   name: 'Register',
+        //   component: () => import('../views/auth/RegisterView.vue'),
+        // }
+      ]
+    },
+    // 輸入錯誤路徑，導回首頁
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
+    }
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

@@ -15,6 +15,9 @@
         <li class="hover:text-gray-400 cursor-pointer ">風格搭配 ▽</li>
         <li class="hover:text-gray-400 cursor-pointer ">聯名款商品 ▽</li>
         <li class="hover:text-gray-400 cursor-pointer ">"限時折扣專區"</li>
+        <li>
+          <router-link to="/member" class="hover:text-gray-400 cursor-pointer transition-colors">會員專區</router-link>
+        </li>
       </ul>
       <div class="absolute right-4 lg:right-10 flex items-center gap-5 text-gray-600">
 
@@ -37,7 +40,7 @@
         <!-- <button class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
           登入/註冊
         </button> -->
-        <router-link to="/member"
+        <router-link to="/auth"
           class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors inline-block">
           登入/註冊
         </router-link>
