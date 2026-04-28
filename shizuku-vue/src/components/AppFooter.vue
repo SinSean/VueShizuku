@@ -38,14 +38,18 @@ const handleSubscribe = () => {
             <li class="hover:text-primary cursor-pointer transition-colors">如何購買</li>
             <li class="hover:text-primary cursor-pointer transition-colors">運送政策</li>
             <li class="hover:text-primary cursor-pointer transition-colors">退換貨說明</li>
-            <li class="hover:text-primary cursor-pointer transition-colors">常見問題 FAQ</li>
+            <li>
+           <RouterLink :to="{ name: 'faq' }" class="hover:text-primary cursor-pointer transition-colors">
+                     常見問題 FAQ
+           </RouterLink>
+            </li>
           </ul>
         </div>
         <div>
           <h4 class="font-bold text-gray-900 mb-6">會員服務</h4>
          <ul class="flex flex-col gap-4 text-sm text-gray-600">
             <li>
-              <RouterLink to="/customer" class="hover:text-primary cursor-pointer transition-colors block">
+              <RouterLink :to="{ name: 'customer' }" class="hover:text-primary cursor-pointer transition-colors block">
                 聯絡我們
               </RouterLink>
             </li>
