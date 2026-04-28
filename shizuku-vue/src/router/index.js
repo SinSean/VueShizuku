@@ -43,6 +43,11 @@ const router = createRouter({
               component: () => import('../components/MemberPaymentMethods.vue'),
             },
             {
+              path: 'notificationset',
+              name: 'MemberNotificationSet',
+              component: () => import('../components/MemberNotificationSet.vue'),
+            },
+            {
               path: 'empty',
               name: 'MemberEmpty',
               component: () => import('../components/MemberEmpty.vue'),

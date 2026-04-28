@@ -17,10 +17,10 @@ const menuItems = [
         icon: 'pi pi-user',
         children: [
             { name: '個人檔案', routeName: 'MemberProfile' }, //已完成畫面
-            { name: '銀行帳號 / 信用卡', routeName: 'MemberPayMentmetod' },
+            { name: '銀行帳號 / 信用卡', routeName: 'MemberPayMentmetod' },//已完成畫面
             { name: '地址', routeName: 'MemberAddress' },  //已完成畫面
             { name: '更改密碼', routeName: 'MemberSetPassword' },//已完成畫面
-            { name: '通知設置', routeName: 'MemberEmpty' },
+            { name: '通知設置', routeName: 'MemberNotificationSet' },//已完成畫面
             { name: '隱私設定', routeName: 'MemberEmpty' }
         ]
     },
