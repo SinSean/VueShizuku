@@ -27,7 +27,7 @@ const menuItems = [
     { title: '購買清單', icon: 'pi pi-list', routeName: 'MemberEmpty' },
     { title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
     { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberEmpty' },
-    { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberEmpty' },
+    { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberPointsDashboard' },
     { title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberEmpty' }
 ];
 </script>

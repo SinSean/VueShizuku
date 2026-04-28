@@ -46,11 +46,16 @@ const router = createRouter({
               path: 'notificationset',
               name: 'MemberNotificationSet',
               component: () => import('../components/MemberNotificationSet.vue'),
-            },//MemberPrivacySetting
+            },
             {
               path: 'privacysetting',
               name: 'MemberPrivacySetting',
               component: () => import('../components/MemberPrivacySetting.vue'),
+            },
+            {
+              path: 'pointsdashboard',
+              name: 'MemberPointsDashboard',
+              component: () => import('../components/MemberPointsDashboard.vue'),
             },
             {
               path: 'empty',
