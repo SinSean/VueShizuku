@@ -1,8 +1,12 @@
 <script setup>
-import ProductDetail from '@/components/ProductDetail.vue'
+import ProductDetail from '@/components/ProductDetail.vue';
 
 </script>
-<template>
 
-<ProductDetail/>
+<template>
+<main class="w-full">
+  <ProductDetail/>
+ 
+  </main>
+          
 </template>

@@ -57,7 +57,7 @@ const products = ref([
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
       
       <div v-for="product in products" :key="product.id" class="group cursor-pointer">
-        
+        <RouterLink :to="'/product/' + product.id">
         <div class="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-4">
           <div class="absolute top-2 left-2 z-10 bg-black/40 text-white text-[10px] px-2 py-0.5 tracking-wider">
             new
@@ -74,6 +74,7 @@ const products = ref([
         <p class="text-sm text-gray-900 font-bold">
           {{ product.price }}
         </p>
+        </RouterLink>
 
         <button class="mt-3 w-full border border-gray-200 py-1.5 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
