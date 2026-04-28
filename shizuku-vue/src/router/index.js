@@ -37,6 +37,15 @@ const router = createRouter({
       ],
     },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      // 如果按了「上一頁/下一頁」，回到之前的位置
+      return savedPosition;
+    } else {
+      // 否則，每次切換新路由都強制回到頂端
+      return { top: 0 };
+    }
+  }
 })
 
 export default router
