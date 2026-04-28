@@ -18,6 +18,7 @@ const router = createRouter({
           path: '/member',
           component: () => import('../views/MemberView.vue'),
           children: [
+            //我的帳戶
             {
               path: '',
               redirect: { name: 'MemberProfile' }
@@ -26,6 +27,11 @@ const router = createRouter({
               path: 'profile',
               name: 'MemberProfile',
               component: () => import('../components/MemberProfile.vue'),
+            },
+            {
+              path: 'paymentmetod',
+              name: 'MemberPayMentmetod',
+              component: () => import('../components/MemberPaymentMethods.vue'),
             },
             {
               path: 'address',
@@ -38,11 +44,6 @@ const router = createRouter({
               component: () => import('../components/MemberSetPassword.vue'),
             },
             {
-              path: 'paymentmetod',
-              name: 'MemberPayMentmetod',
-              component: () => import('../components/MemberPaymentMethods.vue'),
-            },
-            {
               path: 'notificationset',
               name: 'MemberNotificationSet',
               component: () => import('../components/MemberNotificationSet.vue'),
@@ -52,12 +53,13 @@ const router = createRouter({
               name: 'MemberPrivacySetting',
               component: () => import('../components/MemberPrivacySetting.vue'),
             },
+            //其他
             {
               path: 'pointsdashboard',
               name: 'MemberPointsDashboard',
               component: () => import('../components/MemberPointsDashboard.vue'),
             },
-            {
+            {//空白頁面，表示未做vue
               path: 'empty',
               name: 'MemberEmpty',
               component: () => import('../components/MemberEmpty.vue'),
