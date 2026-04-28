@@ -9,7 +9,7 @@ import HomeView from '@/views/HomeView.vue';
     <AppNav />
   </nav>
   <main>
-    <HomeView />
+    <RouterView />
   </main>
   <footer>
     <AppFooter />
