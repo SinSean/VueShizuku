@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Menu from 'primevue/menu'
 const menu = ref()
 const items = ref([
@@ -16,7 +17,7 @@ const items = ref([
     image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+2',
   },
 ])
-
+const router = useRouter()
 // 移除商品
 const removeItem = (id) => {
   items.value = items.value.filter((item) => item.id !== id)
@@ -24,6 +25,13 @@ const removeItem = (id) => {
 
 const toggle = (event) => {
   menu.value.toggle(event)
+}
+
+// 建立一個去購物車的函式
+const goToCart = () => {
+  router.push({ name: 'cart' })
+  // 切換頁面後，把原本打開的下拉小選單給隱藏起來
+  menu.value.hide()
 }
 </script>
 
@@ -79,7 +87,8 @@ const toggle = (event) => {
       <template #end>
         <div class="p-2 mt-2 border-t border-gray-100">
           <button
-            class="w-full bg-black text-white py-2 rounded-md text-sm font-bold hover:bg-gray-800 transition-colors"
+            @click="goToCart"
+            class="w-full bg-blue-500 text-white py-2 rounded-md text-sm font-bold hover:bg-blue-800 transition-colors"
           >
             檢視購物車
           </button>

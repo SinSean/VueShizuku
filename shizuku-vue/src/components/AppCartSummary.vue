@@ -41,7 +41,7 @@ const handleCheckout = () => {
 
     <button
       @click="handleCheckout"
-      class="w-full bg-black text-white py-3 rounded-md font-bold tracking-widest hover:bg-gray-800 transition-colors mt-4"
+      class="w-full bg-blue-500 text-white py-3 rounded-md font-bold tracking-widest hover:bg-blue-600 transition-colors mt-4"
     >
       前往結帳
     </button>
