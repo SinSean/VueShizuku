@@ -25,12 +25,12 @@ const router = createRouter({
             {
               path: 'profile',
               name: 'MemberProfile',
-              component: () => import('../views/MemberProfileView.vue'),
+              component: () => import('../components/MemberProfile.vue'),
             },
             {
               path: 'address',
               name: 'MemberAddress',
-              component: () => import('../views/MemberAddressView.vue'),
+              component: () => import('../components/MemberAddress.vue'),
             },
           ],
         },
