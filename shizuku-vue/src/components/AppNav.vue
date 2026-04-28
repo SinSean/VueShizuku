@@ -1,5 +1,9 @@
 <script setup>
+import { ref } from 'vue'
 import AppCartMenu from './AppCartMenu.vue'
+import AppNavHamburgerMenu from './AppNavHamburgerMenu.vue'
+
+const isHamburgerMenuOpen = ref(false)
 </script>
 
 <template>
@@ -11,7 +15,7 @@ import AppCartMenu from './AppCartMenu.vue'
         </span>
       </div>
       <ul
-        class="left-4 flex justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700"
+        class="hidden lg:flex left-4 flex justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700"
       >
         <li class="hover:text-gray-400 cursor-pointer">首頁</li>
         <li class="hover:text-gray-400 cursor-pointer">所有商品</li>
@@ -34,11 +38,26 @@ import AppCartMenu from './AppCartMenu.vue'
         <AppCartMenu />
 
         <button
-          class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors"
+          class="hidden lg:block border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors"
         >
           登入/註冊
+        </button>
+        <button
+          class="lg:hidden hover:text-gray-400 transition-colors"
+          @click="isHamburgerMenuOpen = true"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
         </button>
       </div>
     </div>
   </nav>
+
+  <AppNavHamburgerMenu v-model:visible="isHamburgerMenuOpen" />
 </template>
