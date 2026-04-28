@@ -57,7 +57,7 @@ const menuItems = [
                         :class="['pi text-xs transition-transform', isAccountOpen ? 'pi-chevron-down' : 'pi-chevron-right']"></i>
                 </div>
 
-                <router-link v-else :to="section.path"
+                <router-link v-else :to="{ name: section.routeName }"
                     class="flex items-center py-3 px-3 rounded-lg text-slate-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition-all"
                     active-class="bg-blue-100 text-blue-700 font-bold">
                     <div class="flex items-center gap-3">
