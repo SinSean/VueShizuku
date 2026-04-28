@@ -1,11 +1,6 @@
 <script setup>
-// 每一行程式碼的中文註解：
-
-// 從 vue-router 拿出電梯司機工具
 import { useRouter } from 'vue-router'
 
-// 這次我們只跟 PrimeVue 借標籤 (Tag) 和按鈕 (Button)
-// 外框我們自己用 Tailwind 畫，會更漂亮！
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 
@@ -20,19 +15,13 @@ const props = defineProps({
   },
 })
 
-// ====== 核心邏輯區塊：自動決定標籤顏色 ======
-// 這是一個小工具，我們給它「狀態文字」，它會還給我們「PrimeVue 專屬的顏色代碼」
+// 顯示狀態文字
 const getSeverity = (status) => {
-  // 如果狀態是已完成，回傳 'success' (綠色)
   if (status === '已完成') return 'success'
-  // 如果狀態是處理中，回傳 'info' (藍色)
   if (status === '處理中') return 'info'
-  // 如果狀態是已出貨，回傳 'warning' (黃色/橘色)
   if (status === '已出貨') return 'warning'
-  // 其他狀況 (例如已取消)，回傳 'danger' (紅色)
   return 'danger'
 }
-// ==========================================
 
 // 跳轉到詳情頁的動作
 const goToDetail = () => {
