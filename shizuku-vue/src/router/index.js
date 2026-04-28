@@ -33,6 +33,16 @@ const router = createRouter({
               component: () => import('../components/MemberAddress.vue'),
             },
             {
+              path: 'password',
+              name: 'MemberSetPassword',
+              component: () => import('../components/MemberSetPassword.vue'),
+            },
+            {
+              path: 'paymentmetod',
+              name: 'MemberPayMentmetod',
+              component: () => import('../components/MemberPaymentMethods.vue'),
+            },
+            {
               path: 'empty',
               name: 'MemberEmpty',
               component: () => import('../components/MemberEmpty.vue'),
