@@ -80,7 +80,7 @@ const handleSubmit = () => {
                 </div>
 
                 <button type="submit"
-                    class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-950 transition-all shadow-lg active:scale-95 text-base">
+                    class="w-full py-4 bg-blue-700 text-white rounded-xl font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95 text-base">
                     {{ recoveryMethod === 'email' ? '發送重設連結' : '發送驗證碼' }}
                 </button>
             </form>
