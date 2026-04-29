@@ -65,7 +65,7 @@ const products = ref([
 ]);
 -->
 
-  //  商品內容
+  <!-- 商品內容 -->
 <template>
   <section class="max-w-6xl mx-auto px-6 py-20">
     <div class="text-center mb-16">

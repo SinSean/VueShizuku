@@ -1,4 +1,4 @@
-<template>     // 服務條款內容
+<template>     <!-- 服務條款內容 -->
   <div class="space-y-12 text-sm text-gray-600 leading-loose tracking-wide">
     <section>
       <h2 class="text-lg font-bold text-gray-900 border-b border-gray-200 pb-2 mb-4 tracking-widest">認知與接受條款</h2>

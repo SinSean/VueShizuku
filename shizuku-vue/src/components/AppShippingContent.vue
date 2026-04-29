@@ -1,4 +1,4 @@
-<template>   // 出貨政策內容
+<template>   <!-- 出貨政策內容 -->
   <div class="space-y-12 text-sm text-gray-600 leading-loose tracking-wide">
     <section>
       <h2 class="text-lg font-bold text-gray-900 border-b border-gray-200 pb-2 mb-4 tracking-widest">出貨時間</h2>
