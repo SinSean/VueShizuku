@@ -68,7 +68,6 @@ const router = createRouter({
         { path: 'faq', name: 'faq', component: FaqView },
         { path: 'privacy-policy', name: 'privacyPolicy', component: PrivacyPolicyView },
         { path: 'terms-of-service', name: 'termsOfService', component: TermsOfServiceView },
-        { path: 'customer', name: 'customer', component: CustomerView },
 
         // 會員中心
         {
@@ -101,6 +100,9 @@ const router = createRouter({
         { path: 'forgot-password', name: 'ForgotPassword', component: () => import('@/components/AppForgotPassword.vue') }
       ]
     },
+
+
+    { path: '/customer', name: 'customer', component: CustomerView },
 
     // 3. 錯誤路徑處理
     {
