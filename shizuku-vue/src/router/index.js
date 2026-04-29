@@ -3,8 +3,19 @@ import Basic from '@/layout/Basic.vue'
 import ProductView from '../views/ProductView.vue'
 import ProductDetail from '@/components/ProductDetail.vue'
 
+
+
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+ // 整合 scrollBehavior：確保(商品)換頁時自動回到頂部
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  },
   routes: [
     {
       path: '/',
