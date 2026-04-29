@@ -1,39 +1,3 @@
-<template>
-  <div>
-    <h2 class="text-xl text-center font-bold text-gray-800 mb-6 tracking-widest">常見問題</h2>
-    
-    <div class="border-t border-gray-200">
-      <div 
-        v-for="item in faqList" 
-        :key="item.id"
-        class="border-b border-gray-200"
-      >
-        <div 
-          @click="toggle(item.id)"
-          class="py-4 px-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors group"
-        >
-          <span class="text-sm font-medium text-gray-800 group-hover:text-black">
-            Q: {{ item.title }}
-          </span>
-          <span 
-            class="text-gray-400 transform transition-transform duration-300"
-            :class="{ 'rotate-90': activeId === item.id }"
-          >
-            &gt;
-          </span>
-        </div>
-        
-        <div 
-          v-show="activeId === item.id"
-          class="px-2 pb-6 pt-2 text-sm text-gray-600 leading-relaxed animate-fade-in bg-gray-50/50"
-        >
-          <span class="font-bold mr-1">A:</span> {{ item.answer }}
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref } from 'vue';
 
@@ -92,3 +56,41 @@ const faqList = ref([
   to { opacity: 1; transform: translateY(0); }
 }
 </style>
+
+
+<template>
+  <div>
+    <h2 class="text-xl text-center font-bold text-gray-800 mb-6 tracking-widest">常見問題</h2>
+    
+    <div class="border-t border-gray-200">
+      <div 
+        v-for="item in faqList" 
+        :key="item.id"
+        class="border-b border-gray-200"
+      >
+        <div 
+          @click="toggle(item.id)"
+          class="py-4 px-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors group"
+        >
+          <span class="text-sm font-medium text-gray-800 group-hover:text-black">
+            Q: {{ item.title }}
+          </span>
+          <span 
+            class="text-gray-400 transform transition-transform duration-300"
+            :class="{ 'rotate-90': activeId === item.id }"
+          >
+            &gt;
+          </span>
+        </div>
+        
+        <div 
+          v-show="activeId === item.id"
+          class="px-2 pb-6 pt-2 text-sm text-gray-600 leading-relaxed animate-fade-in bg-gray-50/50"
+        >
+          <span class="font-bold mr-1">A:</span> {{ item.answer }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
