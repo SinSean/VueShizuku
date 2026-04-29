@@ -10,6 +10,8 @@ import HomeView from '@/views/HomeView.vue'
 import OrdersListView from '@/views/OrdersListView.vue'
 import OrderDetailView from '@/views/OrderDetailView.vue'
 import CartDetailView from '@/views/CartDetailView.vue'
+import PaymentListView from '@/views/PaymentListView.vue'
+import PaymentDetailView from '@/views/PaymentDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +34,21 @@ const router = createRouter({
           path: 'orders/:id',
           name: 'order-detail',
           component: OrderDetailView,
+        },
+        {
+          path: 'orders/:id/payments',
+          name: 'payment-list',
+          component: PaymentListView,
+        },
+        {
+          path: 'PaymentList',
+          name: 'payment-list-root',
+          component: PaymentListView,
+        },
+        {
+          path: 'orders/:id/payments/:transactionId',
+          name: 'payment-detail',
+          component: PaymentDetailView,
         },
       ],
     },
