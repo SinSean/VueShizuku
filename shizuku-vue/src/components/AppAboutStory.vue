@@ -12,7 +12,7 @@
 }
 </style>
 
-<template>
+<template>   <!-- 品牌故事內容 -->
   <div class="max-w-2xl mx-auto text-center space-y-10 text-gray-600 leading-loose tracking-widest animate-fade-in-up">
     
     <p class="text-xl font-medium text-gray-800">「如水滴般純粹，包容生活的所有姿態。」</p>

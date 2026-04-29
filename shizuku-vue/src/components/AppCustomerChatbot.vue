@@ -15,7 +15,7 @@
 
 
 
-<template>
+<template>   // 客服信箱機器人
   <div class="animate-fade-in bg-white border border-gray-200 p-10 text-center">
     <h2 class="text-2xl font-bold mb-4">IQ 智能客服系統</h2>
     <p class="text-gray-500 mb-6">AI 客服機器人建置中...</p>

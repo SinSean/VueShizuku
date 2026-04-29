@@ -1,4 +1,4 @@
-<template>
+<template>   // 購物流程說明
   <section class="animate-fade-in-up" style="animation-delay: 0.2s;">
     <h2 class="text-lg font-bold text-gray-900 border-b-2 border-gray-900 pb-3 mb-6 tracking-widest flex items-center gap-3">
       <span class="text-gray-400 font-light italic">03</span>  配送與運費

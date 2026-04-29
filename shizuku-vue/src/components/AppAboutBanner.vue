@@ -11,7 +11,7 @@
 }
 </style>
 
-<template>
+<template>  <!-- 品牌故事 Banner -->
   <div class="mb-20 text-center animate-fade-in">
     <div class="overflow-hidden mb-10">
       <img 

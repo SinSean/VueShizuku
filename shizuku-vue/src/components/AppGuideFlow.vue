@@ -1,4 +1,4 @@
-<template>
+<template>    // 購物流程說明
   <section class="animate-fade-in-up">
     <h2 class="text-lg font-bold text-gray-900 border-b-2 border-gray-900 pb-3 mb-6 tracking-widest flex items-center gap-3">
       <span class="text-gray-400 font-light italic">01</span> 利用方法 / 購物流程

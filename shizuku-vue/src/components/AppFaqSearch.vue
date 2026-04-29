@@ -2,7 +2,7 @@
 // 未來搜尋的邏輯會寫在這裡
 </script>
 
-
+  // 常見問題搜尋內容
 
 <template>
   <div class="mb-16">

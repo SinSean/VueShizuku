@@ -56,9 +56,9 @@ const faqList = ref([
   to { opacity: 1; transform: translateY(0); }
 }
 </style>
-
-
-<template>
+ // 常見問題內容
+   
+<template>   
   <div>
     <h2 class="text-xl text-center font-bold text-gray-800 mb-6 tracking-widest">常見問題</h2>
     
