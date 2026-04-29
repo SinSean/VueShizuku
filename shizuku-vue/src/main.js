@@ -1,11 +1,12 @@
 import './assets/main.css'
+import 'primeicons/primeicons.css'; //引入PrimeVue的css
+
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import PrimeVue from 'primevue/config';
 import Button from 'primevue/button'; // 匯入元件
-
 
 
 import App from './App.vue'

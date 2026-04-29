@@ -1,24 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
+// Layouts
+import Basic from '@/layout/Basic.vue'
+import AuthLayout from '@/layout/AuthLayout.vue'
+
+// Views
 import HomeView from '../views/HomeView.vue'
 import CustomerView from '../views/CustomerView.vue'
-// 重點 1：記得引入 FaqView
 import FaqView from '../views/FaqView.vue'
-import AboutView from '../views/AboutView.vue' // 引入品牌故事
-import GuideView from '../views/GuideView.vue' // 引入購物指南
-import ShippingPolicyView from '../views/ShippingPolicyView.vue' // 引入運送政策
-import ReturnPolicyView from '../views/ReturnPolicyView.vue' // 引入退貨政策
-import PrivacyPolicyView from '../views/PrivacyPolicyView.vue' // 引入隱私政策
-import TermsOfServiceView from '../views/TermsOfServiceView.vue' // 引入服務條款
-import Basic from '@/layout/Basic.vue'
+import AboutView from '../views/AboutView.vue'
+import GuideView from '../views/GuideView.vue'
+import ShippingPolicyView from '../views/ShippingPolicyView.vue'
+import ReturnPolicyView from '../views/ReturnPolicyView.vue'
+import PrivacyPolicyView from '../views/PrivacyPolicyView.vue'
+import TermsOfServiceView from '../views/TermsOfServiceView.vue'
 import ProductView from '../views/ProductView.vue'
-import ProductDetail from '@/components/ProductDetail.vue'
-
-
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  // 整合 scrollBehavior：確保(商品)換頁時自動回到頂部
+
+  // 統一管理滾動行為
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
@@ -26,72 +27,64 @@ const router = createRouter({
       return { top: 0 }
     }
   },
+
   routes: [
+    // 1. 一般頁面 (使用 Basic Layout)
     {
       path: '/',
-      // 載入版型檔案Basic.vue 當作外殼
-      component: () => import('../layout/Basic.vue'),
-      // children 就是這個外殼裡面裝的小孩(裡面的頁面)
+      component: Basic,
       children: [
+        { path: '', name: 'home', component: HomeView },
+        { path: 'about', name: 'about', component: AboutView },
+        { path: 'guide', name: 'guide', component: GuideView },
+        { path: 'shipping-policy', name: 'shippingPolicy', component: ShippingPolicyView },
+        { path: 'return-policy', name: 'returnPolicy', component: ReturnPolicyView },
+        { path: 'faq', name: 'faq', component: FaqView },
+        { path: 'privacy-policy', name: 'privacyPolicy', component: PrivacyPolicyView },
+        { path: 'terms-of-service', name: 'termsOfService', component: TermsOfServiceView },
+        { path: 'all', name: 'ProductView', component: ProductView },
         {
-          path: '',
-          name: 'home',
-          component: HomeView
-        },
-        {
-          path: 'about',
-          name: 'about',
-          component: AboutView
-        },
-        {
-          path: 'guide',
-          name: 'guide',
-          component: GuideView
-        },
-        {
-          path: 'shipping-policy',
-          name: 'shippingPolicy',
-          component: ShippingPolicyView
-        },
-        {
-          path: 'return-policy',
-          name: 'returnPolicy',
-          component: ReturnPolicyView
-        },
-        {
-          path: '/faq', // 這裡也要加斜線 /
-          name: 'faq',
-          component: FaqView
-        },
-        {
-          path: 'privacy-policy',
-          name: 'privacyPolicy',
-          component: PrivacyPolicyView
-        },
-        {
-          path: 'terms-of-service',
-          name: 'termsOfService',
-          component: TermsOfServiceView
-        },
-        // 
-        {
-          path: 'all', //<--- 這裡定義了「路徑名稱」
-          name: 'ProductView',
-          component: () => import('../views/ProductView.vue'),
-        },
-        {
-          path: 'product/:id', // :id 是動態參數
+          path: 'product/:id',
           name: 'product-detail',
           component: () => import('../views/ProductDetail.vue')
+        },
+        // 客服頁面
+        { path: 'customer', name: 'customer', component: CustomerView },
+        // 會員中心
+        {
+          path: 'member',
+          component: () => import('../views/MemberView.vue'),
+          children: [
+            { path: '', redirect: { name: 'MemberProfile' } },
+            { path: 'profile', name: 'MemberProfile', component: () => import('../components/MemberProfile.vue') },
+            { path: 'paymentmetod', name: 'MemberPayMentmetod', component: () => import('../components/MemberPaymentMethods.vue') },
+            { path: 'address', name: 'MemberAddress', component: () => import('../components/MemberAddress.vue') },
+            { path: 'password', name: 'MemberSetPassword', component: () => import('../components/MemberSetPassword.vue') },
+            { path: 'notificationset', name: 'MemberNotificationSet', component: () => import('../components/MemberNotificationSet.vue') },
+            { path: 'privacysetting', name: 'MemberPrivacySetting', component: () => import('../components/MemberPrivacySetting.vue') },
+            { path: 'pointsdashboard', name: 'MemberPointsDashboard', component: () => import('../components/MemberPointsDashboard.vue') },
+            { path: 'vouchers', name: 'MemberVouchers', component: () => import('../components/MemberVouchers.vue') },
+            { path: 'empty', name: 'MemberEmpty', component: () => import('../components/MemberEmpty.vue') }
+          ]
         }
       ]
     },
-    // CustomerView
+    // 2. 登入/註冊專區 (使用 AuthLayout)
     {
-      path: '/customer',
-      name: 'customer',
-      component: CustomerView
+      path: '/auth',
+      component: AuthLayout,
+      children: [
+        { path: '', redirect: { name: 'Login' } },
+        { path: 'login', name: 'Login', component: () => import('../components/AppLogin.vue') },
+        { path: 'register', name: 'Register', component: () => import('../components/AppRegister.vue') },
+        { path: 'forgot-password', name: 'ForgotPassword', component: () => import('../components/AppForgotPassword.vue') }
+      ]
     },
+    // 3. 錯誤路徑處理
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
+    }
   ]
 })
 
