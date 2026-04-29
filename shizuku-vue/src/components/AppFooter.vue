@@ -79,8 +79,16 @@ const handleSubscribe = () => {
               </RouterLink>
             </li>
             <li class="hover:text-primary cursor-pointer transition-colors">訂單查詢</li>
-            <li class="hover:text-primary cursor-pointer transition-colors">隱私權政策</li>
-            <li class="hover:text-primary cursor-pointer transition-colors">服務條款</li>
+           <li>
+              <RouterLink :to="{ name: 'privacyPolicy' }" class="hover:text-primary transition-colors block">
+                隱私權政策
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink :to="{ name: 'termsOfService' }" class="hover:text-primary transition-colors block">
+                服務條款
+              </RouterLink>
+            </li>
           </ul>
         </div>
 

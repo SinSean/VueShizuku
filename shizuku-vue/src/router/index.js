@@ -7,6 +7,8 @@ import AboutView from '../views/AboutView.vue' // 引入品牌故事
 import GuideView from '../views/GuideView.vue' // 引入購物指南
 import ShippingPolicyView from '../views/ShippingPolicyView.vue' // 引入運送政策
 import ReturnPolicyView from '../views/ReturnPolicyView.vue' // 引入退貨政策
+import PrivacyPolicyView from '../views/PrivacyPolicyView.vue' // 引入隱私政策
+import TermsOfServiceView from '../views/TermsOfServiceView.vue' // 引入服務條款
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,7 +48,17 @@ const router = createRouter({
       path: '/faq', // 這裡也要加斜線 /
       name: 'faq',      
       component: FaqView
-    }
+    },
+    {
+          path: 'privacy-policy',
+          name: 'privacyPolicy',
+          component: PrivacyPolicyView
+        },
+        {
+          path: 'terms-of-service',
+          name: 'termsOfService',
+          component: TermsOfServiceView
+        }
       ]
     },
     // ⚠️ 重點 2：搬到最外層的獨立頁面，path 前面一定要加斜線 /
