@@ -1,4 +1,4 @@
-<template>
+<template>   <!-- 首頁輪播圖 -->
     <section class="relative w-full h-[450px] md:h-[650px] bg-gray-950 overflow-hidden group">
 
         <div class="relative w-full h-full">

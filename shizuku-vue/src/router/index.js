@@ -1,4 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
+import CustomerView from '../views/CustomerView.vue'
+// 重點 1：記得引入 FaqView
+import FaqView from '../views/FaqView.vue'
+import AboutView from '../views/AboutView.vue' // 引入品牌故事
+import GuideView from '../views/GuideView.vue' // 引入購物指南
+import ShippingPolicyView from '../views/ShippingPolicyView.vue' // 引入運送政策
+import ReturnPolicyView from '../views/ReturnPolicyView.vue' // 引入退貨政策
+import PrivacyPolicyView from '../views/PrivacyPolicyView.vue' // 引入隱私政策
+import TermsOfServiceView from '../views/TermsOfServiceView.vue' // 引入服務條款
 import Basic from '@/layout/Basic.vue'
 import ProductView from '../views/ProductView.vue'
 import ProductDetail from '@/components/ProductDetail.vue'
@@ -8,7 +18,7 @@ import ProductDetail from '@/components/ProductDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
- // 整合 scrollBehavior：確保(商品)換頁時自動回到頂部
+  // 整合 scrollBehavior：確保(商品)換頁時自動回到頂部
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
@@ -19,28 +29,70 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: Basic,
+      // 載入版型檔案Basic.vue 當作外殼
+      component: () => import('../layout/Basic.vue'),
+      // children 就是這個外殼裡面裝的小孩(裡面的頁面)
       children: [
         {
           path: '',
           name: 'home',
-          component: () => import('../views/HomeView.vue'),
+          component: HomeView
         },
         {
-      path: 'all', //<--- 這裡定義了「路徑名稱」
-      name: 'ProductView',
-      component: () => import('../views/ProductView.vue'),     
+          path: 'about',
+          name: 'about',
+          component: AboutView
+        },
+        {
+          path: 'guide',
+          name: 'guide',
+          component: GuideView
+        },
+        {
+          path: 'shipping-policy',
+          name: 'shippingPolicy',
+          component: ShippingPolicyView
+        },
+        {
+          path: 'return-policy',
+          name: 'returnPolicy',
+          component: ReturnPolicyView
+        },
+        {
+          path: '/faq', // 這裡也要加斜線 /
+          name: 'faq',
+          component: FaqView
+        },
+        {
+          path: 'privacy-policy',
+          name: 'privacyPolicy',
+          component: PrivacyPolicyView
+        },
+        {
+          path: 'terms-of-service',
+          name: 'termsOfService',
+          component: TermsOfServiceView
+        },
+        // 
+        {
+          path: 'all', //<--- 這裡定義了「路徑名稱」
+          name: 'ProductView',
+          component: () => import('../views/ProductView.vue'),
+        },
+        {
+          path: 'product/:id', // :id 是動態參數
+          name: 'product-detail',
+          component: () => import('../views/ProductDetail.vue')
+        }
+      ]
     },
+    // CustomerView
     {
-  path: 'product/:id', // :id 是動態參數
-  name: 'product-detail',
-  component: () => import('../views/ProductDetail.vue')
-}
-    
-      ],     
+      path: '/customer',
+      name: 'customer',
+      component: CustomerView
     },
-    
-  ],
+  ]
 })
 
 export default router
