@@ -5,6 +5,8 @@ import CustomerView from '../views/CustomerView.vue'
 import FaqView from '../views/FaqView.vue'
 import AboutView from '../views/AboutView.vue' // 引入品牌故事
 import GuideView from '../views/GuideView.vue' // 引入購物指南
+import ShippingPolicyView from '../views/ShippingPolicyView.vue' // 引入運送政策
+import ReturnPolicyView from '../views/ReturnPolicyView.vue' // 引入退貨政策
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,7 +31,22 @@ const router = createRouter({
           path: 'guide', 
           name: 'guide', 
           component: GuideView 
-        }
+        },
+        {
+          path: 'shipping-policy',
+          name: 'shippingPolicy',
+          component: ShippingPolicyView
+        },
+        {
+          path: 'return-policy',
+          name: 'returnPolicy',
+          component: ReturnPolicyView
+        },
+         {
+      path: '/faq', // 這裡也要加斜線 /
+      name: 'faq',      
+      component: FaqView
+    }
       ]
     },
     // ⚠️ 重點 2：搬到最外層的獨立頁面，path 前面一定要加斜線 /
@@ -38,11 +55,7 @@ const router = createRouter({
       name: 'customer',
       component: CustomerView 
     },
-    {
-      path: '/faq', // 這裡也要加斜線 /
-      name: 'faq',      
-      component: FaqView
-    }
+    
   ]
 })
 

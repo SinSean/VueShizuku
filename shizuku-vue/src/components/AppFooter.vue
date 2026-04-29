@@ -52,8 +52,16 @@ const handleSubscribe = () => {
     如何購買
   </RouterLink>
 </li>
-            <li class="hover:text-primary cursor-pointer transition-colors">運送政策</li>
-            <li class="hover:text-primary cursor-pointer transition-colors">退換貨說明</li>
+            <li>
+              <RouterLink :to="{ name: 'shippingPolicy' }" class="hover:text-primary transition-colors block">
+                運送政策
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink :to="{ name: 'returnPolicy' }" class="hover:text-primary transition-colors block">
+                退換貨說明
+              </RouterLink>
+            </li>
             <li>
               <RouterLink :to="{ name: 'faq' }" class="hover:text-primary cursor-pointer transition-colors block">
                 常見問題 FAQ
