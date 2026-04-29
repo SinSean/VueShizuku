@@ -10,6 +10,7 @@ import AppFooter from '@/components/AppFooter.vue';
   <main>
     <RouterView />
   </main>
+
   <footer>
     <AppFooter />
   </footer>
