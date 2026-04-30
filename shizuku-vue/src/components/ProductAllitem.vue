@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import ProductSidebar from '@/components/ProductSidebar.vue'
+// import ProductSidebar from '@/components/ProductSidebar.vue'
 // 假設你有一個商品卡片組件，如果沒有，等一下我們來寫
 // import ProductCard from '@/components/ProductCard.vue' 
 
@@ -21,22 +21,8 @@ const products = ref([
 ])
 </script>
 
-<template>
-  <div class="pt-24 min-h-screen bg-white">
-    
-    <!-- 標題區 -->
-    <div class="max-w-[1400px] mx-auto px-4 py-12 text-center">
-  <h1 class="text-3xl font-light tracking-[0.5em] uppercase mb-4">
-    Shop All
-  </h1>
-
-  <div class="text-sm text-gray-400 uppercase tracking-widest">
-    <RouterLink to="/" class="hover:text-black">Home</RouterLink>
-    <span class="mx-2">/</span>
-    <span class="text-black">All Products</span>
-  </div>
-
-</div>
+<template>  
+<div class="max-w-[1400px] mx-auto px-4 py-14 text-center">
 <!-- 排序列 -->
     <div class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4">
          
@@ -48,10 +34,7 @@ const products = ref([
       </select>
     </div>
 
-    <!-- Sidebar + 商品區 ⭐最重要 -->
-    <div class="max-w-[1400px] mx-auto px-4 pb-20 flex gap-16">
-<ProductSidebar/>
-   
+
 
     <div class="flex-1 min-w-0">
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
@@ -90,6 +73,6 @@ const products = ref([
 
   </div>
   </div>
-  </div>
+
 
 </template>
