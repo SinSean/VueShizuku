@@ -26,7 +26,7 @@ const pageTitle = computed(() => {
         <div class="flex justify-center items-center px-4 py-6">
             <div class="absolute left-4 lg:left-8">
                 <router-link to="/" class="cursor-pointer inline-block">
-                    <img src="../assets/img/logo.png" alt="Shizuku" class="inline-block" />
+                    <img src="@/assets/img/logo.png" alt="Shizuku" class="inline-block" />
                 </router-link>
             </div>
 

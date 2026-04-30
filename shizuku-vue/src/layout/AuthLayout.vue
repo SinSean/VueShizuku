@@ -1,5 +1,5 @@
 <script setup>
-import MemberNav from '@/components/MemberNav.vue';
+import MemberNav from '@/components/member/MemberNav.vue';
 import AppFooter from '@/components/AppFooter.vue';
 </script>
 
