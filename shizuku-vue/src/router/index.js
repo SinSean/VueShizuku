@@ -75,15 +75,15 @@ const router = createRouter({
           component: () => import('@/views/MemberView.vue'),
           children: [
             { path: '', redirect: { name: 'MemberProfile' } },
-            { path: 'profile', name: 'MemberProfile', component: () => import('@/components/MemberProfile.vue') },
-            { path: 'paymentmetod', name: 'MemberPayMentmetod', component: () => import('@/components/MemberPaymentMethods.vue') },
-            { path: 'address', name: 'MemberAddress', component: () => import('@/components/MemberAddress.vue') },
-            { path: 'password', name: 'MemberSetPassword', component: () => import('@/components/MemberSetPassword.vue') },
-            { path: 'notificationset', name: 'MemberNotificationSet', component: () => import('@/components/MemberNotificationSet.vue') },
-            { path: 'privacysetting', name: 'MemberPrivacySetting', component: () => import('@/components/MemberPrivacySetting.vue') },
-            { path: 'pointsdashboard', name: 'MemberPointsDashboard', component: () => import('@/components/MemberPointsDashboard.vue') },
-            { path: 'vouchers', name: 'MemberVouchers', component: () => import('@/components/MemberVouchers.vue') },
-            { path: 'empty', name: 'MemberEmpty', component: () => import('@/components/MemberEmpty.vue') }
+            { path: 'profile', name: 'MemberProfile', component: () => import('@/components/member/MemberProfile.vue') },
+            { path: 'paymentmetod', name: 'MemberPayMentmetod', component: () => import('@/components/member/MemberPaymentMethods.vue') },
+            { path: 'address', name: 'MemberAddress', component: () => import('@/components/member/MemberAddress.vue') },
+            { path: 'password', name: 'MemberSetPassword', component: () => import('@/components/member/MemberSetPassword.vue') },
+            { path: 'notificationset', name: 'MemberNotificationSet', component: () => import('@/components/member/MemberNotificationSet.vue') },
+            { path: 'privacysetting', name: 'MemberPrivacySetting', component: () => import('@/components/member/MemberPrivacySetting.vue') },
+            { path: 'pointsdashboard', name: 'MemberPointsDashboard', component: () => import('@/components/member/MemberPointsDashboard.vue') },
+            { path: 'vouchers', name: 'MemberVouchers', component: () => import('@/components/member/MemberVouchers.vue') },
+            { path: 'empty', name: 'MemberEmpty', component: () => import('@/components/member/MemberEmpty.vue') }
           ]
         }
       ]
