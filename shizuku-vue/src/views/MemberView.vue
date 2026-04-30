@@ -1,5 +1,5 @@
 <script setup>
-import MemberSidebar from '../components/MemberSidebar.vue';
+import MemberSidebar from '../components/member/MemberSidebar.vue';
 </script>
 
 <template>
