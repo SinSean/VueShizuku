@@ -20,6 +20,7 @@ import ReturnPolicyView from '@/views/ReturnPolicyView.vue'
 import PrivacyPolicyView from '@/views/PrivacyPolicyView.vue'
 import TermsOfServiceView from '@/views/TermsOfServiceView.vue'
 import ProductView from '@/views/ProductView.vue'
+import CheckoutView from '@/views/CheckoutView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,6 +52,7 @@ const router = createRouter({
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
+        { path: 'checkout', name: 'checkout', component: CheckoutView },
 
         // 商品頁面
         { path: 'all', name: 'ProductView', component: ProductView },

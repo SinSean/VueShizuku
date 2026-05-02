@@ -1,44 +1,59 @@
 <script setup>
-//  computed 自動計算機
 import { computed } from 'vue'
-// 定義傳遞 items  進來
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const props = defineProps({
-  // 標明 items 必須是一個 Array
   items: Array,
 })
 
 const totalPrice = computed(() => {
-  let total = 0
-  props.items.forEach((item) => {
-    total = total + item.price * item.quantity
-  })
-  return total
+  return props.items.reduce((total, item) => total + (item.price * item.quantity), 0)
 })
 
-// ============== 未來接 API - 送出結帳訂單 =================
-
-// ======================================================
-// 這是專門處理結帳按鈕被點擊時的工具
-const handleCheckout = () => {
-  // 在瀏覽器的開發者工具印出提示，代表這顆按鈕有乖乖運作
-  console.log('準備執行結帳 API... 總金額為：', totalPrice.value)
+const goToCheckout = () => {
+  router.push('/checkout')
 }
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-sm h-fit">
-    <h2 class="text-lg font-bold border-b border-gray-100 pb-3 mb-4">訂單摘要</h2>
+  <div class="bg-gray-50/70 p-8 rounded-2xl border border-gray-100 sticky top-28">
+    <h2 class="text-xl font-bold text-gray-900 mb-6">訂單摘要</h2>
 
-    <div class="flex justify-between items-center mb-4 text-gray-600">
-      <span>商品總計</span>
-      <span class="font-bold">NT$ {{ totalPrice }}</span>
+    <div class="space-y-4 text-sm text-gray-600 border-b border-gray-200 pb-6 mb-6">
+      <div class="flex justify-between items-center">
+        <span>商品金額小計</span>
+        <span class="font-medium text-gray-900">NT$ {{ totalPrice.toLocaleString() }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span>運費</span>
+        <span class="text-gray-500">結帳時計算</span>
+      </div>
     </div>
 
+    <!-- 總金額 -->
+    <div class="flex justify-between items-end mb-8">
+      <span class="text-base font-bold text-gray-900">總計</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500">TWD</span>
+        <span class="text-3xl font-black text-gray-900">NT$ {{ totalPrice.toLocaleString() }}</span>
+      </div>
+    </div>
+
+    <!-- 結帳按鈕 -->
     <button
-      @click="handleCheckout"
-      class="w-full bg-blue-500 text-white py-3 rounded-md font-bold tracking-widest hover:bg-blue-600 transition-colors mt-4"
+      @click="goToCheckout"
+      :disabled="props.items.length === 0"
+      class="w-full bg-black text-white py-4 rounded-md font-bold tracking-widest hover:bg-gray-800 transition shadow-lg shadow-gray-200 flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      前往結帳
+      前往結帳 <i class="pi pi-arrow-right text-sm"></i>
     </button>
+    
+    <!-- 支援的支付方式 Icon (裝飾用增加信任感) -->
+    <div class="mt-8 flex justify-center items-center gap-5 text-gray-300 text-2xl">
+      <i class="pi pi-credit-card hover:text-gray-400 transition"></i>
+      <i class="pi pi-paypal hover:text-gray-400 transition"></i>
+      <i class="pi pi-apple hover:text-gray-400 transition"></i>
+    </div>
   </div>
 </template>
