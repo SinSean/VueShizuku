@@ -9,7 +9,7 @@ import Button from 'primevue/button'
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-6 mt-8">
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
       <h2 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">基本資訊</h2>
       <div class="flex flex-wrap gap-x-8 gap-y-4 text-gray-700">

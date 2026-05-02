@@ -52,7 +52,7 @@ const router = createRouter({
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
-        { path: 'checkout', name: 'checkout', component: CheckoutView },
+        
 
         // 商品頁面
         { path: 'all', name: 'ProductView', component: ProductView },
@@ -105,6 +105,8 @@ const router = createRouter({
 
 
     { path: '/customer', name: 'customer', component: CustomerView },
+    //結帳頁面
+    { path: '/checkout', name: 'checkout', component: CheckoutView },
 
     // 3. 錯誤路徑處理
     {

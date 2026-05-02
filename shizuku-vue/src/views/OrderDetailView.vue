@@ -42,13 +42,6 @@ const goBack = () => {
   router.push({ name: 'orders' })
 }
 
-// 前往支付明細列表頁
-// const goToPaymentList = () => {
-//   router.push({
-//     name: 'payment-list',
-//     params: { id: orderData.value.id },
-//   })
-// }
 </script>
 
 <template>
@@ -58,16 +51,6 @@ const goBack = () => {
         <Button icon="pi pi-arrow-left" text rounded @click="goBack" />
         <h1 class="text-3xl font-extrabold text-gray-800">訂單詳細內容</h1>
       </div>
-
-      <!-- <div class="flex justify-end">
-        <Button
-          label="查看支付明細列表"
-          icon="pi pi-credit-card"
-          outlined
-          @click="goToPaymentList"
-        />
-      </div> -->
-
       <OrderInfoSection :order="orderData" />
     </div>
   </div>
