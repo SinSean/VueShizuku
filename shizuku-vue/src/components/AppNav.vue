@@ -56,12 +56,25 @@ const handleLogout = () => {
 
         <AppCartMenu />
 
-        <!-- 4. 關鍵修改：條件渲染登入狀態 -->
         <template v-if="authStore.isLogin">
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-medium text-slate-700">你好，{{ authStore.userName }}</span>
+          <div class="flex items-center gap-3 bg-gray-200/50 p-1 pr-3 rounded-full border border-gray-300">
+            <!-- 會員頭像 + 名字 (點了進會員中心) -->
+            <router-link to="/member" class="flex items-center gap-2 group">
+              <div
+                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white overflow-hidden group-hover:bg-emerald-600 transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                </svg>
+              </div>
+              <span class="hidden xl:block text-xs font-bold text-gray-700">{{ authStore.userName }}</span>
+            </router-link>
+
+            <!-- 分隔線 -->
+            <div class="w-[1px] h-4 bg-gray-400"></div>
+
+            <!-- 登出按鈕：直接露出來，保證點得到 -->
             <button @click="handleLogout"
-              class="hidden lg:block border border-red-300 px-3 py-1 rounded-full text-xs text-red-500 hover:bg-red-50 transition-colors">
+              class="text-xs font-bold text-red-500 hover:text-red-700 transition-colors px-1">
               登出
             </button>
           </div>
@@ -69,7 +82,7 @@ const handleLogout = () => {
 
         <template v-else>
           <router-link to="/auth"
-            class="hidden lg:block border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
+            class="hidden lg:block border border-gray-400 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-gray-800 hover:text-white transition-all">
             登入/註冊
           </router-link>
         </template>

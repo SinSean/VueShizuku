@@ -14,35 +14,42 @@ const portAddressNumber = ref('7197')
 
 const handleLogin = async () => {
     if (isLoading.value) return;
-
     isLoading.value = true;
+
     try {
-        const response = await axios.post(`https://localhost:${portAddressNumber.value}/api/MemberApi/login`, {
-            fEmail: email.value,
-            fPassword: password.value
-        });
+        // 在 axios 參數最後面加上 { timeout: 5000 }
+        const response = await axios.post(
+            `https://localhost:${portAddressNumber.value}/api/MemberApi/login`,
+            {
+                fEmail: email.value,
+                fPassword: password.value
+            },
+            { timeout: 5000 } // 如果 5 秒內後端沒回應，會直接噴到 catch
+        );
 
         const res = response.data;
-
         if (res.success) {
-            // 顯示歡迎訊息
-            alert(`${res.message}！歡迎回來，${res.data.userName}`);
-
-            // 存入簡單的狀態（這步很重要，否則跳轉後網頁不知道你登入了）
-            // 目前我們先用 localStorage 存名字，等之後學 JWT 再存 Token
             authStore.login(res.data.userName);
-
-            // 執行跳轉
+            alert('登入成功');
             router.push({ name: 'home' });
         }
     } catch (error) {
-        const errorMsg = error.response?.data?.message || '系統連線錯誤';
-        alert(errorMsg);
+        console.error("捕捉到錯誤:", error);
+
+        // 這裡可以細分錯誤原因
+        if (error.code === 'ECONNABORTED') {
+            alert('伺服器回應太久（逾時），請檢查後端是否掛掉');
+        } else {
+            const errorMsg = error.response?.data?.message || '系統連線錯誤或後端崩潰';
+            alert(errorMsg);
+        }
     } finally {
+        // 關鍵：無論如何都會跑這行，按鈕就不會卡在「登入中」
         isLoading.value = false;
     }
 };
 </script>
+
 
 <template>
     <div class="relative min-h-screen flex items-center justify-center p-6 bg-slate-900">
