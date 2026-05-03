@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import { loginAPI } from '@/api/member';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth'; // 1. 引入
 const authStore = useAuthStore(); // 2. 初始化
@@ -18,25 +18,22 @@ const handleLogin = async () => {
 
     try {
         // 在 axios 參數最後面加上 { timeout: 5000 }
-        const response = await axios.post(
-            `https://localhost:${portAddressNumber.value}/api/MemberApi/login`,
-            {
-                fEmail: email.value,
-                fPassword: password.value
-            },
-            { timeout: 5000 } // 如果 5 秒內後端沒回應，會直接噴到 catch
-        );
+        const response = await loginAPI({
+            fEmail: email.value,
+            fPassword: password.value
+        });
 
         const res = response.data;
         if (res.success) {
-            authStore.login(res.data.userName);
+            console.log("後端回傳的資料內容：", res.data); // <--- 加這行
+            // 記得確認後端回傳的 res.data 結構是否就是 User 物件
+            authStore.login(res.data);
             alert('登入成功');
             router.push({ name: 'home' });
         }
     } catch (error) {
+        // 錯誤處理邏輯保持不變，很棒
         console.error("捕捉到錯誤:", error);
-
-        // 這裡可以細分錯誤原因
         if (error.code === 'ECONNABORTED') {
             alert('伺服器回應太久（逾時），請檢查後端是否掛掉');
         } else {
@@ -44,7 +41,6 @@ const handleLogin = async () => {
             alert(errorMsg);
         }
     } finally {
-        // 關鍵：無論如何都會跑這行，按鈕就不會卡在「登入中」
         isLoading.value = false;
     }
 };
