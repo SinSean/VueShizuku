@@ -7,30 +7,33 @@ const email = ref('');
 const password = ref('');
 const isRemember = ref(false);
 const isLoading = ref(false); // 2. 新增：增加載入狀態防止重複點擊
+const router = useRouter();
 const portAddressNumber = ref('7197')
 
 const handleLogin = async () => {
+    if (isLoading.value) return;
+
+    isLoading.value = true;
     try {
-        // 這裡換成你 local 執行的 API 位址
         const response = await axios.post(`https://localhost:${portAddressNumber.value}/api/MemberApi/login`, {
             fEmail: email.value,
             fPassword: password.value
         });
-        // 4. 重要修正：對應你後端定義的 ApiResponse<T>
+
         const res = response.data;
 
         if (res.success) {
-            // 5. 修正：res.data 裡面才是 MemberLoginResponseDTO 的內容 (含有 userName)
+            // 顯示歡迎訊息
             alert(`${res.message}！歡迎回來，${res.data.userName}`);
 
-            // 這裡未來存 Token (localStorage.setItem('token', ...))
+            // 存入簡單的狀態（這步很重要，否則跳轉後網頁不知道你登入了）
+            // 目前我們先用 localStorage 存名字，等之後學 JWT 再存 Token
+            localStorage.setItem('userName', res.data.userName);
 
-            // 登入成功後跳轉頁面
-            // router.push({ name: 'Home' }); 
+            // 執行跳轉
+            router.push({ name: 'home' });
         }
     } catch (error) {
-        // 6. 修正：捕捉 401 或其他錯誤時的處理邏輯
-        console.error("登入出錯:", error);
         const errorMsg = error.response?.data?.message || '系統連線錯誤';
         alert(errorMsg);
     } finally {
