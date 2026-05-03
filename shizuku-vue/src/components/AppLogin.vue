@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth'; // 1. 引入
+const authStore = useAuthStore(); // 2. 初始化
 
 const email = ref('');
 const password = ref('');
@@ -28,7 +30,7 @@ const handleLogin = async () => {
 
             // 存入簡單的狀態（這步很重要，否則跳轉後網頁不知道你登入了）
             // 目前我們先用 localStorage 存名字，等之後學 JWT 再存 Token
-            localStorage.setItem('userName', res.data.userName);
+            authStore.login(res.data.userName);
 
             // 執行跳轉
             router.push({ name: 'home' });
