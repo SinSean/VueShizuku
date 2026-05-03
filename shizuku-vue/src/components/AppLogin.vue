@@ -22,7 +22,7 @@ const handleLogin = async () => {
             fEmail: email.value,
             fPassword: password.value
         });
-
+        console.log('後端回傳的原始 JSON 資料：', response.data);   //看看是不是真的有資料
         const res = response.data;
         if (res.success) {
             console.log("後端回傳的資料內容：", res.data); // <--- 加這行
