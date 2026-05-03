@@ -1,12 +1,41 @@
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const email = ref('');
 const password = ref('');
 const isRemember = ref(false);
+const isLoading = ref(false); // 2. 新增：增加載入狀態防止重複點擊
+const portAddressNumber = ref('7197')
 
-const handleLogin = () => {
-    console.log('Login attempt:', { email: email.value, password: password.value });
+const handleLogin = async () => {
+    try {
+        // 這裡換成你 local 執行的 API 位址
+        const response = await axios.post(`https://localhost:${portAddressNumber.value}/api/MemberApi/login`, {
+            fEmail: email.value,
+            fPassword: password.value
+        });
+        // 4. 重要修正：對應你後端定義的 ApiResponse<T>
+        const res = response.data;
+
+        if (res.success) {
+            // 5. 修正：res.data 裡面才是 MemberLoginResponseDTO 的內容 (含有 userName)
+            alert(`${res.message}！歡迎回來，${res.data.userName}`);
+
+            // 這裡未來存 Token (localStorage.setItem('token', ...))
+
+            // 登入成功後跳轉頁面
+            // router.push({ name: 'Home' }); 
+        }
+    } catch (error) {
+        // 6. 修正：捕捉 401 或其他錯誤時的處理邏輯
+        console.error("登入出錯:", error);
+        const errorMsg = error.response?.data?.message || '系統連線錯誤';
+        alert(errorMsg);
+    } finally {
+        isLoading.value = false;
+    }
 };
 </script>
 
@@ -54,9 +83,9 @@ const handleLogin = () => {
                     </RouterLink>
                 </div>
 
-                <button type="submit"
-                    class="w-full py-4 mt-2 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95">
-                    登入帳號
+                <button type="submit" :disabled="isLoading"
+                    class="w-full py-4 mt-2 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95 disabled:bg-slate-400">
+                    {{ isLoading ? '處理中...' : '登入帳號' }}
                 </button>
             </form>
 
