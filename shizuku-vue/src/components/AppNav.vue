@@ -3,7 +3,20 @@ import { ref } from 'vue'
 import AppCartMenu from './AppCartMenu.vue'
 import AppNavHamburgerMenu from './AppNavHamburgerMenu.vue'
 
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
 const isHamburgerMenuOpen = ref(false)
+
+const authStore = useAuthStore()
+const router = useRouter()
+
+// 處理登出邏輯
+const handleLogout = () => {
+  authStore.logout()
+  alert('您已成功登出')
+  router.push({ name: 'home' });
+}
 </script>
 
 <template>
@@ -43,13 +56,23 @@ const isHamburgerMenuOpen = ref(false)
 
         <AppCartMenu />
 
-        <!-- <button class="border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
-          登入/註冊
-        </button> -->
-        <router-link to="/auth"
-          class="hidden lg:block border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
-          登入/註冊
-        </router-link>
+        <!-- 4. 關鍵修改：條件渲染登入狀態 -->
+        <template v-if="authStore.isLogin">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-medium text-slate-700">你好，{{ authStore.userName }}</span>
+            <button @click="handleLogout"
+              class="hidden lg:block border border-red-300 px-3 py-1 rounded-full text-xs text-red-500 hover:bg-red-50 transition-colors">
+              登出
+            </button>
+          </div>
+        </template>
+
+        <template v-else>
+          <router-link to="/auth"
+            class="hidden lg:block border border-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-50 transition-colors">
+            登入/註冊
+          </router-link>
+        </template>
         <button class="lg:hidden hover:text-gray-400 transition-colors" @click="isHamburgerMenuOpen = true">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
