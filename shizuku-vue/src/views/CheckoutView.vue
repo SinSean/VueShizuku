@@ -4,6 +4,9 @@ import axios from 'axios'
 import FloatLabel from 'primevue/floatlabel'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import { useCartStore } from '@/stores/cartStore'
+
+const cartStore = useCartStore()
 
 // 準備變數來接收使用者的輸入
 const form = ref({
@@ -19,6 +22,12 @@ const submitOrder = async () => {
     return
   }
 
+  // 把 Pinia 購物車的資料轉換為後端 API 需要的格式
+  const formattedCartItems = cartStore.items.map(item => ({
+    variantId: item.id,
+    quantity: item.quantity
+  }))
+
   const requestPayload = {
     memberId: 1, 
     receiverName: form.value.receiverName,
@@ -26,10 +35,7 @@ const submitOrder = async () => {
     receiverAddress: form.value.receiverAddress,
     note: form.value.note,
     paymentMethodId: 1,
-    cartItems: [
-        { variantId: 1, quantity: 2 },
-        { variantId: 2, quantity: 1 }
-    ]
+    cartItems: formattedCartItems
   }
 
   try {
@@ -75,34 +81,20 @@ const submitOrder = async () => {
           <h2 class="text-xl font-bold text-gray-900 mb-6">訂單摘要</h2>
           
           <div class="space-y-6 mb-6">
-            <!-- 假購物車商品清單 1 -->
-            <div class="flex items-center gap-4 relative">
+            <!-- 購物車商品清單 (動態產生) -->
+            <div v-for="item in cartStore.items" :key="item.id" class="flex items-center gap-4 relative">
               <div class="relative flex-shrink-0">
-                <div class="w-16 h-16 bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <img src="https://placehold.co/100x100/e2e8f0/64748b?text=Item+1" class="w-full h-full object-cover">
+                <div class="w-16 h-16 bg-[#f8f8f8] border border-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                  <img :src="item.image" class="w-full h-full object-cover mix-blend-multiply">
                 </div>
-                <span class="absolute -top-2 -right-2 bg-gray-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">2</span>
+                <span class="absolute -top-2 -right-2 bg-gray-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">{{ item.quantity }}</span>
               </div>
               <div class="flex-1">
-                <h4 class="font-bold text-gray-900 text-sm">日系簡約純棉 T-Shirt</h4>
-                <p class="text-gray-500 text-xs mt-1">L / 白</p>
+                <h4 class="font-bold text-gray-900 text-sm">{{ item.name }}</h4>
+                <p class="text-gray-500 text-xs mt-1">單價：NT$ {{ item.price.toLocaleString() }}</p>
               </div>
-              <p class="font-bold text-gray-900 text-sm">NT$ 1,180</p>
-            </div>
-
-            <!-- 假購物車商品清單 2 -->
-            <div class="flex items-center gap-4 relative">
-              <div class="relative flex-shrink-0">
-                <div class="w-16 h-16 bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <img src="https://placehold.co/100x100/e2e8f0/64748b?text=Item+2" class="w-full h-full object-cover">
-                </div>
-                <span class="absolute -top-2 -right-2 bg-gray-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">1</span>
-              </div>
-              <div class="flex-1">
-                <h4 class="font-bold text-gray-900 text-sm">復古寬鬆牛仔褲</h4>
-                <p class="text-gray-500 text-xs mt-1">32 / 藍</p>
-              </div>
-              <p class="font-bold text-gray-900 text-sm">NT$ 1,280</p>
+              <!-- 小計 -->
+              <p class="font-bold text-gray-900 text-sm">NT$ {{ (item.price * item.quantity).toLocaleString() }}</p>
             </div>
           </div>
 
@@ -116,7 +108,7 @@ const submitOrder = async () => {
           <div class="space-y-2 text-sm text-gray-600 border-t border-gray-200 pt-6">
             <div class="flex justify-between">
               <span>小計</span>
-              <span class="font-medium text-gray-900">NT$ 2,460</span>
+              <span class="font-medium text-gray-900">NT$ {{ cartStore.totalPrice.toLocaleString() }}</span>
             </div>
             <div class="flex justify-between">
               <span>運費</span>
@@ -127,7 +119,7 @@ const submitOrder = async () => {
               <span class="text-base font-bold text-gray-900">總計</span>
               <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-500">TWD</span>
-                <span class="text-2xl font-black text-gray-900">NT$ 2,460</span>
+                <span class="text-2xl font-black text-gray-900">NT$ {{ cartStore.totalPrice.toLocaleString() }}</span>
               </div>
             </div>
           </div>
