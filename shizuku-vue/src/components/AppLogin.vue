@@ -25,11 +25,11 @@ const handleLogin = async () => {
         console.log('後端回傳的原始 JSON 資料：', response.data);   //看看是不是真的有資料
         const res = response.data;
         if (res.success) {
-            // console.log("後端回傳的資料內容：", res.data); 
-            console.log("後端回傳的資料內容：", res.data[0]); //印單筆
-            res.data.forEach(x => {         //全部印出
-                console.log(x.fEmail)
-            });
+            console.log("後端回傳的資料內容：", res.data);
+            // console.log("後端回傳的資料內容：", res.data[0]); //印單筆
+            // res.data.forEach(x => {         //全部印出
+            //     console.log(x.fEmail)
+            // });
             // 記得確認後端回傳的 res.data 結構是否就是 User 物件
             authStore.login(res.data);
             alert('登入成功');
