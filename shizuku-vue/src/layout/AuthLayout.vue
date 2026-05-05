@@ -1,16 +1,12 @@
 <script setup>
 import MemberNav from '@/components/member/MemberNav.vue';
-import AppFooter from '@/components/AppFooter.vue';
 </script>
 
 <template>
-    <nav>
+    <nav class="sticky top-0 z-50">
         <MemberNav />
     </nav>
     <main>
         <RouterView />
     </main>
-    <footer>
-        <!-- <AppFooter /> -->
-    </footer>
 </template>
