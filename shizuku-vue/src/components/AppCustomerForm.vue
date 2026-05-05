@@ -1,8 +1,9 @@
 <script setup>
-import { reactive, ref } from 'vue';
+// ✨ 1. 多引入了一個 onMounted，用來在網頁開啟時觸發動作
+import { reactive, ref, onMounted } from 'vue';
 import axios from 'axios';
 
-// 1. 表單資料綁定 (對應後端的 VueTicketDto)
+// 表單資料綁定
 const formData = reactive({
   lastName: '',
   firstName: '',
@@ -12,31 +13,39 @@ const formData = reactive({
   description: ''
 });
 
-// 2. 問題分類選項
-const categories = ref([
-  { id: 1, name: '商品瑕疵' },
-  { id: 2, name: '尺寸不合' },
-  { id: 3, name: '物流延遲' },
-  { id: 4, name: '退貨申請' },
-  { id: 5, name: '一般諮詢' },
-  { id: 6, name: '發送錯誤' }
-]);
+// ✨ 2. 這裡改成「空陣列」，不寫死了，等著接後端傳來的資料！
+const categories = ref([]);
 
 const isSubmitting = ref(false);
 
-// 3. 送出表單到後端
+// ✨ 3. 新增：專門去後端拿「分類資料」的函數
+const fetchCategories = async () => {
+  try {
+    // 🛑🛑🛑 注意：把 7123 換成你 C# 真實的 Port 號！
+    const apiUrl = 'https://localhost:7197/api/CustomerApi/Categories';
+    
+    // 用 GET 去敲剛剛寫好的那扇門
+    const response = await axios.get(apiUrl);
+    
+    // 把後端吐出來的資料直接塞給變數，畫面上的下拉選單就會瞬間長出來！
+    categories.value = response.data;
+  } catch (error) {
+    console.error("取得分類失敗：", error);
+  }
+};
+
+// 送出表單到後端 (跟你原本寫的一樣)
 const submitForm = async () => {
   isSubmitting.value = true;
   
   try {
-    // 🛑🛑🛑 老哥！就是這裡！把 7123 換成你 C# 跑起來的真實 Port 號 🛑🛑🛑
+    // 🛑🛑🛑 注意：這裡的 7123 也一樣要換成你 C# 真實的 Port 號！
     const apiUrl = 'https://localhost:7197/api/CustomerApi/Submit';
     
-    // 發送 POST 請求
     const response = await axios.post(apiUrl, formData);
     
     if (response.data.success) {
-      alert(response.data.message); // 顯示成功訊息
+      alert(response.data.message);
       // 清空表單
       Object.keys(formData).forEach(key => formData[key] = '');
     }
@@ -47,6 +56,11 @@ const submitForm = async () => {
     isSubmitting.value = false;
   }
 };
+
+// ✨ 4. 新增：設定網頁一載入 (Mounted) 的時候，就立刻去執行 fetchCategories！
+onMounted(() => {
+  fetchCategories();
+});
 </script>
 
 <style scoped>
@@ -66,9 +80,9 @@ const submitForm = async () => {
       <span class="text-sm text-gray-600"><span class="text-red-500 mr-1">※</span>必須項目</span>
     </div>
 
-    <!-- 加上 @submit.prevent 攔截原生表單送出，改呼叫我們的 API 邏輯 -->
     <form @submit.prevent="submitForm" class="space-y-6 bg-white p-6 md:p-10 border border-gray-200">
       
+      <!-- 姓名 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">姓名 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3 flex gap-4">
@@ -83,6 +97,7 @@ const submitForm = async () => {
         </div>
       </div>
 
+      <!-- 信箱 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">電子郵件地址 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -90,7 +105,7 @@ const submitForm = async () => {
         </div>
       </div>
 
-      <!-- 新增的分類、主旨與描述 -->
+      <!-- 問題分類 (現在裡面的資料是從後端來的囉！) -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">問題分類 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -101,6 +116,7 @@ const submitForm = async () => {
         </div>
       </div>
 
+      <!-- 主旨 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">案件主旨 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -108,6 +124,7 @@ const submitForm = async () => {
         </div>
       </div>
 
+      <!-- 描述 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">詳細描述 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -115,8 +132,8 @@ const submitForm = async () => {
         </div>
       </div>
 
+      <!-- 送出按鈕 -->
       <div class="text-center pt-8">
-        <!-- 按鈕改成 type="submit" -->
         <button type="submit" :disabled="isSubmitting" class="bg-gray-900 text-white px-16 py-3 font-bold tracking-widest hover:bg-gray-700 transition-colors disabled:opacity-50">
           {{ isSubmitting ? '傳送中...' : '確認送出' }}
         </button>
