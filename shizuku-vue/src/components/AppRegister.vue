@@ -1,19 +1,21 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 
-const name = ref('');
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
+// 根據 DTO 結構定義，建議使用 reactive 管理表單
+// 提醒：對接後端時，屬性名稱建議符合 .NET camelCase 慣例 
+const form = reactive({
+    fName: '',
+    fEmail: '',
+    fPhone: '',
+    fGender: null, // 性別使用 int [cite: 145, 146]
+    fBirthday: '',
+    fPassword: '',
+    confirmPassword: ''
+});
 
 const handleRegister = () => {
-    // 這裡加入註冊邏輯
-    console.log('Register attempt:', {
-        name: name.value,
-        email: email.value,
-        password: password.value,
-        confirmPassword: confirmPassword.value
-    });
+    // 這裡加入 API 提交邏輯
+    console.log('提交註冊資料:', form);
 };
 </script>
 
@@ -36,45 +38,75 @@ const handleRegister = () => {
             </div>
 
             <div
-                class="w-full max-w-md bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border border-white/20 mx-auto lg:mx-0">
-                <div class="text-center mb-8">
+                class="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 mx-auto lg:mx-0 overflow-y-auto max-h-[90vh] py-1">
+                <div class="text-center mb-6">
                     <h2 class="text-2xl font-serif font-bold text-slate-800 mb-2">建立帳號</h2>
                     <p class="text-slate-600 text-sm">歡迎加入我們的行列</p>
                 </div>
 
                 <form @submit.prevent="handleRegister" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">名稱</label>
-                        <input v-model="name" type="text" placeholder="請輸入您的暱稱"
-                            class="w-full p-3.5 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition placeholder:text-slate-400">
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">名稱</label>
+                        <input v-model="form.fName" type="text" placeholder="請輸入您的暱稱"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">電子信箱</label>
-                        <input v-model="email" type="email" placeholder="example@shizuku.com"
-                            class="w-full p-3.5 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition placeholder:text-slate-400">
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">電子信箱</label>
+                        <input v-model="form.fEmail" type="email" placeholder="example@shizuku.com"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">密碼</label>
-                        <input v-model="password" type="password" placeholder="設定您的密碼"
-                            class="w-full p-3.5 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition placeholder:text-slate-400">
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">電話號碼</label>
+                        <input v-model="form.fPhone" type="tel" placeholder="0912345678"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5 ml-1">確認密碼</label>
-                        <input v-model="confirmPassword" type="password" placeholder="再次確認密碼"
-                            class="w-full p-3.5 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition placeholder:text-slate-400">
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">性別</label>
+                        <div class="flex space-x-4 p-1">
+                            <label class="flex items-center cursor-pointer text-slate-600 text-sm">
+                                <input type="radio" v-model="form.fGender" :value="1"
+                                    class="mr-2 text-emerald-500 focus:ring-emerald-500"> 男
+                            </label>
+                            <label class="flex items-center cursor-pointer text-slate-600 text-sm">
+                                <input type="radio" v-model="form.fGender" :value="2"
+                                    class="mr-2 text-emerald-500 focus:ring-emerald-500"> 女
+                            </label>
+                            <label class="flex items-center cursor-pointer text-slate-600 text-sm">
+                                <input type="radio" v-model="form.fGender" :value="0"
+                                    class="mr-2 text-emerald-500 focus:ring-emerald-500"> 其他
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">生日日期</label>
+                        <input v-model="form.fBirthday" type="date"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">密碼</label>
+                        <input v-model="form.fPassword" type="password" placeholder="密碼"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">確認密碼</label>
+                        <input v-model="form.confirmPassword" type="password" placeholder="確認"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <button type="submit"
-                        class="w-full py-4 mt-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg active:scale-95">
+                        class="w-full py-4 mt-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95">
                         立即註冊
                     </button>
                 </form>
 
-                <div class="mt-8 text-center text-sm text-slate-600">
-                    已經有帳號了？ <RouterLink :to="{ name: 'Login' }" class="font-bold text-emerald-700 hover:underline">返回登入
+                <div class="mt-6 text-center text-sm text-slate-600">
+                    已經有帳號了？
+                    <RouterLink :to="{ name: 'Login' }" class="font-bold text-emerald-700 hover:underline">返回登入
                     </RouterLink>
                 </div>
             </div>
@@ -86,5 +118,11 @@ const handleRegister = () => {
 h1,
 h2 {
     font-family: 'Georgia', serif;
+}
+
+/* 隱藏 Chrome 的 Date Input 預設圖示以保持美觀 */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
 }
 </style>
