@@ -1,15 +1,25 @@
 <script setup>
+import Tag from 'primevue/tag'
+import Button from 'primevue/button'
 const props = defineProps({
   order: {
     type: Object,
     required: true,
   },
 })
-import Button from 'primevue/button'
+// 保持跟列表頁一致的顏色邏輯
+const getSeverity = (status) => {
+  if (status === '已完成') return 'secondary' 
+  if (status === '已付款') return 'info'      
+  if (status === '已出貨') return 'warn'      
+  if (status === '待付款') return 'secondary'  
+  if (status === '已取消') return 'primary' 
+  return 'danger'                             
+}
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-6 mt-8">
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
       <h2 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">基本資訊</h2>
       <div class="flex flex-wrap gap-x-8 gap-y-4 text-gray-700">
@@ -20,9 +30,7 @@ import Button from 'primevue/button'
         <p><span class="text-gray-500 mr-2">訂購日期:</span> {{ props.order.date }}</p>
         <p>
           <span class="text-gray-500 mr-2">訂單狀態:</span>
-          <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">{{
-            props.order.status
-          }}</span>
+          <Tag :value="props.order.status" :severity="getSeverity(props.order.status)" rounded />
         </p>
       </div>
     </div>

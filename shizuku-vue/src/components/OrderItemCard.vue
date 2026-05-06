@@ -17,10 +17,12 @@ const props = defineProps({
 
 // 顯示狀態文字
 const getSeverity = (status) => {
-  if (status === '已完成') return 'success'
-  if (status === '處理中') return 'info'
-  if (status === '已出貨') return 'warning'
-  return 'danger'
+  if (status === '已完成') return 'secondary'   // 綠色
+  if (status === '已付款') return 'info'      // 藍色
+  if (status === '已出貨') return 'warn'      // 黃色
+  if (status === '待付款') return 'secondary'  // 黑色/深色
+  if (status === '已取消') return 'primary' // 灰色
+  return 'danger'                             // 紅色 (預設或錯誤)
 }
 
 // 跳轉到詳情頁的動作

@@ -1,24 +1,47 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import Button from 'primevue/button'
+import axios from 'axios'
 import OrderItemCard from '@/components/OrderItemCard.vue'
 
-// 假資料來源
-const ordersList = ref([
-  { id: 'ORD-001', total: 1500, status: '已完成', date: '2026-04-20' },
-  { id: 'ORD-002', total: 890, status: '已出貨', date: '2026-04-25' },
-  { id: 'ORD-003', total: 3200, status: '處理中', date: '2026-04-27' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-  { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-])
+// 假資料
+// const ordersList = ref([
+//   { id: 'ORD-001', total: 1500, status: '已完成', date: '2026-04-20' },
+//   { id: 'ORD-002', total: 890, status: '已出貨', date: '2026-04-25' },
+//   { id: 'ORD-003', total: 3200, status: '處理中', date: '2026-04-27' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
+// ])
+
+const ordersList = ref([])
+
+onMounted(async () => {
+    try {
+      // 測試先寫死
+        const member = 1;
+        const response = await axios.get(`https://localhost:7197/api/order/member/${member}`);
+        
+        // 把後端傳來的資料，轉換成前端卡片元件 (OrderItemCard) 看得懂的欄位
+        ordersList.value = response.data.map(order => ({
+          id: order.orderNo,              // 對應後端的 OrderNo
+          total: order.totalAmount,       // 對應後端的 TotalAmount
+          status: order.statusText,       // 對應後端的 StatusText
+          date: order.createdAt.split('T')[0] // 只取日期部分 (例如: 2026-05-05)
+        }))
+        
+    } catch (error) {
+        console.error("取得訂單失敗：", error)
+        alert("無法載入訂單資料，請稍後再試！")
+    }
+})
 
 // 控制初始顯示數量與每次增加數量
 const limit = ref(10)

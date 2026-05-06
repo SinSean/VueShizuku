@@ -1,27 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCartStore } from '@/stores/cartStore'
 import Menu from 'primevue/menu'
 const menu = ref()
-const items = ref([
-  {
-    id: 1,
-    name: '日系簡約純棉 T-Shirt',
-    price: 'NT$ 590',
-    image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+1',
-  },
-  {
-    id: 2,
-    name: '復古寬鬆牛仔褲',
-    price: 'NT$ 1,280',
-    image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+2',
-  },
-])
+const cartStore = useCartStore()
+
 const router = useRouter()
-// 移除商品
-const removeItem = (id) => {
-  items.value = items.value.filter((item) => item.id !== id)
-}
 
 const toggle = (event) => {
   menu.value.toggle(event)
@@ -46,29 +31,49 @@ const goToCart = () => {
           d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
         ></path>
       </svg>
-      <span class="text-xs font-bold">{{ items.length }}</span>
+      <span class="text-xs font-bold">{{ cartStore.totalItems }}</span>
     </button>
 
     <Menu
       ref="menu"
       id="overlay_menu"
-      :model="items"
+      :model="cartStore.items"
       :popup="true"
       class="w-80 p-2 !bg-white !border !border-gray-200 !shadow-xl"
     >
       <template #item="{ item }">
         <div
+          @click.stop
           class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md transition-colors group"
         >
-          <img :src="item.image" alt="商品縮圖" class="w-14 h-14 object-cover rounded" />
+          <img :src="item.image" alt="商品縮圖" class="w-14 h-14 object-cover rounded flex-shrink-0" />
 
           <div class="flex flex-col flex-1">
             <span class="text-sm font-bold text-gray-800">{{ item.name }}</span>
-            <span class="text-xs text-gray-500 mt-1">{{ item.price }}</span>
+            
+            <div class="flex items-center justify-between mt-2">
+              <span class="text-xs font-bold text-gray-500">NT$ {{ item.price.toLocaleString() }}</span>
+              
+              <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded px-2 py-0.5">
+                <button 
+                  @click.stop="item.quantity > 1 ? item.quantity-- : null" 
+                  class="text-gray-400 hover:text-black font-bold transition-colors"
+                >
+                  -
+                </button>
+                <span class="text-xs font-bold text-gray-800 w-3 text-center">{{ item.quantity }}</span>
+                <button 
+                  @click.stop="item.quantity++" 
+                  class="text-gray-400 hover:text-black font-bold transition-colors"
+                >
+                  +
+                </button>
+              </div>
+            </div>
           </div>
 
           <button
-            @click.stop="removeItem(item.id)"
+            @click.stop="cartStore.removeFromCart(item.id)"
             class="p-2 text-gray-400 hover:text-red-500 transition-colors"
             title="刪除商品"
           >

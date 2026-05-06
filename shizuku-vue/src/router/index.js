@@ -20,6 +20,8 @@ import ReturnPolicyView from '@/views/ReturnPolicyView.vue'
 import PrivacyPolicyView from '@/views/PrivacyPolicyView.vue'
 import TermsOfServiceView from '@/views/TermsOfServiceView.vue'
 import ProductView from '@/views/ProductView.vue'
+import CheckoutView from '@/views/CheckoutView.vue'
+import PaymentSuccessView from '@/views/PaymentSuccessView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,6 +53,7 @@ const router = createRouter({
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
+        
 
         // 商品頁面
         { path: 'all', name: 'ProductView', component: ProductView },
@@ -103,6 +106,18 @@ const router = createRouter({
 
 
     { path: '/customer', name: 'customer', component: CustomerView },
+    //結帳頁面
+    { path: '/checkout', name: 'checkout', component: CheckoutView },
+
+    // LINE Pay 指定要跳回來的網址
+    {
+      path: '/payment/success',
+      name: 'PaymentSuccess',
+      component: PaymentSuccessView,
+      meta: {
+        title: '付款處理中 - Shizuku'
+      }
+    },
 
     // 3. 錯誤路徑處理
     {
