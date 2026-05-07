@@ -22,7 +22,7 @@ const pageTitle = computed(() => {
 </script>
 
 <template>
-    <div class="sticky top-0 left-0 w-full z-50 bg-gray-100 py-4">
+    <div class="fixed top-0 left-0 w-full z-50 bg-gray-100 py-4">
         <div class="flex justify-center items-center px-4 py-6">
             <div class="absolute left-4 lg:left-8">
                 <router-link to="/" class="cursor-pointer inline-block">

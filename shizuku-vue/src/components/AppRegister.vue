@@ -26,7 +26,7 @@ const handleRegister = () => {
         </div>
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
 
-        <div class="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-24">
 
             <div class="hidden lg:flex flex-col text-white space-y-6 p-8">
                 <h1 class="text-6xl font-serif font-bold tracking-wider">Shizuku</h1>
