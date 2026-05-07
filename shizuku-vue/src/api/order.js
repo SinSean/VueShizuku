@@ -18,3 +18,10 @@ export const getMemberOrdersAPI = async (memberId) => {
     const response = await request.get(`/orderApi/member/${memberId}`);
     return response.data;
 };
+
+//取得單筆訂單詳情
+
+export const getOrderDetailAPI = async (orderNo) => {
+    const response = await request.get(`/orderApi/${orderNo}`);
+    return response.data;
+};
