@@ -48,7 +48,7 @@ const submitOrder = async () => {
   }
 
   try {
-    const response = await axios.post('https://localhost:7197/api/order/create', requestPayload)
+    const response = await axios.post('https://localhost:7197/api/orderApi/create', requestPayload)
     console.log("後端回傳的資料：", response.data)
     if (response.data.isSuccess) {
       // 1. 成功送出訂單後，第一件事就是清空購物車！

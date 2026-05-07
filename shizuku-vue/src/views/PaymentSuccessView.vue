@@ -20,7 +20,7 @@ onMounted(async () => {
 
   try {
     // 2. 呼叫我們後端寫好的 Confirm API 進行最終扣款！
-    const response = await axios.post('https://localhost:7197/api/order/confirm', {
+    const response = await axios.post('https://localhost:7197/api/orderApi/confirm', {
       transactionId: transactionId,
       orderId: orderId
     })

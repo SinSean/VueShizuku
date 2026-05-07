@@ -27,7 +27,7 @@ onMounted(async () => {
     try {
       // 測試先寫死
         const member = 1;
-        const response = await axios.get(`https://localhost:7197/api/order/member/${member}`);
+        const response = await axios.get(`https://localhost:7197/api/orderApi/member/${member}`);
         
         // 把後端傳來的資料，轉換成前端卡片元件 (OrderItemCard) 看得懂的欄位
         ordersList.value = response.data.map(order => ({
