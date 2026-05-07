@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import { createOrderAPI } from '@/api/order'
 import { useRouter } from 'vue-router'
 import FloatLabel from 'primevue/floatlabel'
 import InputText from 'primevue/inputtext'
@@ -48,17 +48,17 @@ const submitOrder = async () => {
   }
 
   try {
-    const response = await axios.post('https://localhost:7197/api/orderApi/create', requestPayload)
-    console.log("後端回傳的資料：", response.data)
-    if (response.data.success) {
+    const res = await createOrderAPI(requestPayload)
+    console.log("後端回傳的資料：", res)
+    if (res.success) {
       // 1. 成功送出訂單後，第一件事就是清空購物車！
       cartStore.clearCart()
       // 2. 檢查後端有沒有傳「LINE Pay 付款網址 (paymentUrl)」過來
-      if (response.data.data && response.data.data.paymentUrl) {
+      if (res.data && res.data.paymentUrl) {
           alert(`訂單建立成功！請在彈出的視窗中完成 LINE Pay 付款...`)
           
           // 1. 彈出新視窗 (我們還可以指定大小，讓它看起來像個專屬付款小視窗)
-          window.open(response.data.data.paymentUrl, '_blank', 'width=600,height=800');
+          window.open(res.data.paymentUrl, '_blank', 'width=600,height=800');
           
           // 2. 在原網頁開啟「監聽器」，隨時等候新視窗傳回來的捷報！
           const receiveMessage = (event) => {
@@ -76,11 +76,11 @@ const submitOrder = async () => {
           window.addEventListener('message', receiveMessage);
           
       } else {
-          alert(`結帳成功！訂單編號：${response.data.data.orderNo}`)
+          alert(`結帳成功！訂單編號：${res.data.orderNo}`)
           router.push({ name: 'orders' }) 
       }
     } else {
-      alert(` 結帳失敗：${response.data.message}`)
+      alert(` 結帳失敗：${res.message}`)
     }
   } catch (error) {
     console.error(error)

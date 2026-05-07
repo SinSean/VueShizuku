@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { confirmPaymentAPI } from '@/api/order'
 
 const route = useRoute()
 const status = ref('processing') // 狀態：processing (處理中), success (成功), fail (失敗)
@@ -20,12 +20,12 @@ onMounted(async () => {
 
   try {
     // 2. 呼叫我們後端寫好的 Confirm API 進行最終扣款！
-    const response = await axios.post('https://localhost:7197/api/orderApi/confirm', {
+    const res = await confirmPaymentAPI({
       transactionId: transactionId,
       orderId: orderId
     })
 
-    if (response.data.success) {
+    if (res.success) {
       status.value = 'success'
       
       // 3. 扣款成功！發送信號給原本的「結帳母視窗」
@@ -40,7 +40,7 @@ onMounted(async () => {
 
     } else {
       status.value = 'fail'
-      errorMessage.value = response.data.message
+      errorMessage.value = res.message
       if (window.opener) window.opener.postMessage('PAYMENT_FAILED', window.location.origin)
     }
   } catch (error) {
