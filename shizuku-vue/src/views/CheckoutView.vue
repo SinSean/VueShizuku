@@ -50,15 +50,15 @@ const submitOrder = async () => {
   try {
     const response = await axios.post('https://localhost:7197/api/orderApi/create', requestPayload)
     console.log("後端回傳的資料：", response.data)
-    if (response.data.isSuccess) {
+    if (response.data.success) {
       // 1. 成功送出訂單後，第一件事就是清空購物車！
       cartStore.clearCart()
       // 2. 檢查後端有沒有傳「LINE Pay 付款網址 (paymentUrl)」過來
-      if (response.data.paymentUrl) {
+      if (response.data.data && response.data.data.paymentUrl) {
           alert(`訂單建立成功！請在彈出的視窗中完成 LINE Pay 付款...`)
           
           // 1. 彈出新視窗 (我們還可以指定大小，讓它看起來像個專屬付款小視窗)
-          window.open(response.data.paymentUrl, '_blank', 'width=600,height=800');
+          window.open(response.data.data.paymentUrl, '_blank', 'width=600,height=800');
           
           // 2. 在原網頁開啟「監聽器」，隨時等候新視窗傳回來的捷報！
           const receiveMessage = (event) => {
@@ -68,7 +68,7 @@ const submitOrder = async () => {
               if (event.data === 'PAYMENT_SUCCESS') {
                   alert("太棒了！偵測到付款成功！為您導向訂單列表...");
                   window.removeEventListener('message', receiveMessage); // 關閉監聽器
-                  router.push('/orders'); // 原網頁這時候才跳轉！
+                  router.push({ name: 'orders' }); // 原網頁這時候才跳轉！
               }
           };
           
@@ -76,8 +76,8 @@ const submitOrder = async () => {
           window.addEventListener('message', receiveMessage);
           
       } else {
-          alert(`結帳成功！訂單編號：${response.data.orderNo}`)
-          router.push('/orders') 
+          alert(`結帳成功！訂單編號：${response.data.data.orderNo}`)
+          router.push({ name: 'orders' }) 
       }
     } else {
       alert(` 結帳失敗：${response.data.message}`)
@@ -96,14 +96,14 @@ const submitOrder = async () => {
       
       <!-- LOGO 區塊 -->
       <header class="mb-8 text-center">
-        <h1 class="text-3xl font-black tracking-tighter text-black uppercase cursor-pointer" @click="$router.push('/')">
+        <h1 class="text-3xl font-black tracking-tighter text-black uppercase cursor-pointer" @click="$router.push({ name: 'home' })">
           Shizuku.
         </h1>
       </header>
 
       <!-- 麵包屑導覽 -->
       <!-- <nav class="flex items-center justify-center text-xs text-gray-400 mb-10 tracking-wider">
-        <span class="hover:text-black cursor-pointer transition" @click="$router.push('/cart')">購物車</span>
+        <span class="hover:text-black cursor-pointer transition" @click="$router.push({ name: 'cart' })">購物車</span>
         <i class="pi pi-angle-right mx-2 text-[10px]"></i>
         <span class="text-black font-bold">收件資訊</span>
         <i class="pi pi-angle-right mx-2 text-[10px]"></i>
@@ -226,13 +226,13 @@ const submitOrder = async () => {
 
             <FloatLabel class="mt-4">
               <Textarea id="note" v-model="form.note" rows="3" class="w-full bg-white !rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-1 focus:ring-black transition resize-none pt-4" />
-              <label for="note" class="text-gray-500 text-sm">給店家的備註 (Order Note)</label>
+              <label for="note" class="text-gray-500 text-sm">給店家的備註</label>
             </FloatLabel>
           </div>
 
           <!-- 底部按鈕區 -->
           <div class="mt-10 pt-8 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4">
-            <button @click="$router.push('/cart')" class="text-sm text-gray-500 hover:text-black transition flex items-center justify-center gap-2 group w-full sm:w-auto py-3">
+            <button @click="$router.push({ name: 'cart' })" class="text-sm text-gray-500 hover:text-black transition flex items-center justify-center gap-2 group w-full sm:w-auto py-3">
               <i class="pi pi-angle-left group-hover:-translate-x-1 transition-transform"></i> 回到購物車
             </button>
             <button @click="submitOrder" class="w-full sm:w-auto bg-black hover:bg-gray-800 text-white px-10 py-4 rounded-md font-bold tracking-widest transition flex items-center justify-center gap-3 shadow-lg shadow-gray-200">

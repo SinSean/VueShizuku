@@ -25,7 +25,7 @@ onMounted(async () => {
       orderId: orderId
     })
 
-    if (response.data.isSuccess) {
+    if (response.data.success) {
       status.value = 'success'
       
       // 3. 扣款成功！發送信號給原本的「結帳母視窗」
