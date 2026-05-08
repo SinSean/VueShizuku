@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { apiMemberRegister } from '@/api/memberApi';
+import { apiMemberRegister } from '@/api/member';
 
 const router = useRouter();
 const isLoading = ref(false);
