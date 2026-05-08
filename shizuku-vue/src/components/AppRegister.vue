@@ -1,21 +1,52 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { apiMemberRegister } from '@/api/memberApi';
 
-// 根據 DTO 結構定義，建議使用 reactive 管理表單
-// 提醒：對接後端時，屬性名稱建議符合 .NET camelCase 慣例 
+const router = useRouter();
+const isLoading = ref(false);
+const errorMessage = ref('');
+
+// 依據 DTO 結構定義響應式表單
 const form = reactive({
     fName: '',
     fEmail: '',
     fPhone: '',
-    fGender: null, // 性別使用 int [cite: 145, 146]
+    fGender: null,
     fBirthday: '',
     fPassword: '',
     confirmPassword: ''
 });
 
-const handleRegister = () => {
-    // 這裡加入 API 提交邏輯
-    console.log('提交註冊資料:', form);
+const handleRegister = async () => {
+    // 1. 基本前端檢查
+    if (form.fPassword !== form.confirmPassword) {
+        errorMessage.value = '兩次密碼輸入不一致';
+        return;
+    }
+
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    try {
+        // 2. 呼叫 API 函式
+        const response = await apiMemberRegister(form);
+
+        // 3. 處理後端 ApiResponse 結構
+        if (response.data.success) {
+            alert(response.data.message || '註冊成功！');
+            router.push({ name: 'Login' });
+        }
+    } catch (error) {
+        // 4. 錯誤處理 (抓取後端 BadRequest 或 Conflict 的訊息)
+        if (error.response && error.response.data) {
+            errorMessage.value = error.response.data.message || '註冊失敗';
+        } else {
+            errorMessage.value = '連線伺服器失敗，請檢查網路狀況';
+        }
+    } finally {
+        isLoading.value = false;
+    }
 };
 </script>
 
@@ -27,16 +58,16 @@ const handleRegister = () => {
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
 
         <div class="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-24">
-
+            <!-- 左側文字區 -->
             <div class="hidden lg:flex flex-col text-white space-y-6 p-8">
                 <h1 class="text-6xl font-serif font-bold tracking-wider">Shizuku</h1>
                 <p class="text-xl text-slate-200 leading-relaxed">
-                    加入 Shizuku。<br>
-                    開啟您的專屬時尚探索之旅。
+                    加入 Shizuku。<br>開啟您的專屬時尚探索之旅。
                 </p>
                 <div class="w-16 h-1 bg-emerald-500 rounded-full"></div>
             </div>
 
+            <!-- 右側表單區 -->
             <div
                 class="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 mx-auto lg:mx-0 overflow-y-auto max-h-[90vh] py-1">
                 <div class="text-center mb-6">
@@ -44,22 +75,28 @@ const handleRegister = () => {
                     <p class="text-slate-600 text-sm">歡迎加入我們的行列</p>
                 </div>
 
+                <!-- 錯誤顯示區 -->
+                <div v-if="errorMessage"
+                    class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl text-sm text-center">
+                    {{ errorMessage }}
+                </div>
+
                 <form @submit.prevent="handleRegister" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">名稱</label>
-                        <input v-model="form.fName" type="text" placeholder="請輸入您的暱稱"
+                        <input v-model="form.fName" type="text" required placeholder="請輸入您的暱稱"
                             class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">電子信箱</label>
-                        <input v-model="form.fEmail" type="email" placeholder="example@shizuku.com"
+                        <input v-model="form.fEmail" type="email" required placeholder="example@shizuku.com"
                             class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">電話號碼</label>
-                        <input v-model="form.fPhone" type="tel" placeholder="0912345678"
+                        <input v-model="form.fPhone" type="tel" required placeholder="0912345678"
                             class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
@@ -67,40 +104,39 @@ const handleRegister = () => {
                         <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">性別</label>
                         <div class="flex space-x-4 p-1">
                             <label class="flex items-center cursor-pointer text-slate-600 text-sm">
-                                <input type="radio" v-model="form.fGender" :value="1"
-                                    class="mr-2 text-emerald-500 focus:ring-emerald-500"> 男
+                                <input type="radio" v-model="form.fGender" :value="1" class="mr-2 text-emerald-500"> 男
                             </label>
                             <label class="flex items-center cursor-pointer text-slate-600 text-sm">
-                                <input type="radio" v-model="form.fGender" :value="2"
-                                    class="mr-2 text-emerald-500 focus:ring-emerald-500"> 女
+                                <input type="radio" v-model="form.fGender" :value="2" class="mr-2 text-emerald-500"> 女
                             </label>
                             <label class="flex items-center cursor-pointer text-slate-600 text-sm">
-                                <input type="radio" v-model="form.fGender" :value="0"
-                                    class="mr-2 text-emerald-500 focus:ring-emerald-500"> 其他
+                                <input type="radio" v-model="form.fGender" :value="0" class="mr-2 text-emerald-500"> 其他
                             </label>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">生日日期</label>
-                        <input v-model="form.fBirthday" type="date"
+                        <input v-model="form.fBirthday" type="date" required
                             class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">密碼</label>
-                        <input v-model="form.fPassword" type="password" placeholder="密碼"
-                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">確認密碼</label>
-                        <input v-model="form.confirmPassword" type="password" placeholder="確認"
+                        <input v-model="form.fPassword" type="password" required minlength="6" placeholder="密碼長度至少需 6 碼"
                             class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
                     </div>
 
-                    <button type="submit"
-                        class="w-full py-4 mt-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95">
-                        立即註冊
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1 ml-1">確認密碼</label>
+                        <input v-model="form.confirmPassword" type="password" required placeholder="再次確認密碼"
+                            class="w-full p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition">
+                    </div>
+
+                    <button type="submit" :disabled="isLoading"
+                        class="w-full py-4 mt-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95 disabled:bg-slate-400">
+                        <span v-if="isLoading">註冊中...</span>
+                        <span v-else>立即註冊</span>
                     </button>
                 </form>
 
@@ -120,7 +156,6 @@ h2 {
     font-family: 'Georgia', serif;
 }
 
-/* 隱藏 Chrome 的 Date Input 預設圖示以保持美觀 */
 input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0.6;
