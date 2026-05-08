@@ -1,68 +1,80 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { productApi } from '@/api/Product.js'
-// import ProductSidebar from '@/components/ProductSidebar.vue'
-// 假設你有一個商品卡片組件，如果沒有，等一下我們來寫
-// import ProductCard from '@/components/ProductCard.vue' 
+import { useRoute } from 'vue-router'
 
-// // 模擬從資料庫抓回來的商品列表
-// const products = ref([
-//   { id: 1, name: '日系透膚輕薄針織衫', price: 'NT$ 1,280', img: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800' },
-//   { id: 2, name: '法式復古碎花無袖洋裝', price: 'NT$ 1,880', img: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=800' },
-//   { id: 3, name: '簡約純棉V領休閒上衣', price: 'NT$ 890', img: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=800' },
-//   { id: 4, name: '挺版牛津襯衫 (天藍色)', price: 'NT$ 1,580', img: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop' },
-//   { id: 5, name: '寬版連帽上衣 (墨綠色)', price: 'NT$ 1,880', img: 'https://images.unsplash.com/photo-1521577352947-9bb58764b69a?q=80&w=600&auto=format&fit=crop' },
-//   { id: 6, name: '丹寧牛仔外套 (水洗藍)', price: 'NT$ 890', img: 'https://images.unsplash.com/photo-1543076447-215ad9ba6923?q=80&w=600&auto=format&fit=crop' },
-//   { id: 7, name: '日系透膚輕薄針織衫', price: 'NT$ 1,280', img: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800' },
-//   { id: 8, name: '法式復古碎花無袖洋裝', price: 'NT$ 1,880', img: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=800' },
-//   { id: 9, name: '簡約純棉V領休閒上衣', price: 'NT$ 890', img: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=800' },
-//   { id: 10, name: '挺版牛津襯衫 (天藍色)', price: 'NT$ 1,580', img: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop' },
-//   { id: 11, name: '寬版連帽上衣 (墨綠色)', price: 'NT$ 1,880', img: 'https://images.unsplash.com/photo-1521577352947-9bb58764b69a?q=80&w=600&auto=format&fit=crop' },
-//   { id: 12, name: '丹寧牛仔外套 (水洗藍)', price: 'NT$ 890', img: 'https://images.unsplash.com/photo-1543076447-215ad9ba6923?q=80&w=600&auto=format&fit=crop' },
-// ])
-// 頁面載入時自動抓資料
-const products = ref([])
-const isLoading = ref(true)
-const keyword = ref('')
-const defaultImg = 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800'
+const route = useRoute()
 
-
-onMounted(async () => {
-    await fetchProducts()
+const props = defineProps({
+    categoryId: {
+        type: Number,
+        default: null
+    }
 })
 
+const products  = ref([])
+const isLoading = ref(true)
+const keyword   = ref('')
+const defaultImg = 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800'
+const sortOrder = ref('latest')
+
+const sortedProducts = computed(() => {
+    const list = [...(products.value ?? [])]
+    if (sortOrder.value === 'priceAsc')  return list.sort((a, b) => a.fPrice - b.fPrice)
+    if (sortOrder.value === 'priceDesc') return list.sort((a, b) => b.fPrice - a.fPrice)
+    if (sortOrder.value === 'hot')       return list.sort((a, b) => b.fId - a.fId)
+    return list
+})
+
+// ✨ 取得目前有效的分類 ID（網址優先，其次 props）
+function getActiveCategoryId() {
+    const fromRoute = route.query.categoryId
+    if (fromRoute) return Number(fromRoute)
+    return props.categoryId ?? null
+}
+
 async function fetchProducts() {
-    try
-    {
+    try {
         isLoading.value = true
-        const res = await productApi.getList(keyword.value)
-         console.log('API 回傳：', res.data)  //先印出來看結構
-        // 對應 ApiResponse 格式：res.data.data
-        products.value = res.data.data ??[]//加 ?? [] 防止 undefined
-    }
-    catch (err)
-    {
+        const categoryId = getActiveCategoryId()
+        const res = await productApi.getList(keyword.value, categoryId)
+        products.value = res.data.data ?? []
+    } catch (err) {
         console.error('商品載入失敗', err)
-         products.value = []  // ✨ 錯誤時給空陣列
-    }
-    finally
-    {
+        products.value = []
+    } finally {
         isLoading.value = false
     }
 }
+
+// 監聽網址的 categoryId 變化
+watch(() => route.query.categoryId, () => {
+    fetchProducts()
+})
+
+// 監聽 props 的 categoryId 變化（Sidebar 點擊）
+watch(() => props.categoryId, () => {
+    fetchProducts()
+})
+
+onMounted(() => {
+    fetchProducts()
+})
 </script>
 
 <template>
     <div class="max-w-[1400px] mx-auto px-4 py-14 text-center">
 
-        <div class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4">
-            <span class="text-gray-500">顯示 {{ products?.length ?? 0 }} 個項目</span>
-            <select class="outline-none bg-transparent cursor-pointer">
-                <option>最新上架</option>
-                <option>價格低到高</option>
-                <option>價格高到低</option>
-            </select>
-        </div>
+     <div class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4">
+    <span class="text-gray-500">顯示 {{ sortedProducts.length }} 個項目</span>
+    <select v-model="sortOrder"
+            class="outline-none bg-transparent cursor-pointer text-sm border border-gray-200 rounded px-3 py-1.5">
+        <option value="latest">依最新項目排序</option>
+        <option value="hot">依熱銷度</option>
+        <option value="priceAsc">依價格排序：低至高</option>
+        <option value="priceDesc">依價格排序：高至低</option>
+    </select>
+</div>
 
         <div v-if="isLoading" class="text-gray-400 py-20">
             載入中...
@@ -71,7 +83,7 @@ async function fetchProducts() {
         <div v-else class="flex-1 min-w-0">
             <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
 
-                <div v-for="product in (products ?? [])" :key="product.fId"
+                <div v-for="product in  sortedProducts" :key="product.fId"
                      class="group cursor-pointer">
                     <RouterLink :to="'/product/' + product.fId">
 

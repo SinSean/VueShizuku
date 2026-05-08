@@ -3,8 +3,8 @@ import axios from 'axios'
 const base = 'https://localhost:7197/api/product'
 
 export const productApi = {
-    // 查詢列表
-    getList: (keyword) => axios.get(base, { params: { keyword } }),
+    // 查詢列表 新增分類篩選
+    getList: (keyword, categoryId) => axios.get(base, { params: { keyword, categoryId } }),
 
     // 查單筆
     getById: (id) => axios.get(`${base}/${id}`),
