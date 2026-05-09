@@ -1,36 +1,48 @@
 <script setup>
-import { ref } from 'vue';
-import axios from 'axios'; // 記得確保有引入 axios
+import { ref, nextTick } from 'vue'; // 重點 2：引入 nextTick
+import axios from 'axios';
 
-// 畫面上綁定的變數
 const messages = ref([
-  // 可以先預設一句歡迎語
   { text: '您好！我是電商智能小幫手，請問有什麼我可以幫您的嗎？', isMine: false }
 ]);
 const newMessage = ref('');
 
-// 發送訊息的方法
+// 重點 3：綁定畫面上的 chatBox 區塊
+const chatBox = ref(null); 
+
+// 重點 4：建立一個滾動到最底部的函數
+const scrollToBottom = async () => {
+  await nextTick(); // 等待 Vue 重新渲染畫面
+  if (chatBox.value) {
+    chatBox.value.scrollTop = chatBox.value.scrollHeight;
+  }
+};
+
 const sendMessage = async () => {
   const userText = newMessage.value.trim();
   if (!userText) return;
 
-  // 1. 先把客人的問題印在畫面上
   messages.value.push({ text: userText, isMine: true });
-  newMessage.value = ''; // 成功送出後，清空輸入框
+  newMessage.value = ''; 
+
+  // 自己發送訊息後，呼叫滾動函數
+  await scrollToBottom();
 
   try {
-    // 2. 呼叫剛寫好的 C# API 
-    //  老哥，記得把這裡的 7123 換成你真正在跑的 Port！
+    // 記得把 7123 換成你真正在跑的 Port
     const response = await axios.post('https://localhost:7197/api/CustomerApi/bot', {
       Message: userText
     });
 
-    // 3. 把機器人的回答印在畫面上
     messages.value.push({ text: response.data.reply, isMine: false });
+    
+    // 機器人回覆後，再次呼叫滾動函數
+    await scrollToBottom();
     
   } catch (error) {
     console.error("機器人連線失敗", error);
     messages.value.push({ text: '系統連線異常，請稍後再試或填寫聯絡表單。', isMine: false });
+    await scrollToBottom();
   }
 };
 </script>
@@ -43,8 +55,12 @@ const sendMessage = async () => {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-</style>
 
+/* 讓滾動更滑順 */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+</style>
 
 
 
@@ -53,7 +69,7 @@ const sendMessage = async () => {
   <div class="animate-fade-in bg-white border border-gray-200 p-6 flex flex-col h-[500px]">
     <h2 class="text-2xl font-bold mb-4 text-center">IQ 智能客服系統</h2>
 
-    <div class="flex-1 overflow-y-auto border border-gray-200 p-4 mb-4 bg-gray-50 rounded">
+    <div ref="chatBox" class="flex-1 overflow-y-auto border border-gray-200 p-4 mb-4 bg-gray-50 rounded scroll-smooth">
       <div v-for="(msg, index) in messages" :key="index" class="mb-3">
         <span :class="msg.isMine ? 'text-green-600' : 'text-blue-600'" class="font-bold">
           {{ msg.isMine ? '我' : '智能客服' }}: 
