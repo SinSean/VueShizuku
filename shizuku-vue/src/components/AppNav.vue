@@ -30,15 +30,15 @@ onMounted(async () => {
     }
 })
 
-// ✨ 延遲隱藏，避免滑鼠移到選單前就消失
+//  延遲隱藏，避免滑鼠移到選單前就消失
 function showMenu(type) {
     clearTimeout(hideTimer)
-    // ✨ 顯示某個選單時，關閉其他選單
+    //  顯示某個選單時，關閉其他選單
     showStyleMenu.value = type === 'style'
     showSaleMenu.value  = type === 'sale'
 }
 function hideMenu() {
-    // ✨ 不需要傳 type，統一延遲關閉所有選單
+    //  不需要傳 type，統一延遲關閉所有選單
     hideTimer = setTimeout(() => {
         showStyleMenu.value = false
         showSaleMenu.value  = false
@@ -77,7 +77,7 @@ const handleLogout = () => {
           </RouterLink>
         </li>
 
-       <!-- ✨ 風格搭配下拉 -->
+       <!--  風格搭配下拉 -->
         <li class="relative"
             @mouseenter="showMenu('style')"
             @mouseleave="hideMenu('style')">
@@ -94,18 +94,18 @@ const handleLogout = () => {
             </div>
         </li>
         
-    <li>
-  <router-link to="/all?type=sale" class="hover:text-gray-400 cursor-pointer transition-colors"
-    active-class="!text-gray-700">
-    現貨專區
-  </router-link>
+   <li>
+    <a @click="router.push({ path: '/all', query: { categoryId: 21 } })"
+       class="hover:text-gray-400 cursor-pointer transition-colors">
+        現貨專區
+    </a>
 </li>
 
 <li>
-  <router-link to="/all?type=instock" class="hover:text-gray-400 cursor-pointer transition-colors"
-    active-class="!text-gray-700">
-    "限時特價"
-  </router-link>
+    <a @click="router.push({ path: '/all', query: { categoryId: 22 } })"
+       class="hover:text-gray-400 cursor-pointer transition-colors text-red-400 hover:text-red-500">
+        🔥 限時特價
+    </a>
 </li>
         <li>
           <router-link to="/member" class="hover:text-gray-400 cursor-pointer transition-colors">會員專區</router-link>

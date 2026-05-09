@@ -26,7 +26,7 @@ const sortedProducts = computed(() => {
     return list
 })
 
-// ✨ 取得目前有效的分類 ID（網址優先，其次 props）
+//  取得目前有效的分類 ID（網址優先，其次 props）
 function getActiveCategoryId() {
     const fromRoute = route.query.categoryId
     if (fromRoute) return Number(fromRoute)
