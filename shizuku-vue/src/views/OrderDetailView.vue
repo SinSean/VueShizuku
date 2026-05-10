@@ -5,7 +5,9 @@ import Button from 'primevue/button'
 import OrderInfoSection from '@/components/OrderInfoSection.vue'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
 import { getOrderDetailAPI, repayOrderAPI } from '@/api/order';
+import { usePaymentWindow } from '@/composables/usePaymentWindow'
 
+const { openPaymentWindow } = usePaymentWindow()
 const route = useRoute()
 const router = useRouter()
 const orderId = route.params.id
@@ -46,50 +48,33 @@ const handleCountdownEnd = () => {
 // 處理重新付款
 const handleRepay = async (paymentMethodId) => {
   try {
+    // 1. 先跳出處理中的等待畫面
     resultStatus.value = 'processing'
     resultMessage.value = '請稍候，即將為您轉跳至付款頁面...'
     showResultModal.value = true
-
+    // 2. 向後端呼叫重新付款的 API，取得 res
     const res = await repayOrderAPI(orderId, paymentMethodId)
     
+    // 3. 接下來才是你剛剛完美改好的 openPaymentWindow 邏輯
     if (res.success && res.data.paymentUrl) {
-      const paymentWindow = window.open(res.data.paymentUrl, '_blank', 'width=600,height=800')
-      let paymentComplete = false
-
-      const receiveMessage = (event) => {
-        if (event.origin !== window.location.origin && event.origin !== 'https://localhost:7197') return
-        
-        if (event.data === 'PAYMENT_SUCCESS') {
-          paymentComplete = true
-          window.removeEventListener('message', receiveMessage)
+      openPaymentWindow(
+        res.data.paymentUrl,
+        () => {
+          // 成功時的動作
           resultStatus.value = 'success'
           resultMessage.value = '太棒了！您的訂單已付款成功。'
           showResultModal.value = true
-        } else if (event.data === 'PAYMENT_FAILED') {
-          paymentComplete = true
-          window.removeEventListener('message', receiveMessage)
+        },
+        (errorMsg) => {
+          // 失敗時的動作
           resultStatus.value = 'fail'
-          resultMessage.value = '付款取消或失敗。'
+          resultMessage.value = errorMsg
           showResultModal.value = true
         }
-      }
-      window.addEventListener('message', receiveMessage)
-
-      const checkWindowClosed = setInterval(() => {
-        if (paymentWindow && paymentWindow.closed) {
-          clearInterval(checkWindowClosed)
-          if (!paymentComplete) {
-            window.removeEventListener('message', receiveMessage)
-            resultStatus.value = 'fail'
-            resultMessage.value = '您已關閉付款視窗，付款未完成。'
-            showResultModal.value = true
-          }
-        }
-      }, 1000)
-
+      )
     } else {
       resultStatus.value = 'fail'
-      resultMessage.value = res.message || '無法產生付款連結'
+      resultMessage.value = res.message || '無法產生付款連結，請聯絡客服。'
       showResultModal.value = true
     }
   } catch (error) {
@@ -99,7 +84,6 @@ const handleRepay = async (paymentMethodId) => {
     showResultModal.value = true
   }
 }
-
 const goBack = () => {
   router.push({ name: 'orders' })
 }

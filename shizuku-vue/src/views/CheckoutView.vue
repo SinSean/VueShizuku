@@ -7,7 +7,9 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useCartStore } from '@/stores/cartStore'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
+import { usePaymentWindow } from '@/composables/usePaymentWindow'
 
+const { openPaymentWindow } = usePaymentWindow()
 const cartStore = useCartStore()
 const router = useRouter()
 
@@ -76,48 +78,24 @@ const submitOrder = async () => {
       // 1. 成功送出訂單後，第一件事就是清空購物車！
       cartStore.clearCart()
       if (res.data && res.data.paymentUrl) {
-          // 1. 彈出綠界或 LINE Pay 的新視窗，並把視窗存進變數中
-          const paymentWindow = window.open(res.data.paymentUrl, '_blank', 'width=600,height=800');
-          let paymentComplete = false; // 用來標記是否正常完成付款流程
-          
-          // 2. 監聽回傳訊息
-          const receiveMessage = (event) => {
-              if (event.origin !== window.location.origin && event.origin !== 'https://localhost:7197') return;
-              
-              if (event.data === 'PAYMENT_SUCCESS') {
-                  paymentComplete = true;
-                  window.removeEventListener('message', receiveMessage);
+          // 呼叫我們封裝好的工具
+          openPaymentWindow(
+              res.data.paymentUrl,
+              () => {
+                  // 成功時的動作 (onSuccess)
                   resultStatus.value = 'success'
                   resultMessage.value = '太棒了！您的訂單已付款成功。'
                   shouldRedirectToOrders.value = true
                   showResultModal.value = true
-              } else if (event.data === 'PAYMENT_FAILED') {
-                  paymentComplete = true;
-                  window.removeEventListener('message', receiveMessage);
+              },
+              (errorMsg) => {
+                  // 失敗或中途關閉時的動作 (onFail)
                   resultStatus.value = 'fail'
-                  resultMessage.value = '付款取消或失敗，請至訂單列表重新付款。'
-                  shouldRedirectToOrders.value = true // 訂單已建立，所以一樣跳轉
+                  resultMessage.value = `${errorMsg} 訂單已成立，請至訂單列表重新付款。`
+                  shouldRedirectToOrders.value = true
                   showResultModal.value = true
               }
-          };
-          window.addEventListener('message', receiveMessage);
-
-          // 3. 貼心設計：每秒檢查一次使用者是不是把視窗「按叉叉」關掉了
-          const checkWindowClosed = setInterval(() => {
-              if (paymentWindow && paymentWindow.closed) {
-                  clearInterval(checkWindowClosed); // 停止檢查
-                  
-                  // 如果視窗關了，但我們還沒收到成功/失敗的訊號 (代表是使用者手動關閉的)
-                  if (!paymentComplete) {
-                      window.removeEventListener('message', receiveMessage);
-                      resultStatus.value = 'fail'
-                      resultMessage.value = '您已關閉付款視窗。訂單已成立，請至訂單列表重新付款。'
-                      shouldRedirectToOrders.value = true // 訂單已建立，所以一樣跳轉
-                      showResultModal.value = true
-                  }
-              }
-          }, 1000);
-          
+          )
       } else {
           // 貨到付款，不需要跳轉金流
           resultStatus.value = 'success'
