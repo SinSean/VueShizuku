@@ -25,3 +25,9 @@ export const getOrderDetailAPI = async (orderNo) => {
     const response = await request.get(`/orderApi/${orderNo}`);
     return response.data;
 };
+
+// 重新付款
+export const repayOrderAPI = async (orderNo, paymentMethodId) => {
+    const response = await request.post(`/orderApi/pay/${orderNo}`, { paymentMethodId });
+    return response.data;
+};

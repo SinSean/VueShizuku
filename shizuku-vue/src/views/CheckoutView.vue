@@ -6,9 +6,24 @@ import FloatLabel from 'primevue/floatlabel'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useCartStore } from '@/stores/cartStore'
+import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
 
 const cartStore = useCartStore()
 const router = useRouter()
+
+// 定義結果視窗的狀態
+const showResultModal = ref(false)
+const resultStatus = ref('success')
+const resultMessage = ref('')
+const shouldRedirectToOrders = ref(false) // 新增：控制倒數結束後要不要跳轉
+
+// 當彈出視窗 3 秒倒數結束時觸發
+const handleCountdownEnd = () => {
+  showResultModal.value = false
+  if (shouldRedirectToOrders.value) {
+    router.push({ name: 'orders' }) // 成功或已經建立訂單，就跳轉訂單列表
+  }
+}
 
 // 準備變數來接收使用者的輸入
 const form = ref({
@@ -27,9 +42,16 @@ const paymentOptions = ref([
 
 const submitOrder = async () => {
   if (!form.value.receiverName || !form.value.receiverPhone || !form.value.receiverAddress) {
-    alert("請填寫完整的收件人資訊喔！")
+    resultStatus.value = 'fail'
+    resultMessage.value = '請填寫完整的收件人資訊喔！'
+    showResultModal.value = true
     return
   }
+
+  // 先顯示處理中的動畫，讓使用者知道系統正在運作
+  resultStatus.value = 'processing'
+  resultMessage.value = '請稍候，即將為您建立訂單並轉跳至付款頁面...'
+  showResultModal.value = true
 
   // 把 Pinia 購物車的資料轉換為後端 API 需要的格式
   const formattedCartItems = cartStore.items.map(item => ({
@@ -53,38 +75,68 @@ const submitOrder = async () => {
     if (res.success) {
       // 1. 成功送出訂單後，第一件事就是清空購物車！
       cartStore.clearCart()
-      // 2. 檢查後端有沒有傳「LINE Pay 付款網址 (paymentUrl)」過來
       if (res.data && res.data.paymentUrl) {
-          alert(`訂單建立成功！請在彈出的視窗中完成 LINE Pay 付款...`)
+          // 1. 彈出綠界或 LINE Pay 的新視窗，並把視窗存進變數中
+          const paymentWindow = window.open(res.data.paymentUrl, '_blank', 'width=600,height=800');
+          let paymentComplete = false; // 用來標記是否正常完成付款流程
           
-          // 1. 彈出新視窗 (我們還可以指定大小，讓它看起來像個專屬付款小視窗)
-          window.open(res.data.paymentUrl, '_blank', 'width=600,height=800');
-          
-          // 2. 在原網頁開啟「監聽器」，隨時等候新視窗傳回來的捷報！
+          // 2. 監聽回傳訊息
           const receiveMessage = (event) => {
-              // 安全檢查：確保訊息是從我們自己的網站發出來的
-              if (event.origin !== window.location.origin) return;
-              // 如果收到付款成功的暗號
+              if (event.origin !== window.location.origin && event.origin !== 'https://localhost:7197') return;
+              
               if (event.data === 'PAYMENT_SUCCESS') {
-                  alert("太棒了！偵測到付款成功！為您導向訂單列表...");
-                  window.removeEventListener('message', receiveMessage); // 關閉監聽器
-                  router.push({ name: 'orders' }); // 原網頁這時候才跳轉！
+                  paymentComplete = true;
+                  window.removeEventListener('message', receiveMessage);
+                  resultStatus.value = 'success'
+                  resultMessage.value = '太棒了！您的訂單已付款成功。'
+                  shouldRedirectToOrders.value = true
+                  showResultModal.value = true
+              } else if (event.data === 'PAYMENT_FAILED') {
+                  paymentComplete = true;
+                  window.removeEventListener('message', receiveMessage);
+                  resultStatus.value = 'fail'
+                  resultMessage.value = '付款取消或失敗，請至訂單列表重新付款。'
+                  shouldRedirectToOrders.value = true // 訂單已建立，所以一樣跳轉
+                  showResultModal.value = true
               }
           };
-          
-          // 開始監聽
           window.addEventListener('message', receiveMessage);
+
+          // 3. 貼心設計：每秒檢查一次使用者是不是把視窗「按叉叉」關掉了
+          const checkWindowClosed = setInterval(() => {
+              if (paymentWindow && paymentWindow.closed) {
+                  clearInterval(checkWindowClosed); // 停止檢查
+                  
+                  // 如果視窗關了，但我們還沒收到成功/失敗的訊號 (代表是使用者手動關閉的)
+                  if (!paymentComplete) {
+                      window.removeEventListener('message', receiveMessage);
+                      resultStatus.value = 'fail'
+                      resultMessage.value = '您已關閉付款視窗。訂單已成立，請至訂單列表重新付款。'
+                      shouldRedirectToOrders.value = true // 訂單已建立，所以一樣跳轉
+                      showResultModal.value = true
+                  }
+              }
+          }, 1000);
           
       } else {
-          alert(`結帳成功！訂單編號：${res.data.orderNo}`)
-          router.push({ name: 'orders' }) 
+          // 貨到付款，不需要跳轉金流
+          resultStatus.value = 'success'
+          resultMessage.value = `結帳成功！訂單編號：${res.data.orderNo}`
+          shouldRedirectToOrders.value = true
+          showResultModal.value = true
       }
     } else {
-      alert(` 結帳失敗：${res.message}`)
+      resultStatus.value = 'fail'
+      resultMessage.value = res.message
+      shouldRedirectToOrders.value = false // 留在原畫面讓他修改
+      showResultModal.value = true
     }
   } catch (error) {
     console.error(error)
-    alert('系統連線發生錯誤！')
+    resultStatus.value = 'fail'
+    resultMessage.value = '系統連線發生錯誤！'
+    shouldRedirectToOrders.value = false // 留在原畫面讓他修改
+    showResultModal.value = true
   }
 }
 </script>
@@ -244,5 +296,14 @@ const submitOrder = async () => {
 
       </div>
     </div>
+
+    <!-- 加入付款結果的自訂彈出視窗 -->
+    <PaymentResultOverlay 
+      :visible="showResultModal" 
+      :status="resultStatus" 
+      :message="resultMessage" 
+      @update:visible="showResultModal = $event"
+      @countdown-end="handleCountdownEnd"
+    />
   </div>
 </template>

@@ -1,6 +1,8 @@
 <script setup>
+import { ref } from 'vue'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
+import Menu from 'primevue/menu'
 const props = defineProps({
   order: {
     type: Object,
@@ -14,12 +16,40 @@ const getSeverity = (status) => {
   if (status === '已出貨') return 'warn'      
   if (status === '待付款') return 'secondary'  
   if (status === '已取消') return 'primary' 
+  if (status === '已取消') return 'primary' 
   return 'danger'                             
 }
+
+const emit = defineEmits(['repay'])
+
+const menu = ref();
+const items = ref([
+    {
+        label: '信用卡 (綠界)',
+        icon: 'pi pi-credit-card',
+        command: () => {
+            emit('repay', 1);
+        }
+    },
+    {
+        label: 'LINE Pay',
+        icon: 'pi pi-mobile',
+        command: () => {
+            emit('repay', 2);
+        }
+    }
+]);
+
+const toggleMenu = (event) => {
+    menu.value.toggle(event);
+};
 </script>
 
 <template>
   <div class="flex flex-col gap-6 mt-8">
+    <!-- 隱藏的 Menu，用於選擇付款方式 -->
+    <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+
     <!-- 基本資訊 -->
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
       <h2 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">基本資訊</h2>
@@ -93,12 +123,18 @@ const getSeverity = (status) => {
       </div>
     </div>
     <!-- 訂單操作 -->
-    <div
-      class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-wrap justify-end gap-3"
-    >
-    <p><span class="text-gray-500 mr-2">付款方式:</span> {{ props.order.paymentMethod }}</p>
-      <Button label="取消訂單" severity="danger" text />
-      <Button label="再次購買" icon="pi pi-shopping-cart" />
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-wrap justify-between items-center gap-3">
+      <div>
+        <span class="text-gray-500 mr-2">付款方式:</span> 
+        <span class="font-medium text-gray-800">{{ props.order.paymentMethod }}</span>
+      </div>
+      <div class="flex gap-3">
+        <!-- 當訂單狀態為「待付款」時，顯示重新付款按鈕 -->
+        <Button v-if="props.order.statusText === '待付款'" label="重新付款" icon="pi pi-wallet" @click="toggleMenu" />
+        
+        <Button v-if="props.order.statusText === '待付款'" label="取消訂單" severity="danger" text />
+        <Button v-if="props.order.statusText !== '待付款'" label="再次購買" icon="pi pi-shopping-cart" />
+      </div>
     </div>
     </div>
   </div>
