@@ -11,10 +11,13 @@ const isLoading = ref(true)
 
 // ✨ 多張示意圖
 const placeholderImages = [
-    'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
+    
     'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
    'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
     'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
+     'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
+      'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
+       'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
 ]
 
 const selectedColor = ref('')
@@ -51,6 +54,17 @@ const currentStock = computed(() => {
     return v ? v.fStock : 0
 })
 
+function selectColor(color) {
+    selectedColor.value = color
+
+    //  自動選該顏色的第一個尺寸
+    const firstSize = variants.value
+        .filter(v => v.fColor === color)
+        .map(v => v.fSize)[0]
+
+    selectedSize.value = firstSize ?? ''
+}
+
 onMounted(async () => {
     try {
         isLoading.value = true
@@ -65,19 +79,26 @@ onMounted(async () => {
         product.value  = productRes.data.data
         variants.value = variantRes.data.data ?? []
 
-        if (availableColors.value.length > 0)
+        // ✨ 先設顏色，再設尺寸（順序很重要）
+        if (availableColors.value.length > 0) {
             selectedColor.value = availableColors.value[0]
-        if (availableSizes.value.length > 0)
-            selectedSize.value = availableSizes.value[0]
 
-    } catch (err) {
+            // ✨ 等 computed 重新計算後再設尺寸
+            const firstSize = variants.value
+                .filter(v => v.fColor === selectedColor.value)
+                .map(v => v.fSize)[0]
+
+            if (firstSize) selectedSize.value = firstSize
+        }
+         } catch (err) {
         console.error('商品載入失敗', err)
     } finally {
         isLoading.value = false
     }
+        
 })
 
-// ✨ 暫時用假資料
+//  暫時用假資料
 const relatedProducts = ref([
     { fId: 1, fName: '日系透膚輕薄針織衫', fPrice: 1280, fImage: null },
     { fId: 2, fName: '法式復古碎花無袖洋裝', fPrice: 1880, fImage: null },
@@ -106,7 +127,12 @@ const relatedProducts = ref([
                 </div>
 
                 <!-- 右側資訊 -->
-                <div class="md:w-[380px] shrink-0 sticky top-32 space-y-4">
+               <div class="md:w-[360px] shrink-0 sticky top-32 
+            max-h-[calc(100vh-96px)] overflow-y-auto
+            space-y-2 pr-2  [&::-webkit-scrollbar]:hidden
+            [-ms-overflow-style:none]
+            [scrollbar-width:none]">
+         
 
                     <div class="space-y-1.5 text-left">
                         <h1 class="text-xl font-normal text-gray-800 leading-snug">
@@ -131,7 +157,7 @@ const relatedProducts = ref([
                             <span class="w-10 shrink-0 pt-1 text-gray-500">顏色</span>
                             <div class="flex flex-wrap gap-2.5">
                                 <button v-for="color in availableColors" :key="color"
-                                        @click="selectedColor = color; selectedSize = ''"
+                                        @click="selectColor(color)"
                                         :class="['px-3 h-7 border text-xs font-medium tracking-wider transition-colors',
                                                  selectedColor === color
                                                     ? 'border-black bg-black text-white'

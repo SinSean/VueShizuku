@@ -22,7 +22,11 @@ onMounted(async () => {
                 }
             }
             if (childName) {
-                parentMap[parentName].children.push({ name: childName, id: cat.id })
+                parentMap[parentName].children.push({
+                    name:   childName,
+                    id:     cat.id,
+                    parent: parentName   // ✨ 記錄父分類名稱
+                })
             }
         })
 
@@ -33,14 +37,17 @@ onMounted(async () => {
 })
 
 function toggle(item) { item.open = !item.open }
-function selectCategory(id) { emit('categorySelected', id) }
+
+function selectCategory(child) {
+    // ✨ 傳 id、子分類名、父分類名
+    emit('categorySelected', child.id, child.name, child.parent)
+}
 </script>
 
 <template>
     <aside class="w-full">
 
-        <!-- 全部商品 -->
-        <button @click="$emit('categorySelected', null)"
+        <button @click="$emit('categorySelected', null, null, null)"
                 class="w-full text-left px-3 py-2 mb-2 text-sm font-semibold tracking-widest uppercase text-gray-400 hover:text-black transition-colors">
             全部商品
         </button>
@@ -49,7 +56,6 @@ function selectCategory(id) { emit('categorySelected', id) }
             <ul class="space-y-1">
                 <li v-for="item in menu" :key="item.title">
 
-                    <!-- 父分類 -->
                     <button @click="toggle(item)"
                             class="w-full flex justify-between items-center px-3 py-2.5 text-sm font-semibold tracking-wider uppercase hover:text-amber-600 transition-colors">
                         {{ item.title }}
@@ -57,11 +63,10 @@ function selectCategory(id) { emit('categorySelected', id) }
                               :class="item.open ? 'rotate-90' : ''">▸</span>
                     </button>
 
-                    <!-- 子分類 -->
                     <ul v-show="item.open" class="mb-2">
                         <li v-for="child in item.children" :key="child.id">
                             <a href="#"
-                               @click.prevent="selectCategory(child.id)"
+                               @click.prevent="selectCategory(child)"
                                class="block px-6 py-1.5 text-sm text-gray-500 hover:text-amber-600 hover:pl-8 transition-all duration-200">
                                 {{ child.name }}
                             </a>
