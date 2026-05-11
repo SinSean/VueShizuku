@@ -13,38 +13,45 @@ const router = useRouter();
 const portAddressNumber = ref('7197')
 
 const handleLogin = async () => {
-    if (isLoading.value) return;
-    isLoading.value = true;
+    if (isLoading.value) return; // 防止連點
+    isLoading.value = true;      // 開始轉圈圈
 
     try {
-        // 在 axios 參數最後面加上 { timeout: 5000 }
         const response = await loginAPI({
             fEmail: email.value,
             fPassword: password.value
         });
-        console.log('後端回傳的原始 JSON 資料：', response.data);   //看看是不是真的有資料
+
         const res = response.data;
         if (res.success) {
-            console.log("後端回傳的資料內容：", res.data);
-            // console.log("後端回傳的資料內容：", res.data[0]); //印單筆
-            // res.data.forEach(x => {         //全部印出
-            //     console.log(x.fEmail)
-            // });
-            // 記得確認後端回傳的 res.data 結構是否就是 User 物件
-            authStore.login(res.data);
+            // 存入 Store 並「等待」存入完成 (避免跳轉後拿不到資料)
+            await authStore.login(res.data);
+
+            // 預載地址 (因為你說地址是另一支 API)
+            try {
+                // 如果 authStore.fetchUserAddress 出現 await 警告
+                // 請確認該 function 在 authStore 裡面有沒有加 "async"
+                await authStore.fetchUserAddress();
+            } catch (e) {
+                console.warn("預載地址失敗，但不影響登入流程");
+            }
+
+            // 成功後才跳轉
             alert('登入成功');
             router.push({ name: 'home' });
+        } else {
+            alert(res.message || '登入失敗，請檢查帳密');
         }
     } catch (error) {
-        // 錯誤處理邏輯保持不變，很棒
         console.error("捕捉到錯誤:", error);
         if (error.code === 'ECONNABORTED') {
             alert('伺服器回應太久（逾時），請檢查後端是否掛掉');
         } else {
-            const errorMsg = error.response?.data?.message || '系統連線錯誤或後端崩潰';
+            const errorMsg = error.response?.data?.message || '系統連線錯誤';
             alert(errorMsg);
         }
     } finally {
+        // 無論成功失敗，都要關閉讀取狀態
         isLoading.value = false;
     }
 };

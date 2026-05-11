@@ -29,10 +29,9 @@ const getMemberId = () => {
   return null;
 };
 
-const memberId = getMemberId();
-
 // 3. 取得地址列表
 const fetchAddresses = async () => {
+  const memberId = getMemberId();
   if (!memberId) return;
   loading.value = true;
   try {
@@ -194,7 +193,7 @@ onMounted(fetchAddresses);
       </div>
     </div>
 
-    <!-- 🌟 新增：地址編輯彈窗 (Modal) -->
+    <!--  新增：地址編輯彈窗 (Modal) -->
     <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
         <h3 class="text-xl font-bold mb-6 text-slate-800">{{ isEdit ? '修改收件地址' : '新增收件地址' }}</h3>
