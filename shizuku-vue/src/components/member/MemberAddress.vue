@@ -9,7 +9,7 @@ const showModal = ref(false); // 控制彈窗顯示
 const isEdit = ref(false);    // 判斷是新增還是修改
 const editIndex = ref(-1);    // 正在編輯哪一筆
 
-// 2. 表單資料模型 (對應 DTO 欄位)
+// 2. 表單資料模型
 const addressForm = reactive({
   fReceiverName: '',
   fReceiverPhone: '',
@@ -20,6 +20,7 @@ const addressForm = reactive({
   fIsDefault: false
 });
 
+// 關鍵修正：確保 memberId 在所有函數中都能被讀取
 const getMemberId = () => {
   const userData = localStorage.getItem('user');
   if (userData) {
@@ -31,7 +32,7 @@ const getMemberId = () => {
 
 // 3. 取得地址列表
 const fetchAddresses = async () => {
-  const memberId = getMemberId();
+  const memberId = getMemberId(); // 這裡獲取沒問題
   if (!memberId) return;
   loading.value = true;
   try {
@@ -47,7 +48,6 @@ const fetchAddresses = async () => {
 // 4. 開啟新增彈窗
 const openAddModal = () => {
   isEdit.value = false;
-  // 重置表單
   Object.assign(addressForm, {
     fReceiverName: '',
     fReceiverPhone: '',
@@ -64,25 +64,27 @@ const openAddModal = () => {
 const openEditModal = (addr, index) => {
   isEdit.value = true;
   editIndex.value = index;
-  // 將舊資料填入表單
   Object.assign(addressForm, { ...addr });
   showModal.value = true;
 };
 
-// 6. 儲存地址 (新增/修改 共用)
+// 6. 儲存地址 (修正點：新增 memberId 獲取)
 const saveAddress = async () => {
+  const memberId = getMemberId();
+  if (!memberId) {
+    alert('請先登入');
+    return;
+  }
+
   const newList = [...addressList.value];
 
   if (isEdit.value) {
-    // 修改邏輯
     newList[editIndex.value] = { ...addressForm };
   } else {
-    // 新增邏輯：如果是第一筆，自動設為預設
     if (newList.length === 0) addressForm.fIsDefault = true;
     newList.push({ ...addressForm });
   }
 
-  // 處理「預設地址」互斥邏輯
   if (addressForm.fIsDefault) {
     newList.forEach((item, idx) => {
       const currentIdx = isEdit.value ? editIndex.value : newList.length - 1;
@@ -102,8 +104,9 @@ const saveAddress = async () => {
   }
 };
 
-// 7. 設為預設地址 (直接更新)
+// 7. 設為預設地址 (修正點：新增 memberId 獲取)
 const setDefault = async (index) => {
+  const memberId = getMemberId();
   const newList = addressList.value.map((addr, i) => ({
     ...addr,
     fIsDefault: i === index
@@ -120,8 +123,9 @@ const setDefault = async (index) => {
   }
 };
 
-// 8. 刪除地址
+// 8. 刪除地址 (修正點：新增 memberId 獲取)
 const deleteAddress = async (index) => {
+  const memberId = getMemberId();
   if (!confirm('確定要刪除此地址嗎？')) return;
   const newList = [...addressList.value];
   newList.splice(index, 1);
@@ -146,7 +150,6 @@ onMounted(fetchAddresses);
         <h2 class="text-2xl font-bold text-slate-800">我的地址</h2>
         <p class="text-slate-500 text-sm mt-1">管理收件地址，提升結帳效率</p>
       </div>
-      <!-- 修改點：綁定 openAddModal -->
       <button @click="openAddModal"
         class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-all active:scale-95">
         <i class="pi pi-plus text-sm"></i>
@@ -183,7 +186,6 @@ onMounted(fetchAddresses);
           <div class="flex items-center gap-4 text-sm font-medium">
             <button v-if="!addr.fIsDefault" @click="setDefault(index)"
               class="text-slate-500 hover:text-blue-600 transition-colors">設為預設</button>
-            <!-- 修改點：綁定 openEditModal -->
             <button @click="openEditModal(addr, index)"
               class="text-slate-500 hover:text-blue-600 transition-colors">編輯</button>
             <button @click="deleteAddress(index)"
@@ -193,7 +195,7 @@ onMounted(fetchAddresses);
       </div>
     </div>
 
-    <!--  新增：地址編輯彈窗 (Modal) -->
+    <!-- 地址編輯彈窗 (Modal) -->
     <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
         <h3 class="text-xl font-bold mb-6 text-slate-800">{{ isEdit ? '修改收件地址' : '新增收件地址' }}</h3>
@@ -249,3 +251,7 @@ onMounted(fetchAddresses);
     </div>
   </main>
 </template>
+
+<style scoped>
+/* 根據您的要求，CSS 放在最下方 */
+</style>
