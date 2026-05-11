@@ -12,6 +12,7 @@ const menuItems = [
   { label: '會員管理', icon: 'pi pi-users', to: { name: 'admin-members' } },
   { label: '商品管理', icon: 'pi pi-box', to: { name: 'admin-products' } },
   { label: '訂單管理', icon: 'pi pi-list', to: { name: 'admin-orders' } },
+  { label: '金流管理', icon: 'pi pi-credit-card', to: { name: 'admin-payments' } },
   { label: '客服管理', icon: 'pi pi-comments', to: { name: 'admin-customer-service' } },
 ]
 
