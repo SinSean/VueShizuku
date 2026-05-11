@@ -1,33 +1,25 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import { getMemberOrdersAPI } from '@/api/order'
 import OrderItemCard from '@/components/OrderItemCard.vue'
+import { useAuthStore } from '@/stores/auth'
 
-// 假資料
-// const ordersList = ref([
-//   { id: 'ORD-001', total: 1500, status: '已完成', date: '2026-04-20' },
-//   { id: 'ORD-002', total: 890, status: '已出貨', date: '2026-04-25' },
-//   { id: 'ORD-003', total: 3200, status: '處理中', date: '2026-04-27' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-//   { id: 'ORD-004', total: 450, status: '已取消', date: '2026-04-10' },
-// ])
-
+const authStore = useAuthStore()
+const router = useRouter()
 const ordersList = ref([])
 
 onMounted(async () => {
+  
     try {
-      // 測試先寫死
-        const member = 1;
-        const res = await getMemberOrdersAPI(member);
+      //沒登入就擋住
+      if(!authStore.isLogin) {
+        router.push({ name: 'Login' }) // 導向登入頁面
+        return
+      }
+      //有登入再取資料
+      const res = await getMemberOrdersAPI(authStore.user.fId);
         
         // 把後端傳來的資料，轉換成前端卡片元件 (OrderItemCard) 看得懂的欄位
         ordersList.value = res.data.map(order => ({

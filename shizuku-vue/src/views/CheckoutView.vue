@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { createOrderAPI } from '@/api/order'
 import { useRouter } from 'vue-router'
 import FloatLabel from 'primevue/floatlabel'
@@ -8,7 +8,9 @@ import Textarea from 'primevue/textarea'
 import { useCartStore } from '@/stores/cartStore'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
 import { usePaymentWindow } from '@/composables/usePaymentWindow'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const { openPaymentWindow } = usePaymentWindow()
 const cartStore = useCartStore()
 const router = useRouter()
@@ -39,10 +41,18 @@ const form = ref({
 const paymentOptions = ref([
   { id: 1, name: '信用卡 / 金融卡', icon: 'pi-credit-card', desc: '支援 Visa, Master, JCB' },
   { id: 2, name: 'LINE Pay', icon: 'pi-comment', desc: '可使用 LINE POINTS 折抵' },
-  { id: 3, name: '貨到付款', icon: 'pi-box', desc: '需額外加收 30 元手續費' }
+  { id: 3, name: '貨到付款', icon: 'pi-box', desc: '全館滿 $1,500 免運，未滿則加收 $60 運費' }
 ])
 
 const submitOrder = async () => {
+  //沒有登入就先擋住
+  if (!authStore.isLogin) {
+    resultStatus.value = 'fail'
+    resultMessage.value = '請先登入會員才能完成結帳！'
+    showResultModal.value = true
+    return
+  }
+
   if (!form.value.receiverName || !form.value.receiverPhone || !form.value.receiverAddress) {
     resultStatus.value = 'fail'
     resultMessage.value = '請填寫完整的收件人資訊喔！'
@@ -62,7 +72,7 @@ const submitOrder = async () => {
   }))
 
   const requestPayload = {
-    memberId: 1, 
+    memberId: authStore.user.fId,
     receiverName: form.value.receiverName,
     receiverPhone: form.value.receiverPhone,
     receiverAddress: form.value.receiverAddress,
@@ -117,6 +127,17 @@ const submitOrder = async () => {
     showResultModal.value = true
   }
 }
+onMounted(() => {
+  if (!authStore.isLogin) {
+    resultStatus.value = 'fail'
+    resultMessage.value = '請先登入會員才能結帳！'
+    showResultModal.value = true
+    // 3 秒後導向登入頁（讓使用者看到提示訊息）
+    setTimeout(() => {
+      router.push({ name: 'Login' }) // 請確認你的登入路由名稱
+    }, 3000)
+  }
+})
 </script>
 
 <template>
