@@ -86,6 +86,8 @@ const router = createRouter({
             { path: 'privacysetting', name: 'MemberPrivacySetting', component: () => import('@/components/member/MemberPrivacySetting.vue') },
             { path: 'pointsdashboard', name: 'MemberPointsDashboard', component: () => import('@/components/member/MemberPointsDashboard.vue') },
             { path: 'vouchers', name: 'MemberVouchers', component: () => import('@/components/member/MemberVouchers.vue') },
+            { path: 'MemberOrders', name: 'MemberOrders', component: () => import('@/components/member/MemberOrders.vue') },
+            { path: 'orders/:id', name: 'MemberOrderDetail', component: () => import('@/views/OrderDetailView.vue') },
             { path: 'empty', name: 'MemberEmpty', component: () => import('@/components/member/MemberEmpty.vue') }
           ]
         }

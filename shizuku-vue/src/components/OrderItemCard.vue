@@ -28,7 +28,7 @@ const getSeverity = (status) => {
 // 跳轉到詳情頁的動作
 const goToDetail = () => {
   router.push({
-    name: 'order-detail',
+    name: 'MemberOrderDetail',
     params: { id: props.order.id },
   })
 }

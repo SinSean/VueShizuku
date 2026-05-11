@@ -85,7 +85,7 @@ onMounted(async () => {
       orderData.value = res.data
     } else {
       alert(res.message)
-      router.push({ name: 'orders' })
+      router.push({ name: 'MemberOrders' })
     }
   } catch (error) {
     console.error("讀取訂單詳情失敗：", error)
@@ -97,13 +97,12 @@ onMounted(async () => {
 
 
 const goBack = () => {
-  router.push({ name: 'orders' })
+  router.push({ name: 'MemberOrders' })
 }
 </script>
 
 <template>
   <div v-if="isLoading" class="min-h-screen flex items-center justify-center">
-    <!-- 簡易的載入動畫 -->
     <i class="pi pi-spin pi-spinner text-3xl text-gray-300"></i>
   </div>
 

@@ -25,7 +25,7 @@ const shouldRedirectToOrders = ref(false) // 新增：控制倒數結束後要�
 const handleCountdownEnd = () => {
   showResultModal.value = false
   if (shouldRedirectToOrders.value) {
-    router.push({ name: 'orders' }) // 成功或已經建立訂單，就跳轉訂單列表
+    router.push({ name: 'MemberOrders' }) // 成功或已經建立訂單，就跳轉訂單列表
   }
 }
 
