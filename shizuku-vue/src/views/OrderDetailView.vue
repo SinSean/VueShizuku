@@ -4,9 +4,11 @@ import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import OrderInfoSection from '@/components/OrderInfoSection.vue'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
-import { getOrderDetailAPI, repayOrderAPI,cancelOrderApi } from '@/api/order';
+import { getOrderDetailAPI, repayOrderAPI,cancelOrderApi } from '@/api/order'
 import { usePaymentWindow } from '@/composables/usePaymentWindow'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const { openPaymentWindow } = usePaymentWindow()
 const route = useRoute()
 const router = useRouter()
@@ -79,7 +81,7 @@ const handleCancel = async () => {
 }
 onMounted(async () => {
   try {
-    const res = await getOrderDetailAPI(orderId)
+    const res = await getOrderDetailAPI(orderId, authStore.user?.fId)
     if (res.success) {
       // 把後端 DTO 轉成你前端需要的格式（或是直接對接）
       orderData.value = res.data
