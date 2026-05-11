@@ -129,7 +129,7 @@ const submitOrder = async () => {
 }
 onMounted(() => {
   if (!authStore.isLogin) {
-    resultStatus.value = 'fail'
+    resultStatus.value = 'warn'
     resultMessage.value = '請先登入會員才能結帳！'
     showResultModal.value = true
     // 3 秒後導向登入頁（讓使用者看到提示訊息）

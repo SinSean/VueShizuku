@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 
 const props = defineProps({
   visible: Boolean,
-  status: String, // 'success' 或 'fail'
+  status: String, // 'success' | 'fail' | 'warn' | 'processing'
   message: String
 })
 
@@ -18,7 +18,7 @@ let timer = null
 watch([() => props.visible, () => props.status], ([newVisible, newStatus]) => {
   if (timer) clearInterval(timer) // 先清空之前的計時器
   
-  if (newVisible && (newStatus === 'success' || newStatus === 'fail')) {
+  if (newVisible && (newStatus === 'success' || newStatus === 'fail' || newStatus === 'warn')) {
     countdown.value = 3
     timer = setInterval(() => {
       countdown.value--
@@ -56,7 +56,7 @@ watch([() => props.visible, () => props.status], ([newVisible, newStatus]) => {
         <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4 overflow-hidden">
           <div class="bg-green-500 h-1.5 rounded-full animate-progress" :style="{ animationDuration: '3s' }"></div>
         </div>
-        <p class="text-gray-400 text-xs font-bold">{{ countdown }} 秒後為您導向訂單列表...</p>
+        <p class="text-gray-400 text-xs font-bold">{{ countdown }} 秒後為您轉跳訂單列表...</p>
       </div>
 
       <!-- 失敗狀態的 UI -->
@@ -68,6 +68,16 @@ watch([() => props.visible, () => props.status], ([newVisible, newStatus]) => {
         <p class="text-red-500 text-sm mb-4 font-medium leading-relaxed">{{ message }}</p>
         <p class="text-gray-400 text-xs font-bold">{{ countdown }} 秒後關閉視窗...</p>
       </div>
+
+      <!-- 尚未登入狀態的 UI -->
+       <div v-if="status === 'warn'">
+  <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-yellow-50 mb-6">
+    <i class="pi pi-exclamation-triangle text-5xl text-yellow-500"></i>
+  </div>
+  <h2 class="text-2xl font-black text-gray-900 mb-3 tracking-wide">請先登入</h2>
+  <p class="text-gray-500 text-sm mb-4 font-medium leading-relaxed">{{ message }}</p>
+  <p class="text-gray-400 text-xs font-bold">{{ countdown }} 秒後為您轉跳登入頁面...</p>
+</div>
 
     </div>
   </div>
