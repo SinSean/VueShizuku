@@ -13,14 +13,13 @@ export const confirmPaymentAPI = async (data) => {
     return response.data;
 };
 
-//  取得會員訂單
+//  根據會員ID 取得訂單列表
 export const getMemberOrdersAPI = async (memberId) => {
     const response = await request.get(`/orderApi/member/${memberId}`);
     return response.data;
 };
 
 //取得單筆訂單詳情
-
 export const getOrderDetailAPI = async (orderNo, memberId) => {
     const response = await request.get(`/orderApi/${orderNo}`, {params: { memberId }});
     return response.data;
@@ -28,7 +27,7 @@ export const getOrderDetailAPI = async (orderNo, memberId) => {
 
 // 重新付款
 export const repayOrderAPI = async (orderNo, paymentMethodId) => {
-    const response = await request.post(`/orderApi/pay/${orderNo}`, { paymentMethodId });
+    const response = await request.post(`/orderApi/repay/${orderNo}`, { paymentMethodId });
     return response.data;
 };
 
