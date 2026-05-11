@@ -22,6 +22,7 @@ import TermsOfServiceView from '@/views/TermsOfServiceView.vue'
 import ProductView from '@/views/ProductView.vue'
 import CheckoutView from '@/views/CheckoutView.vue'
 import PaymentSuccessView from '@/views/PaymentSuccessView.vue'
+import AdminDashboard from '@/admin/view/AdminDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,7 +54,7 @@ const router = createRouter({
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
-        
+
 
         // 商品頁面
         { path: 'all', name: 'ProductView', component: ProductView },
@@ -118,12 +119,41 @@ const router = createRouter({
         title: '付款處理中 - Shizuku'
       }
     },
+    //後台
+    {
+      path: '/admin',
+      component: () => import('@/layout/AdminLayout.vue'),
+      children: [
+        {
+          path: '',
+          redirect: { name: AdminDashboard }
+        },
+        {
+          path: 'dashboard',
+          name: 'AdminDashboard',
+          component: () => import('@/views/admin/AdminDashboard.vue')
+        },
+        {
+          path: 'products',
+          name: 'AdminProducts',
+          component: () => import('@/views/admin/AdminProducts.vue')
+        },
+        {
+          path: 'inventory',
+          name: 'AdminInventory',
+          component: () => import('@/views/admin/AdminInventory.vue')
+        }
+
+      ]
+
+    },
 
     // 3. 錯誤路徑處理
     {
       path: '/:pathMatch(.*)*',
       redirect: '/'
     }
+
   ]
 })
 

@@ -32,5 +32,8 @@ export const productApi = {
     updateVariants: (id, variants) => axios.put(`${base}/${id}/variants`, variants),
 
     // 刪除
-    delete: (id) => axios.delete(`${base}/${id}`)
+    delete: (id) => axios.delete(`${base}/${id}`),
+
+    getStats: () => axios.get(`${base}/stats`),
+    getInventory: () => axios.get(`${base}/inventory`),
 }
