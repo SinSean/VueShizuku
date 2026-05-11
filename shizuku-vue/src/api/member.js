@@ -12,3 +12,13 @@ export const apiMemberRegister = (data) => {
 
 // 會員資料 (預留)
 // export const getMemberInfoAPI = (id) => request.get(`/MemberApi/${id}`);
+
+// 取得地址列表 (GET: api/MemberAddressApi/{memberId})
+export const getAddressesAPI = (memberId) => {
+    return request.get(`/MemberAddressApi/${memberId}`);
+};
+
+// 更新地址清單 (PUT: api/MemberAddressApi/{memberId})
+export const updateAddressesAPI = (memberId, data) => {
+    return request.put(`/MemberAddressApi/${memberId}`, data);
+};

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'; // 1. 引入
 const authStore = useAuthStore(); // 2. 初始化
 
 const email = ref('user@email.com');
-const password = ref('1234');
+const password = ref('Password123!');
 const isRemember = ref(false);
 const isLoading = ref(false); // 2. 新增：增加載入狀態防止重複點擊
 const router = useRouter();
