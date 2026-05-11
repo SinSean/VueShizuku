@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'  //會員登入狀態
 
 // --- Layouts ---
 import Basic from '@/layout/Basic.vue'
@@ -53,7 +54,7 @@ const router = createRouter({
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
-        
+
 
         // 商品頁面
         { path: 'all', name: 'ProductView', component: ProductView },
@@ -125,6 +126,29 @@ const router = createRouter({
       redirect: '/'
     }
   ]
+})
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+
+  // 1. 定義哪些頁面是「只有會員才能進去」的
+  // 檢查路徑是否以 /member 開頭，或是否為 checkout 頁面
+  const isMemberPage = to.path.startsWith('/member') || to.name === 'checkout'
+
+  // 2. 定義哪些頁面是「登入後就不該再進去」的（例如登入頁、註冊頁）
+  const isAuthPage = to.path.startsWith('/auth')
+
+  if (isMemberPage && !authStore.isLogin) {
+    // 如果要去會員頁但沒登入 -> 踢回登入頁
+    alert('請先登入會員')
+    next({ name: 'Login' })
+  } else if (isAuthPage && authStore.isLogin) {
+    // 如果已經登入了還想去登入頁 -> 踢回首頁
+    next({ name: 'home' })
+  } else {
+    // 其他情況正常放行
+    next()
+  }
 })
 
 export default router
