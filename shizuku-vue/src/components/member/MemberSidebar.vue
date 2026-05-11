@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
 
 const isAccountOpen = ref(true);
 
@@ -39,7 +42,7 @@ const menuItems = [
                 <i class="pi pi-user text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-bold text-slate-800">Andy</h3>
+                <h3 class="font-bold text-slate-800">{{ authStore.userName }}</h3>
                 <p class="text-xs text-blue-600 cursor-pointer hover:underline">編輯個人簡介</p>
             </div>
         </div>
