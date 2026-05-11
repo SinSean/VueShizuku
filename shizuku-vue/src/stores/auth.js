@@ -10,6 +10,8 @@ export const useAuthStore = defineStore('auth', () => {
     // 修飾語 (Getters)
     // 直接判斷 user 是否存在來決定登入狀態
     const isLogin = computed(() => user.value !== null);
+    //判斷是否為員工帳號
+    const isAdmin = computed(() => user.value?.isEmployee === true)
 
     // 從 user 物件裡提取名字，如果 user 為空就顯示 '訪客'
     // 這裡的 fName 請根據你資料庫回傳的欄位名稱調整 (例如你的資料庫欄位是 fName)
@@ -44,6 +46,6 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('userToken');
     }
 
-    return { user, token, userName, isLogin, login, logout };
+    return { user, token, userName, isLogin, isAdmin, login, logout };
 });
 
