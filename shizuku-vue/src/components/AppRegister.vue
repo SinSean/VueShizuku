@@ -107,10 +107,7 @@ const handleRegister = async () => {
                                 <input type="radio" v-model="form.fGender" :value="1" class="mr-2 text-emerald-500"> 男
                             </label>
                             <label class="flex items-center cursor-pointer text-slate-600 text-sm">
-                                <input type="radio" v-model="form.fGender" :value="2" class="mr-2 text-emerald-500"> 女
-                            </label>
-                            <label class="flex items-center cursor-pointer text-slate-600 text-sm">
-                                <input type="radio" v-model="form.fGender" :value="0" class="mr-2 text-emerald-500"> 其他
+                                <input type="radio" v-model="form.fGender" :value="0" class="mr-2 text-emerald-500"> 女
                             </label>
                         </div>
                     </div>

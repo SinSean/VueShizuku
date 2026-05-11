@@ -22,3 +22,8 @@ export const getAddressesAPI = (memberId) => {
 export const updateAddressesAPI = (memberId, data) => {
     return request.put(`/MemberAddressApi/${memberId}`, data);
 };
+
+// 會員更新個人資料
+export const updateProfileAPI = (data) => {
+    return request.put('/MemberApi/UpdateProfile', data);
+};
