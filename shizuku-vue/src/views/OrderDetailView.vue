@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import OrderInfoSection from '@/components/OrderInfoSection.vue'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
-import { getOrderDetailAPI, repayOrderAPI } from '@/api/order';
+import { getOrderDetailAPI, repayOrderAPI,cancelOrderApi } from '@/api/order';
 import { usePaymentWindow } from '@/composables/usePaymentWindow'
 
 const { openPaymentWindow } = usePaymentWindow()
@@ -15,24 +15,6 @@ const orderId = route.params.id
 //初始資料為null
 const orderData = ref(null)
 const isLoading = ref(true)
-
-onMounted(async () => {
-  try {
-    const res = await getOrderDetailAPI(orderId)
-    if (res.success) {
-      // 把後端 DTO 轉成你前端需要的格式（或是直接對接）
-      orderData.value = res.data
-    } else {
-      alert(res.message)
-      router.push({ name: 'orders' })
-    }
-  } catch (error) {
-    console.error("讀取訂單詳情失敗：", error)
-    alert("系統錯誤，請稍後再試")
-  } finally {
-    isLoading.value = false
-  }
-})
 
 // 彈出視窗相關狀態
 const showResultModal = ref(false)
@@ -84,6 +66,36 @@ const handleRepay = async (paymentMethodId) => {
     showResultModal.value = true
   }
 }
+//取消訂單
+const handleCancel = async () => {
+  if (!confirm('確定要取消這筆訂單嗎？')) return;
+  const res = await cancelOrderApi(orderId);
+  if (res.success) {
+    alert('訂單已取消！');
+    window.location.reload(); // 重新整理以更新狀態
+  } else {
+    alert(res.message);
+  }
+}
+onMounted(async () => {
+  try {
+    const res = await getOrderDetailAPI(orderId)
+    if (res.success) {
+      // 把後端 DTO 轉成你前端需要的格式（或是直接對接）
+      orderData.value = res.data
+    } else {
+      alert(res.message)
+      router.push({ name: 'orders' })
+    }
+  } catch (error) {
+    console.error("讀取訂單詳情失敗：", error)
+    alert("系統錯誤，請稍後再試")
+  } finally {
+    isLoading.value = false
+  }
+})
+
+
 const goBack = () => {
   router.push({ name: 'orders' })
 }
@@ -103,7 +115,7 @@ const goBack = () => {
       </div>
       
       <!-- 引入原有的訂單明細元件，並監聽重新付款事件 -->
-      <OrderInfoSection :order="orderData" @repay="handleRepay" />
+      <OrderInfoSection :order="orderData" @repay="handleRepay" @cancel="handleCancel"/>
     </div>
 
     <!-- 加入付款結果的自訂彈出視窗 -->

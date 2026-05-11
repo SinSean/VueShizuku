@@ -31,3 +31,9 @@ export const repayOrderAPI = async (orderNo, paymentMethodId) => {
     const response = await request.post(`/orderApi/pay/${orderNo}`, { paymentMethodId });
     return response.data;
 };
+
+//取消訂單
+export const cancelOrderApi = async(orderNo) => {
+    const response = await request.patch(`/orderApi/${orderNo}/cancel`);
+    return response.data;
+};

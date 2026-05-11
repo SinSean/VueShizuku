@@ -3,12 +3,14 @@ import { ref } from 'vue'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
+
 const props = defineProps({
   order: {
     type: Object,
     required: true,
   },
 })
+
 // 保持跟列表頁一致的顏色邏輯
 const getSeverity = (status) => {
   if (status === '已完成') return 'secondary' 
@@ -20,9 +22,10 @@ const getSeverity = (status) => {
   return 'danger'                             
 }
 
-const emit = defineEmits(['repay'])
+const emit = defineEmits(['repay','cancel'])
 
 const menu = ref();
+
 const items = ref([
     {
         label: '信用卡 (綠界)',
@@ -132,7 +135,7 @@ const toggleMenu = (event) => {
         <!-- 當訂單狀態為「待付款」時，顯示重新付款按鈕 -->
         <Button v-if="props.order.statusText === '待付款'" label="重新付款" icon="pi pi-wallet" @click="toggleMenu" />
         
-        <Button v-if="props.order.statusText === '待付款'" label="取消訂單" severity="danger" text />
+        <Button v-if="props.order.statusText === '待付款'" label="取消訂單" severity="danger" text @click="emit('cancel')" />
         <Button v-if="props.order.statusText !== '待付款'" label="再次購買" icon="pi pi-shopping-cart" />
       </div>
     </div>
