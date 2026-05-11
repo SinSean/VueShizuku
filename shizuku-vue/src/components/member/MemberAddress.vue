@@ -123,8 +123,16 @@ const setDefault = async (index) => {
   }
 };
 
-// 8. 刪除地址 (修正點：新增 memberId 獲取)
+// 8. 刪除地址 (新增：預設地址不可刪除邏輯)
 const deleteAddress = async (index) => {
+  const targetAddress = addressList.value[index];
+
+  // 關鍵檢查：如果是預設地址，不允許刪除
+  if (targetAddress.fIsDefault) {
+    alert('「預設地址」不能被刪除。請先將其他地址設為預設，再嘗試刪除此地址。');
+    return;
+  }
+
   const memberId = getMemberId();
   if (!confirm('確定要刪除此地址嗎？')) return;
   const newList = [...addressList.value];
@@ -188,8 +196,11 @@ onMounted(fetchAddresses);
               class="text-slate-500 hover:text-blue-600 transition-colors">設為預設</button>
             <button @click="openEditModal(addr, index)"
               class="text-slate-500 hover:text-blue-600 transition-colors">編輯</button>
-            <button @click="deleteAddress(index)"
-              class="text-slate-500 hover:text-red-600 transition-colors">刪除</button>
+            <button @click="deleteAddress(index)" :disabled="addr.fIsDefault"
+              :class="addr.fIsDefault ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-red-600'"
+              :title="addr.fIsDefault ? '預設地址不可刪除' : ''" class="transition-colors">
+              刪除
+            </button>
           </div>
         </div>
       </div>
