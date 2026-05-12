@@ -1,24 +1,102 @@
 <script setup>
+import { ref, nextTick } from 'vue';
+// 這裡假設你已經有 axios，如果沒有請自行換成 fetch 或你原本呼叫 API 的方式
+import axios from 'axios'; 
+
+const messages = ref([
+  { 
+    sender: '智能客服', 
+    text: '您好！我是 SHIZUKU 智能小幫手。請問有什麼我可以幫忙的嗎？您可以直接點擊下方按鈕快速發問。' 
+  }
+]);
+const inputMessage = ref('');
+const messagesContainer = ref(null);
+
+// 這裡的文字必須跟你資料庫 tChatbotFaq 裡面的 fKeyword 完全一模一樣
+const quickKeywords = ['運費', '退換貨', '門市', '付款方式'];
+
+const sendMessage = async (text) => {
+  const messageToSend = text || inputMessage.value;
+  if (!messageToSend.trim()) return;
+
+  // 1. 把客人的訊息推到畫面上
+  messages.value.push({ sender: '我', text: messageToSend });
+  inputMessage.value = '';
+  await scrollToBottom();
+
+  try {
+    // 2. 配合你的 C# Controller，改用 POST 發送，並包裝成 JSON 物件
+    const response = await axios.post('https://localhost:7197/api/CustomerApi/bot', {
+      Message: messageToSend 
+    });
+    
+    // 3. 配合組長規定的 ApiResponse 格式，必須多加一層 .data 才能拆開包裝拿到裡面的 reply
+messages.value.push({ sender: '智能客服', text: response.data.data.reply });
+  } catch (error) {
+    console.error("API 呼叫失敗", error);
+    messages.value.push({ sender: '智能客服', text: '不好意思，系統連線異常，請稍後再試。' });
+  }
+  
+  await scrollToBottom();
+};
+
+const scrollToBottom = async () => {
+  await nextTick();
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+  }
+};
 </script>
 
-<style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
-
-
-
-
-
-<template>   <!-- 智能客服系統內容 -->
-  <div class="animate-fade-in bg-white border border-gray-200 p-10 text-center">
-    <h2 class="text-2xl font-bold mb-4">IQ 智能客服系統</h2>
-    <p class="text-gray-500 mb-6">AI 客服機器人建置中...</p>
+<template>
+  <div class="bg-white border border-gray-300 shadow-sm flex flex-col h-[500px] animate-fade-in">
+    <div class="bg-red-600 text-white p-4 font-bold tracking-widest text-center">
+      智能客服系統
     </div>
+    
+    <div class="flex-grow p-6 overflow-y-auto space-y-4 bg-gray-50" ref="messagesContainer">
+      <div v-for="(msg, index) in messages" :key="index" 
+           :class="['flex flex-col', msg.sender === '我' ? 'items-end' : 'items-start']">
+        <span class="text-xs text-gray-400 mb-1">{{ msg.sender }}</span>
+        <div :class="['px-4 py-2 rounded-lg max-w-[80%] text-sm', 
+                    msg.sender === '我' ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-800']">
+          {{ msg.text }}
+        </div>
+      </div>
+    </div>
+
+  <div class="px-4 py-2 bg-white border-t border-gray-100 flex gap-4 overflow-x-auto whitespace-nowrap">
+      <span class="text-xs text-gray-400 flex items-center">常見問題：</span>
+      <button 
+        v-for="keyword in quickKeywords" 
+        :key="keyword"
+        @click="sendMessage(keyword)"
+        class="text-sm text-gray-600 hover:text-black hover:bg-gray-100 px-3 py-1 rounded transition-all duration-200"
+      >
+        {{ keyword }}
+      </button>
+    </div>
+
+    <div class="p-4 border-t border-gray-200 bg-white">
+      <div class="flex gap-2">
+        <input v-model="inputMessage" @keyup.enter="sendMessage()" 
+               type="text" class="flex-grow border border-gray-300 px-4 py-2 focus:outline-none focus:border-black"
+               placeholder="或手動輸入您的問題..." />
+        <button @click="sendMessage()" class="bg-black text-white px-6 py-2 hover:bg-gray-800 transition-colors">
+          發送
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
+<style scoped>
+/* 隱藏卷軸但保留滑動功能，讓按鈕區塊更好看 */
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
+}
+.overflow-x-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

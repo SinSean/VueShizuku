@@ -1,5 +1,5 @@
 <script setup>
-// ✨ 1. 多引入了一個 onMounted，用來在網頁開啟時觸發動作
+//  1. 多引入了一個 onMounted，用來在網頁開啟時觸發動作
 import { reactive, ref, onMounted } from 'vue';
 import axios from 'axios';
 
@@ -13,22 +13,21 @@ const formData = reactive({
   description: ''
 });
 
-// ✨ 2. 這裡改成「空陣列」，不寫死了，等著接後端傳來的資料！
+//  2. 這裡改成「空陣列」，不寫死了，等著接後端傳來的資料！
 const categories = ref([]);
 
 const isSubmitting = ref(false);
 
-// ✨ 3. 新增：專門去後端拿「分類資料」的函數
+//  3. 新增：專門去後端拿「分類資料」的函數
 const fetchCategories = async () => {
   try {
-    // 🛑🛑🛑 注意：把 7123 換成你 C# 真實的 Port 號！
+    //  記得確認這裡的 Port 號是你現在 C# 跑起來的真實 Port (例如 7123)
     const apiUrl = 'https://localhost:7197/api/CustomerApi/Categories';
-    
-    // 用 GET 去敲剛剛寫好的那扇門
     const response = await axios.get(apiUrl);
     
-    // 把後端吐出來的資料直接塞給變數，畫面上的下拉選單就會瞬間長出來！
-    categories.value = response.data;
+    //  【關鍵修改】：因為套用了組長的 ApiResponse，所以這裡要寫 .data.data 才能拿到真正的陣列！
+    categories.value = response.data.data; 
+
   } catch (error) {
     console.error("取得分類失敗：", error);
   }
@@ -37,27 +36,30 @@ const fetchCategories = async () => {
 // 送出表單到後端 (跟你原本寫的一樣)
 const submitForm = async () => {
   isSubmitting.value = true;
-  
   try {
-    // 🛑🛑🛑 注意：這裡的 7123 也一樣要換成你 C# 真實的 Port 號！
+    //  記得確認 Port 號
     const apiUrl = 'https://localhost:7197/api/CustomerApi/Submit';
-    
     const response = await axios.post(apiUrl, formData);
     
+    //  這裡其實不用大改，因為 response.data 裡面剛好也有組長寫的 success 和 message！
     if (response.data.success) {
-      alert(response.data.message);
-      // 清空表單
-      Object.keys(formData).forEach(key => formData[key] = '');
+      alert(response.data.message); // 會跳出我們 C# 寫的 "客服單已成功送出！"
+      Object.keys(formData).forEach(key => formData[key] = ''); // 清空表單
     }
   } catch (error) {
     console.error("API 呼叫失敗：", error);
-    alert("系統發生錯誤，送出失敗。請檢查網路狀態或聯繫客服。");
+    
+    // 【進階處理】：如果 C# 的 BadRequest 有回傳 ApiResponse，我們也可以把組長寫的錯誤訊息印出來
+    if (error.response && error.response.data && error.response.data.message) {
+      alert("錯誤：" + error.response.data.message);
+    } else {
+      alert("系統發生錯誤，送出失敗。請檢查網路狀態或聯繫客服。");
+    }
   } finally {
     isSubmitting.value = false;
   }
 };
-
-// ✨ 4. 新增：設定網頁一載入 (Mounted) 的時候，就立刻去執行 fetchCategories！
+//  4. 新增：設定網頁一載入 (Mounted) 的時候，就立刻去執行 fetchCategories！
 onMounted(() => {
   fetchCategories();
 });
