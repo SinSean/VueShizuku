@@ -27,7 +27,7 @@ const menuItems = [
             { name: '隱私設定', routeName: 'MemberPrivacySetting' }//已完成畫面
         ]
     },
-    { title: '購買清單', icon: 'pi pi-list', routeName: 'MemberEmpty' },
+    { title: '訂單列表', icon: 'pi pi-list', routeName: 'MemberOrders' },//已完成轉接
     { title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
     { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberVouchers' },
     { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberPointsDashboard' },//已完成畫面

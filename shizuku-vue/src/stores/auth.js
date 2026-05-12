@@ -10,6 +10,11 @@ export const useAuthStore = defineStore('auth', () => {
     const addressList = ref([]);
 
     const isLogin = computed(() => user.value !== null);
+    ///////////// 判斷是否為員工帳號 ////////////////
+    const isAdmin = computed(() => user.value?.isEmployee === true)
+
+    // 從 user 物件裡提取名字，如果 user 為空就顯示 '訪客'
+    // 這裡的 fName 請根據你資料庫回傳的欄位名稱調整 (例如你的資料庫欄位是 fName)
     const userName = computed(() => user.value ? user.value.fName : '訪客');
 
     // 1：加上 async
@@ -49,5 +54,6 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('userToken');
     }
 
-    return { user, token, userName, isLogin, login, logout, addressList, fetchUserAddress };
+    
+    return { user, token, userName, isLogin, isAdmin, login, logout, addressList, fetchUserAddress };
 });

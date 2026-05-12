@@ -12,7 +12,7 @@ const totalPrice = computed(() => {
 })
 
 const goToCheckout = () => {
-  router.push('/checkout')
+  router.push({ name: 'checkout' })
 }
 </script>
 

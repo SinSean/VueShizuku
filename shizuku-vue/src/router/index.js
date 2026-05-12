@@ -50,7 +50,11 @@ const router = createRouter({
         { path: 'orders/:id', name: 'order-detail', component: OrderDetailView },
         { path: 'orders/:id/payments', name: 'payment-list', component: PaymentListView },
         { path: 'PaymentList', name: 'payment-list-root', component: PaymentListView },
-        { path: 'orders/:id/payments/:transactionId', name: 'payment-detail', component: PaymentDetailView },
+        {
+          path: 'orders/:id/payments/:transactionId',
+          name: 'payment-detail',
+          component: PaymentDetailView,
+        },
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
@@ -61,7 +65,7 @@ const router = createRouter({
         {
           path: 'product/:id',
           name: 'product-detail',
-          component: () => import('@/views/ProductDetail.vue')
+          component: () => import('@/views/ProductDetail.vue'),
         },
 
         // 資訊頁面
@@ -79,18 +83,64 @@ const router = createRouter({
           component: () => import('@/views/MemberView.vue'),
           children: [
             { path: '', redirect: { name: 'MemberProfile' } },
-            { path: 'profile', name: 'MemberProfile', component: () => import('@/components/member/MemberProfile.vue') },
-            { path: 'paymentmetod', name: 'MemberPayMentmetod', component: () => import('@/components/member/MemberPaymentMethods.vue') },
-            { path: 'address', name: 'MemberAddress', component: () => import('@/components/member/MemberAddress.vue') },
-            { path: 'password', name: 'MemberSetPassword', component: () => import('@/components/member/MemberSetPassword.vue') },
-            { path: 'notificationset', name: 'MemberNotificationSet', component: () => import('@/components/member/MemberNotificationSet.vue') },
-            { path: 'privacysetting', name: 'MemberPrivacySetting', component: () => import('@/components/member/MemberPrivacySetting.vue') },
-            { path: 'pointsdashboard', name: 'MemberPointsDashboard', component: () => import('@/components/member/MemberPointsDashboard.vue') },
-            { path: 'vouchers', name: 'MemberVouchers', component: () => import('@/components/member/MemberVouchers.vue') },
-            { path: 'empty', name: 'MemberEmpty', component: () => import('@/components/member/MemberEmpty.vue') }
-          ]
-        }
-      ]
+            {
+              path: 'profile',
+              name: 'MemberProfile',
+              component: () => import('@/components/member/MemberProfile.vue'),
+            },
+            {
+              path: 'paymentmetod',
+              name: 'MemberPayMentmetod',
+              component: () => import('@/components/member/MemberPaymentMethods.vue'),
+            },
+            {
+              path: 'address',
+              name: 'MemberAddress',
+              component: () => import('@/components/member/MemberAddress.vue'),
+            },
+            {
+              path: 'password',
+              name: 'MemberSetPassword',
+              component: () => import('@/components/member/MemberSetPassword.vue'),
+            },
+            {
+              path: 'notificationset',
+              name: 'MemberNotificationSet',
+              component: () => import('@/components/member/MemberNotificationSet.vue'),
+            },
+            {
+              path: 'privacysetting',
+              name: 'MemberPrivacySetting',
+              component: () => import('@/components/member/MemberPrivacySetting.vue'),
+            },
+            {
+              path: 'pointsdashboard',
+              name: 'MemberPointsDashboard',
+              component: () => import('@/components/member/MemberPointsDashboard.vue'),
+            },
+            {
+              path: 'vouchers',
+              name: 'MemberVouchers',
+              component: () => import('@/components/member/MemberVouchers.vue'),
+            },
+            {
+              path: 'MemberOrders',
+              name: 'MemberOrders',
+              component: () => import('@/components/member/MemberOrders.vue'),
+            },
+            {
+              path: 'orders/:id',
+              name: 'MemberOrderDetail',
+              component: () => import('@/views/OrderDetailView.vue'),
+            },
+            {
+              path: 'empty',
+              name: 'MemberEmpty',
+              component: () => import('@/components/member/MemberEmpty.vue'),
+            },
+          ],
+        },
+      ],
     },
 
     // 2. 登入/註冊專區 (使用 AuthLayout)
@@ -100,11 +150,18 @@ const router = createRouter({
       children: [
         { path: '', redirect: { name: 'Login' } },
         { path: 'login', name: 'Login', component: () => import('@/components/AppLogin.vue') },
-        { path: 'register', name: 'Register', component: () => import('@/components/AppRegister.vue') },
-        { path: 'forgot-password', name: 'ForgotPassword', component: () => import('@/components/AppForgotPassword.vue') }
-      ]
+        {
+          path: 'register',
+          name: 'Register',
+          component: () => import('@/components/AppRegister.vue'),
+        },
+        {
+          path: 'forgot-password',
+          name: 'ForgotPassword',
+          component: () => import('@/components/AppForgotPassword.vue'),
+        },
+      ],
     },
-
 
     { path: '/customer', name: 'customer', component: CustomerView },
     //結帳頁面
@@ -116,18 +173,78 @@ const router = createRouter({
       name: 'PaymentSuccess',
       component: PaymentSuccessView,
       meta: {
-        title: '付款處理中 - Shizuku'
-      }
+        title: '付款處理中 - Shizuku',
+      },
     },
 
-    // 3. 錯誤路徑處理
+    // 3. 後台登入頁面 (獨立，不帶 Sidebar)
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: () => import('@/views/admin/AdminLoginView.vue'),
+    },
+    // 4. 後台管理區 (使用 AdminView 作為 Layout)
+    {
+      path: '/admin',
+      component: () => import('@/views/AdminView.vue'),
+      children: [
+        {
+          path: '',
+          name: 'admin-dashboard',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminDashboardView.vue'),
+        },
+        {
+          path: 'members',
+          name: 'admin-members',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminMembersView.vue'),
+        },
+        {
+          path: 'products',
+          name: 'admin-products',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminProductsView.vue'),
+        },
+        {
+          path: 'orders',
+          name: 'admin-orders',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminOrdersView.vue'),
+        },
+        {
+          path: 'payments',
+          name: 'admin-payments',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminPaymentsView.vue'),
+        },
+        {
+          path: 'customer-service',
+          name: 'admin-customer-service',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminCustomerServiceView.vue'),
+        },
+      ],
+    },
+    // 4. 錯誤路徑處理(永遠放最後一個)
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/'
-    }
-  ]
+      redirect: '/',
+    },
+  ],
 })
 
+/////後台權限檢查/////
+router.beforeEach((to) => {
+  if (to.meta.requiresAdmin) {
+    const user = JSON.parse(localStorage.getItem('user'))
+    if (!user || !user.isEmployee) {
+      return { name: 'admin-login' }
+    }
+  }
+})
+
+// 前台檢測
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 

@@ -5,18 +5,17 @@ export const useCartStore = defineStore('cart', () => {
   //. State (狀態)
   const items = ref([
     {
-      id: 1,
-      name: '日系簡約純棉 T-Shirt',
+      id: 1, // 這對應到剛剛 SQL 裡的 "黑色 M 號 T-Shirt"
+      name: '日系簡約純棉 T-Shirt (黑色 M)',
       price: 590,
-      image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+1',
+      image: 'https://placehold.co/400x400/eeeeee/999999?text=T-Shirt',
       quantity: 1,
     },
-    // 第二個假商品
     {
-      id: 2,
-      name: '復古寬鬆牛仔褲',
+      id: 3, // 這對應到剛剛 SQL 裡的 "深藍 M 號牛仔褲"
+      name: '復古寬鬆牛仔褲 (深藍 M)',
       price: 1280,
-      image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+2',
+      image: 'https://placehold.co/400x400/eeeeee/999999?text=Jeans',
       quantity: 2,
     }
   ])

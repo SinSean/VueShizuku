@@ -1,46 +1,56 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { confirmPaymentAPI } from '@/api/order'
 
 const route = useRoute()
 const status = ref('processing') // 狀態：processing (處理中), success (成功), fail (失敗)
 const errorMessage = ref('')
 
 onMounted(async () => {
-  // 1. 從網址列抓取 LINE Pay 傳回來的參數
+  // 1. 抓取網址列參數
   const transactionId = route.query.transactionId
   const orderId = route.query.orderId
+  const from = route.query.from 
+  // 如果是從綠界回來的 (綠界在背景就扣完款了，前端不需要打 API)
+  if (from === 'ecpay') {
+    status.value = 'success' // 畫面直接顯示成功
+    
+    // 通知結帳母視窗，付款成功了！
+    if (window.opener) {
+      window.opener.postMessage('PAYMENT_SUCCESS', window.location.origin)
+    }
+    
+    // 3 秒後自動關閉這個彈出視窗
+    setTimeout(() => {
+      window.close()
+    }, 3000)
+    return 
+  }
 
+  // --- 保留原本的 LINE Pay 邏輯 ---
   if (!transactionId || !orderId) {
     status.value = 'fail'
     errorMessage.value = '網址缺少必要的交易參數。'
     return
   }
-
   try {
-    // 2. 呼叫我們後端寫好的 Confirm API 進行最終扣款！
-    const response = await axios.post('https://localhost:7197/api/order/confirm', {
+    // 呼叫後端寫好的 Confirm API 進行最終扣款！
+    const res = await confirmPaymentAPI({
       transactionId: transactionId,
       orderId: orderId
     })
-
-    if (response.data.isSuccess) {
+    if (res.success) {
       status.value = 'success'
-      
-      // 3. 扣款成功！發送信號給原本的「結帳母視窗」
       if (window.opener) {
         window.opener.postMessage('PAYMENT_SUCCESS', window.location.origin)
       }
-      
-      // 4. 倒數 3 秒後自動關閉這個彈出視窗
       setTimeout(() => {
         window.close()
       }, 3000)
-
     } else {
       status.value = 'fail'
-      errorMessage.value = response.data.message
+      errorMessage.value = res.message
       if (window.opener) window.opener.postMessage('PAYMENT_FAILED', window.location.origin)
     }
   } catch (error) {

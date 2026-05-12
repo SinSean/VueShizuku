@@ -1,12 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router'; // 🌟 記得引入 RouterLink
-
-// 引入你剛剛切出去的兩個小積木
+import { RouterLink } from 'vue-router';
 import AppCustomerForm from '@/components/AppCustomerForm.vue';
 import AppCustomerChatbot from '@/components/AppCustomerChatbot.vue';
 
-// 控制器：決定現在要顯示哪個積木
 const currentView = ref('menu');
 </script>
 
