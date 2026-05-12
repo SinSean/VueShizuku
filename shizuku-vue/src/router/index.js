@@ -230,21 +230,21 @@ const router = createRouter({
           path: '',
           redirect: { name: AdminDashboard }
         },
-        {
-          path: 'dashboard',
-          name: 'AdminDashboard',
-          component: () => import('@/views/admin/AdminDashboard.vue')
-        },
-        {
-          path: 'products',
-          name: 'AdminProducts',
-          component: () => import('@/views/admin/AdminProducts.vue')
-        },
-        {
-          path: 'inventory',
-          name: 'AdminInventory',
-          component: () => import('@/views/admin/AdminInventory.vue')
-        }
+        // {
+        //   path: 'dashboard',
+        //   name: 'AdminDashboard',
+        //   component: () => import('@/views/admin/AdminDashboard.vue')
+        // },
+        // {
+        //   path: 'products',
+        //   name: 'AdminProducts',
+        //   component: () => import('@/views/admin/AdminProducts.vue')
+        // },
+        // {
+        //   path: 'inventory',
+        //   name: 'AdminInventory',
+        //   component: () => import('@/views/admin/AdminInventory.vue')
+        // }
       ],
     },
     // 4. 錯誤路徑處理(永遠放最後一個)
