@@ -115,7 +115,7 @@ const handleLogout = () => {
           </a>
         </li>
         <li>
-          <router-link to="/member" class="hover:text-gray-400 cursor-pointer transition-colors">會員專區</router-link>
+          <router-link to="/admin" class="hover:text-gray-400 cursor-pointer transition-colors">後台</router-link>
         </li>
       </ul>
       <div class="absolute right-4 lg:right-10 flex items-center gap-5 text-gray-600">
