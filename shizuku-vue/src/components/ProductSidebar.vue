@@ -1,71 +1,81 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { productApi } from '@/api/Product.js'
+
+const emit = defineEmits(['categorySelected'])
+const menu = ref([])
+
+onMounted(async () => {
+    try {
+        const res = await productApi.getDropdowns()
+        const categories = res.data.data.categories ?? []
+        const parentMap = {}
+
+        categories.forEach(cat => {
+            const parts      = cat.fullName.split('-')
+            const parentName = parts[0]
+            const childName  = parts[1]
+
+            if (!parentMap[parentName]) {
+                parentMap[parentName] = {
+                    title: parentName, open: false, children: []
+                }
+            }
+            if (childName) {
+                parentMap[parentName].children.push({
+                    name:   childName,
+                    id:     cat.id,
+                    parent: parentName   // ✨ 記錄父分類名稱
+                })
+            }
+        })
+
+        menu.value = Object.values(parentMap)
+    } catch (err) {
+        console.error('分類載入失敗', err)
+    }
+})
+
+function toggle(item) { item.open = !item.open }
+
+function selectCategory(child) {
+    // ✨ 傳 id、子分類名、父分類名
+    emit('categorySelected', child.id, child.name, child.parent)
+}
+</script>
+
 <template>
-<aside class="w-[240px]">    
-    <ul class="space-y-3">
-      
-      <li v-for="item in menu" :key="item.title">
-        
-        <!-- 主分類 -->
-        <button
-          @click="toggle(item)"
-          class="w-full flex justify-between items-center py-2 font-semibold hover:text-amber-600"
-        >
-          {{ item.title }}
-          <span class="text-xs">{{ item.open ? "▾" : "▸" }}</span>
+    <aside class="w-full">
+
+        <button @click="$emit('categorySelected', null, null, null)"
+                class="w-full text-left px-3 py-2 mb-2 text-sm font-semibold tracking-widest uppercase text-gray-400 hover:text-black transition-colors">
+            全部商品
         </button>
 
-        <!-- 子分類 -->
-        <ul v-show="item.open" class="pl-3 space-y-2 text-sm text-gray-600">
-          <li v-for="sub in item.children" :key="sub">
-            <a href="#" class="hover:text-amber-600">
-              {{ sub }}
-            </a>
-          </li>
-        </ul>
+        <div class="border-t border-gray-100 pt-3">
+            <ul class="space-y-1">
+                <li v-for="item in menu" :key="item.title">
 
-      </li>
+                    <button @click="toggle(item)"
+                            class="w-full flex justify-between items-center px-3 py-2.5 text-sm font-semibold tracking-wider uppercase hover:text-amber-600 transition-colors">
+                        {{ item.title }}
+                        <span class="text-[10px] transition-transform duration-200"
+                              :class="item.open ? 'rotate-90' : ''">▸</span>
+                    </button>
 
-    </ul>
-  </aside>
+                    <ul v-show="item.open" class="mb-2">
+                        <li v-for="child in item.children" :key="child.id">
+                            <a href="#"
+                               @click.prevent="selectCategory(child)"
+                               class="block px-6 py-1.5 text-sm text-gray-500 hover:text-amber-600 hover:pl-8 transition-all duration-200">
+                                {{ child.name }}
+                            </a>
+                        </li>
+                    </ul>
+
+                </li>
+            </ul>
+        </div>
+
+    </aside>
 </template>
-
-<script>
-export default {
-  name: "Sidebar",
-  data() {
-    return {
-      menu: [
-        {
-          title: "風格搭配",
-          open: true,
-          children: ["通勤時尚Look!", "日系可愛風", "渡假休閒風"]
-        },
-        {
-          title: "上身 / TOP",
-          open: false,
-          children: ["短袖", "長袖", "外套"]
-        },
-        {
-          title: "下身 / BOTTOM",
-          open: false,
-          children: ["長褲", "短褲"]
-        },
-        {
-          title: "配件 / ACCESSORIES",
-          open: false,
-          children: ["帽子", "包包", "襪子"]
-        },
-        {
-          title: "洋裝",
-          open: false,
-          children: ["長洋裝", "短洋裝"]
-        }
-      ]
-    };
-  },
-  methods: {
-    toggle(item) {
-      item.open = !item.open;
-    }
-  }
-};
-</script>
