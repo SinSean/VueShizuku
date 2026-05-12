@@ -18,37 +18,45 @@ const router = useRouter()
 onMounted(async () => {
   try {
     const res = await productApi.getDropdowns()
-    const categories = res.data.data.categories ?? []
+    // 這裡根據你提供的 JSON 結構層級：res.data.data.categories
+    const categories = res.data?.data?.categories ?? []
+
+    // API 實際回傳的名稱是 "日系穿搭-xxx"，所以這裡要對應改掉
+    const filterKey = '日系穿搭-'
+
     styleCategories.value = categories
-      .filter(c => c.fullName.startsWith('風格搭配-'))
+      .filter(c => c.fullName && c.fullName.startsWith(filterKey))
       .map(c => ({
         id: c.id,
-        name: c.fullName.replace('風格搭配-', '')
+        name: c.fullName.replace(filterKey, '')
       }))
+
+    console.log('載入成功，風格分類數量:', styleCategories.value.length)
   } catch (err) {
     console.error('分類載入失敗', err)
   }
 })
 
-//  延遲隱藏，避免滑鼠移到選單前就消失
+// 延遲隱藏，避免滑鼠移到選單前就消失
 function showMenu(type) {
   clearTimeout(hideTimer)
-  //  顯示某個選單時，關閉其他選單
   showStyleMenu.value = type === 'style'
   showSaleMenu.value = type === 'sale'
 }
+
 function hideMenu() {
-  //  不需要傳 type，統一延遲關閉所有選單
   hideTimer = setTimeout(() => {
     showStyleMenu.value = false
     showSaleMenu.value = false
   }, 150)
 }
+
 function goToCategory(id) {
   showStyleMenu.value = false
   showSaleMenu.value = false
   router.push({ path: '/all', query: { categoryId: id } })
 }
+
 // 處理登出邏輯
 const handleLogout = () => {
   authStore.logout()
@@ -77,11 +85,15 @@ const handleLogout = () => {
           </RouterLink>
         </li>
 
-        <!--  風格搭配下拉 -->
-        <li class="relative" @mouseenter="showMenu('style')" @mouseleave="hideMenu('style')">
+        <li class="relative" @mouseenter="showMenu('style')" @mouseleave="hideMenu()">
           <span class="hover:text-gray-400 cursor-pointer select-none">風格搭配 ▽</span>
           <div v-show="showStyleMenu" @mouseenter="showMenu('style')" @mouseleave="hideMenu()"
             class="absolute top-full left-0 mt-2 w-44 bg-white border border-gray-100 shadow-lg rounded-lg py-2 z-50">
+
+            <div v-if="styleCategories.length === 0" class="px-4 py-2 text-xs text-gray-400">
+              暫無分類資料
+            </div>
+
             <a v-for="cat in styleCategories" :key="cat.id" @click="goToCategory(cat.id)"
               class="block px-4 py-2.5 text-sm text-gray-600 hover:text-amber-600 hover:bg-gray-50 cursor-pointer transition-colors">
               {{ cat.name }}
@@ -118,7 +130,6 @@ const handleLogout = () => {
 
         <template v-if="authStore.isLogin">
           <div class="flex items-center gap-3 bg-gray-200/50 p-1 pr-3 rounded-full border border-gray-300">
-            <!-- 會員頭像 + 名字 (點了進會員中心) -->
             <router-link to="/member" class="flex items-center gap-2 group">
               <div
                 class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white overflow-hidden group-hover:bg-emerald-600 transition-colors">
@@ -128,11 +139,7 @@ const handleLogout = () => {
               </div>
               <span class="hidden xl:block text-xs font-bold text-gray-700">{{ authStore.userName }}</span>
             </router-link>
-
-            <!-- 分隔線 -->
             <div class="w-[1px] h-4 bg-gray-400"></div>
-
-            <!-- 登出按鈕：直接露出來，保證點得到 -->
             <button @click="handleLogout"
               class="text-xs font-bold text-red-500 hover:text-red-700 transition-colors px-1">
               登出

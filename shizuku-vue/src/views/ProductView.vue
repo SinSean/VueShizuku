@@ -2,21 +2,21 @@
 import ProductAllitem from '@/components/ProductAllitem.vue'
 import ProductSidebar from '@/components/ProductSidebar.vue'
 import ProductPageHeader from '@/components/ProductPageHeader.vue'
-import { ref, watch,onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { productApi } from '@/api/Product'
 
-const route=useRoute()
-const selectedCategoryId   = ref(null)
+const route = useRoute()
+const selectedCategoryId = ref(null)
 const selectedCategoryName = ref(null)   // 子分類名稱，例如「T恤」
-const selectedParentName   = ref(null)   // 父分類名稱，例如「上身」
+const selectedParentName = ref(null)   // 父分類名稱，例如「上身」
 
 // ✨ 根據 categoryId 查出分類名稱
 async function updateCrumbById(categoryId) {
     if (!categoryId) {
-        selectedCategoryId.value   = null
+        selectedCategoryId.value = null
         selectedCategoryName.value = null
-        selectedParentName.value   = null
+        selectedParentName.value = null
         return
     }
 
@@ -29,16 +29,16 @@ async function updateCrumbById(categoryId) {
         if (found) {
             // ✨ 一般子分類：上身-T恤 → 父:上身 子:T恤
             const parts = found.fullName.split('-')
-            selectedParentName.value   = parts[0] ?? null
+            selectedParentName.value = parts[0] ?? null
             selectedCategoryName.value = parts[1] ?? parts[0]
         } else {
             // ✨ 找不到代表是父分類（現貨專區/限時特價）
             // 用 categoryId 對應名稱
             const nameMap = {
-                21: '現貨專區',
-                22: '限時特價'
+                17: '現貨專區',
+                18: '限時特價'
             }
-            selectedParentName.value   = null
+            selectedParentName.value = null
             selectedCategoryName.value = nameMap[Number(categoryId)] ?? `分類 ${categoryId}`
         }
 
@@ -56,18 +56,16 @@ watch(() => route.query.categoryId, (newId) => {
 
 // ✨ Sidebar 點擊直接給名稱，不用查 API
 function onCategorySelected(id, childName, parentName) {
-    selectedCategoryId.value   = id
+    selectedCategoryId.value = id
     selectedCategoryName.value = childName ?? null
-    selectedParentName.value   = parentName ?? null
+    selectedParentName.value = parentName ?? null
 }
 </script>
 
 <template>
     <main class="pt-24 bg-white min-h-screen">
 
-        <ProductPageHeader
-            title="Shop All"
-            :parentCrumb="selectedParentName"
+        <ProductPageHeader title="Shop All" :parentCrumb="selectedParentName"
             :currentCrumb="selectedCategoryName ?? 'All Products'" />
 
         <div class="flex flex-col md:flex-row max-w-[1400px] mx-auto px-4 gap-8 pt-1">
