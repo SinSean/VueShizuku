@@ -258,7 +258,7 @@ const router = createRouter({
 /////後台權限檢查/////
 router.beforeEach((to) => {
   if (to.meta.requiresAdmin) {
-    const user = JSON.parse(localStorage.getItem('user'))
+    const user = JSON.parse(localStorage.getItem('adminUser'))
     if (!user || !user.isEmployee) {
       return { name: 'admin-login' }
     }

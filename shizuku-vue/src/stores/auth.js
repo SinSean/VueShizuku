@@ -4,26 +4,21 @@ import { ref, computed } from 'vue';
 import { getAddressesAPI } from '@/api/member';
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref(JSON.parse(localStorage.getItem('user')) || null);
-    const token = ref(localStorage.getItem('userToken') || '');
+    const user = ref(JSON.parse(localStorage.getItem('memberUser')) || null);
+    const token = ref(localStorage.getItem('memberToken') || '');
     // 新增：用來存放抓回來的地址
     const addressList = ref([]);
 
     const isLogin = computed(() => user.value !== null);
-    ///////////// 判斷是否為員工帳號 ////////////////
-    const isAdmin = computed(() => user.value?.isEmployee === true)
-
-    // 從 user 物件裡提取名字，如果 user 為空就顯示 '訪客'
-    // 這裡的 fName 請根據你資料庫回傳的欄位名稱調整 (例如你的資料庫欄位是 fName)
     const userName = computed(() => user.value ? user.value.fName : '訪客');
 
     // 1：加上 async
     async function login(userData, userToken = '') {
         user.value = userData;
         token.value = userToken;
-        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('memberUser', JSON.stringify(userData));
         if (userToken) {
-            localStorage.setItem('userToken', userToken);
+            localStorage.setItem('memberToken', userToken);
         }
         return true;
     }
@@ -50,10 +45,9 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null;
         token.value = '';
         addressList.value = []; // 清空地址
-        localStorage.removeItem('user');
-        localStorage.removeItem('userToken');
+        localStorage.removeItem('memberUser');
+        localStorage.removeItem('memberToken');
     }
 
-    
-    return { user, token, userName, isLogin, isAdmin, login, logout, addressList, fetchUserAddress };
+    return { user, token, userName, isLogin, login, logout, addressList, fetchUserAddress };
 });
