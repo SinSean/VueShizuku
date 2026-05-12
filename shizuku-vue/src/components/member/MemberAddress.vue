@@ -22,7 +22,7 @@ const addressForm = reactive({
 
 // 關鍵修正：確保 memberId 在所有函數中都能被讀取
 const getMemberId = () => {
-  const userData = localStorage.getItem('user');
+  const userData = localStorage.getItem('memberUser');
   if (userData) {
     const user = JSON.parse(userData);
     return user.fId || user.fMemberId || user.FMemberId;
