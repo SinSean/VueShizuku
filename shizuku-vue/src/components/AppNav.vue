@@ -25,10 +25,10 @@ onMounted(async () => {
     const filterKey = '日系穿搭-'
 
     styleCategories.value = categories
-      .filter(c => c.fullName && c.fullName.startsWith(filterKey))
+      .filter(c => c.fFullName && c.fFullName.startsWith(filterKey))
       .map(c => ({
-        id: c.id,
-        name: c.fullName.replace(filterKey, '')
+        id: c.fId,
+        name: c.fFullName.replace(filterKey, '')
       }))
 
     console.log('載入成功，風格分類數量:', styleCategories.value.length)

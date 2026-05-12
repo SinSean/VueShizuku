@@ -12,7 +12,7 @@ onMounted(async () => {
         const parentMap = {}
 
         categories.forEach(cat => {
-            const parts      = cat.fullName.split('-')
+            const parts      = cat.fFullName.split('-')
             const parentName = parts[0]
             const childName  = parts[1]
 
@@ -24,8 +24,8 @@ onMounted(async () => {
             if (childName) {
                 parentMap[parentName].children.push({
                     name:   childName,
-                    id:     cat.id,
-                    parent: parentName   // ✨ 記錄父分類名稱
+                    fId:    cat.fId,      // ← 這裡改成 fId
+                    parent: parentName
                 })
             }
         })
@@ -39,8 +39,7 @@ onMounted(async () => {
 function toggle(item) { item.open = !item.open }
 
 function selectCategory(child) {
-    // ✨ 傳 id、子分類名、父分類名
-    emit('categorySelected', child.id, child.name, child.parent)
+    emit('categorySelected', child.fId, child.name, child.parent)
 }
 </script>
 
@@ -64,7 +63,7 @@ function selectCategory(child) {
                     </button>
 
                     <ul v-show="item.open" class="mb-2">
-                        <li v-for="child in item.children" :key="child.id">
+                        <li v-for="child in item.children" :key="child.fId">
                             <a href="#"
                                @click.prevent="selectCategory(child)"
                                class="block px-6 py-1.5 text-sm text-gray-500 hover:text-amber-600 hover:pl-8 transition-all duration-200">

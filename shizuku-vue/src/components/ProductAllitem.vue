@@ -28,9 +28,12 @@ const sortedProducts = computed(() => {
 
 //  取得目前有效的分類 ID（網址優先，其次 props）
 function getActiveCategoryId() {
+    // props 優先（Sidebar 點擊），其次才是網址（Nav 點擊）
+    if (props.categoryId !== null && props.categoryId !== undefined)
+        return props.categoryId
     const fromRoute = route.query.categoryId
     if (fromRoute) return Number(fromRoute)
-    return props.categoryId ?? null
+    return null
 }
 
 async function fetchProducts() {
