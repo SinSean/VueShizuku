@@ -16,38 +16,38 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 onMounted(async () => {
-    try {
-        const res = await productApi.getDropdowns()
-        const categories = res.data.data.categories ?? []
-        styleCategories.value = categories
-            .filter(c => c.fullName.startsWith('風格搭配-'))
-            .map(c => ({
-                id:   c.id,
-                name: c.fullName.replace('風格搭配-', '')
-            }))
-    } catch (err) {
-        console.error('分類載入失敗', err)
-    }
+  try {
+    const res = await productApi.getDropdowns()
+    const categories = res.data.data.categories ?? []
+    styleCategories.value = categories
+      .filter(c => c.fullName.startsWith('風格搭配-'))
+      .map(c => ({
+        id: c.id,
+        name: c.fullName.replace('風格搭配-', '')
+      }))
+  } catch (err) {
+    console.error('分類載入失敗', err)
+  }
 })
 
 //  延遲隱藏，避免滑鼠移到選單前就消失
 function showMenu(type) {
-    clearTimeout(hideTimer)
-    //  顯示某個選單時，關閉其他選單
-    showStyleMenu.value = type === 'style'
-    showSaleMenu.value  = type === 'sale'
+  clearTimeout(hideTimer)
+  //  顯示某個選單時，關閉其他選單
+  showStyleMenu.value = type === 'style'
+  showSaleMenu.value = type === 'sale'
 }
 function hideMenu() {
-    //  不需要傳 type，統一延遲關閉所有選單
-    hideTimer = setTimeout(() => {
-        showStyleMenu.value = false
-        showSaleMenu.value  = false
-    }, 150)
+  //  不需要傳 type，統一延遲關閉所有選單
+  hideTimer = setTimeout(() => {
+    showStyleMenu.value = false
+    showSaleMenu.value = false
+  }, 150)
 }
 function goToCategory(id) {
-    showStyleMenu.value = false
-    showSaleMenu.value  = false
-    router.push({ path: '/all', query: { categoryId: id } })
+  showStyleMenu.value = false
+  showSaleMenu.value = false
+  router.push({ path: '/all', query: { categoryId: id } })
 }
 // 處理登出邏輯
 const handleLogout = () => {
@@ -77,36 +77,31 @@ const handleLogout = () => {
           </RouterLink>
         </li>
 
-       <!--  風格搭配下拉 -->
-        <li class="relative"
-            @mouseenter="showMenu('style')"
-            @mouseleave="hideMenu('style')">
-            <span class="hover:text-gray-400 cursor-pointer select-none">風格搭配 ▽</span>
-            <div v-show="showStyleMenu"
-                 @mouseenter="showMenu('style')"
-                 @mouseleave="hideMenu()"
-                 class="absolute top-full left-0 mt-2 w-44 bg-white border border-gray-100 shadow-lg rounded-lg py-2 z-50">
-                <a v-for="cat in styleCategories" :key="cat.id"
-                   @click="goToCategory(cat.id)"
-                   class="block px-4 py-2.5 text-sm text-gray-600 hover:text-amber-600 hover:bg-gray-50 cursor-pointer transition-colors">
-                    {{ cat.name }}
-                </a>
-            </div>
+        <!--  風格搭配下拉 -->
+        <li class="relative" @mouseenter="showMenu('style')" @mouseleave="hideMenu('style')">
+          <span class="hover:text-gray-400 cursor-pointer select-none">風格搭配 ▽</span>
+          <div v-show="showStyleMenu" @mouseenter="showMenu('style')" @mouseleave="hideMenu()"
+            class="absolute top-full left-0 mt-2 w-44 bg-white border border-gray-100 shadow-lg rounded-lg py-2 z-50">
+            <a v-for="cat in styleCategories" :key="cat.id" @click="goToCategory(cat.id)"
+              class="block px-4 py-2.5 text-sm text-gray-600 hover:text-amber-600 hover:bg-gray-50 cursor-pointer transition-colors">
+              {{ cat.name }}
+            </a>
+          </div>
         </li>
-        
-   <li>
-    <a @click="router.push({ path: '/all', query: { categoryId: 21 } })"
-       class="hover:text-gray-400 cursor-pointer transition-colors">
-        現貨專區
-    </a>
-</li>
 
-<li>
-    <a @click="router.push({ path: '/all', query: { categoryId: 22 } })"
-       class="hover:text-gray-400 cursor-pointer transition-colors text-red-400 hover:text-red-500">
-        🔥 限時特價
-    </a>
-</li>
+        <li>
+          <a @click="router.push({ path: '/all', query: { categoryId: 17 } })"
+            class="hover:text-gray-400 cursor-pointer transition-colors">
+            現貨專區
+          </a>
+        </li>
+
+        <li>
+          <a @click="router.push({ path: '/all', query: { categoryId: 18 } })"
+            class="hover:text-gray-400 cursor-pointer transition-colors text-red-400 hover:text-red-500">
+            🔥 限時特價
+          </a>
+        </li>
         <li>
           <router-link to="/member" class="hover:text-gray-400 cursor-pointer transition-colors">會員專區</router-link>
         </li>
