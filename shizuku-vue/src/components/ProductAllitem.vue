@@ -11,8 +11,8 @@ const props = defineProps({
     default: null,
   },
 })
-const baseUrl = 'https://localhost:7197'
 
+const baseUrl = 'https://localhost:7197'
 const products = ref([])
 const isLoading = ref(true)
 const keyword = ref('')
@@ -27,12 +27,13 @@ const sortedProducts = computed(() => {
   return list
 })
 
-//  取得目前有效的分類 ID（網址優先，其次 props）
+// 取得目前有效的分類 ID（props 優先，其次才是網址）
 function getActiveCategoryId() {
-  // props 優先（Sidebar 點擊），其次才是網址（Nav 點擊）
   if (props.categoryId !== null && props.categoryId !== undefined) return props.categoryId
+  
   const fromRoute = route.query.categoryId
   if (fromRoute) return Number(fromRoute)
+  
   return null
 }
 
@@ -73,9 +74,8 @@ onMounted(() => {
 
 <template>
   <div class="max-w-[1400px] mx-auto px-4 py-14 text-center">
-    <div
-      class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4"
-    >
+    <!-- 工具列：項目計數與排序 -->
+    <div class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4">
       <span class="text-gray-500">顯示 {{ sortedProducts.length }} 個項目</span>
       <select
         v-model="sortOrder"
@@ -88,16 +88,17 @@ onMounted(() => {
       </select>
     </div>
 
+    <!-- 載入狀態 -->
     <div v-if="isLoading" class="text-gray-400 py-20">載入中...</div>
 
+    <!-- 商品列表區塊 -->
     <div v-else class="flex-1 min-w-0">
       <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
         <div v-for="product in sortedProducts" :key="product.fId" class="group cursor-pointer">
           <RouterLink :to="'/product/' + product.fId">
+            <!-- 商品圖片 -->
             <div class="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-4">
-              <div
-                class="absolute top-2 left-2 z-10 bg-black/40 text-white text-[10px] px-2 py-0.5 tracking-wider"
-              >
+              <div class="absolute top-2 left-2 z-10 bg-black/40 text-white text-[10px] px-2 py-0.5 tracking-wider">
                 new
               </div>
               <img
@@ -107,16 +108,20 @@ onMounted(() => {
               />
             </div>
 
+            <!-- 商品名稱 -->
             <h3 class="text-sm font-medium text-gray-700 mb-1">
               {{ product.fName }}
             </h3>
 
+            <!-- 商品價格 -->
             <p class="text-sm text-gray-900 font-bold">
               NT$ {{ (product.fMinPrice ?? product.fPrice).toLocaleString() }}
             </p>
           </RouterLink>
 
+          <!-- 操作按鈕 -->
           <button
+            @click="$router.push('/product/' + product.fId)"
             class="mt-3 w-full border border-gray-200 py-1.5 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +132,7 @@ onMounted(() => {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-            <span class="text-xs font-bold">加入購物車</span>
+            <span class="text-xs font-bold">查看商品</span>
           </button>
         </div>
       </div>
