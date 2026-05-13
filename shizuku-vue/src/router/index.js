@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'  //會員登入狀態
+import { useAuthStore } from '@/stores/auth' //會員登入狀態
 
 // --- Layouts ---
 import Basic from '@/layout/Basic.vue'
@@ -58,8 +58,6 @@ const router = createRouter({
 
         // 購物車
         { path: 'cart', name: 'cart', component: CartDetailView },
-
-
 
         // 商品頁面
         { path: 'all', name: 'ProductView', component: ProductView },
@@ -208,16 +206,28 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminProductsView.vue'),
         },
         {
+          path: 'products/create',
+          name: 'admin-products-create',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminProductCreateView.vue'),
+        },
+        {
+          path: 'products/:id/edit',
+          name: 'admin-products-edit',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/AdminProductEditView.vue'),
+        },
+        {
           path: 'inventory',
           name: 'admin-inventory',
           meta: { requiresAdmin: true },
-          component: () => import('@/views/admin/AdminInventoryView.vue')
+          component: () => import('@/views/admin/AdminInventoryView.vue'),
         },
         {
           path: 'categories',
           name: 'admin-categories',
           meta: { requiresAdmin: true },
-          component: () => import('@/views/admin/AdminCategoriesView.vue')
+          component: () => import('@/views/admin/AdminCategoriesView.vue'),
         },
         {
           path: 'orders',
@@ -237,15 +247,14 @@ const router = createRouter({
           meta: { requiresAdmin: true },
           component: () => import('@/views/admin/AdminCustomerServiceView.vue'),
         },
-
       ],
     },
     // 4. 錯誤路徑處理(永遠放最後一個)
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/'
-    }
-  ]
+      redirect: '/',
+    },
+  ],
 })
 
 /////後台權限檢查/////

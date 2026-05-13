@@ -104,7 +104,7 @@ onMounted(() => {
                         </h3>
 
                         <p class="text-sm text-gray-900 font-bold">
-                            NT$ {{ product.fPrice.toLocaleString() }}
+                            NT$ {{ (product.fMinPrice ?? product.fPrice).toLocaleString() }}
                         </p>
 
                     </RouterLink>

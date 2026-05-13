@@ -8,6 +8,15 @@ const product = ref(null)
 const variants = ref([])
 const relatedProduct = ref([])
 const isLoading = ref(true)
+const currentPrice = computed(() => {
+    if (!selectedColor.value || !selectedSize.value) {
+        return product.value?.fMinPrice ?? product.value?.fPrice
+    }
+    const variant = variants.value.find(
+        v => v.fColor === selectedColor.value && v.fSize === selectedSize.value
+    )
+    return variant?.fPrice ?? product.value?.fPrice
+})
 
 // ✨ 多張示意圖
 const placeholderImages = [
@@ -146,7 +155,7 @@ const relatedProducts = ref([
                     <div class="text-left py-2 border-t border-gray-100">
                         <p class="text-sm text-gray-400">NT.</p>
                         <p class="text-3xl font-bold text-gray-900 mt-1">
-                            {{ product.fPrice?.toLocaleString() }}
+                             NT$ {{ currentPrice?.toLocaleString() }}
                         </p>
                     </div>
 
