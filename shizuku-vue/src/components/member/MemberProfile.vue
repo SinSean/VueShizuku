@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-// 1. 記得引入你剛剛測成功的 API (假設你寫在 api/member.js)
 import { updateProfileAPI } from '@/api/member';
 
 const authStore = useAuthStore();
@@ -14,12 +13,12 @@ const profile = ref({
     fPhone: ''
 });
 
+// 同步 Store 資料到本地表單
 watch(() => authStore.user, (newVal) => {
     if (newVal) {
         profile.value = {
             fId: newVal.fId || 0,
             fName: newVal.fName || '',
-            // 修正：確保轉為數字，否則 Radio 會勾不起來
             fGender: newVal.fGender !== null ? Number(newVal.fGender) : 0,
             fBirthday: newVal.fBirthday ? newVal.fBirthday.split('T')[0] : '',
             fPhone: newVal.fPhone || ''
@@ -28,7 +27,7 @@ watch(() => authStore.user, (newVal) => {
 }, { immediate: true });
 
 const saveProfile = async () => {
-    // 2. 準備送往後端的資料 (欄位名稱要對應 DTO 的 PascalCase)
+    // 根據你的 DTO 規範，確保屬性名稱正確 (PascalCase)
     const updateData = {
         FId: profile.value.fId,
         FName: profile.value.fName,
@@ -36,17 +35,20 @@ const saveProfile = async () => {
     };
 
     try {
-        // 3. 呼叫剛剛測試成功的 API
         const res = await updateProfileAPI(updateData);
 
+        // 對應你的 ApiResponse<T> 規範: res.data.success
         if (res.data.success) {
-            // 更新本地 Store 狀態，畫面才會跟著變
+            // 同步更新 Pinia Store
             authStore.user = {
                 ...authStore.user,
                 fName: profile.value.fName,
                 fGender: profile.value.fGender
             };
-            localStorage.setItem('user', JSON.stringify(authStore.user));
+
+            // 修正鍵名為 memberUser，確保重新整理後資料還在
+            localStorage.setItem('memberUser', JSON.stringify(authStore.user));
+
             alert('個人資料已儲存');
         } else {
             alert('儲存失敗：' + res.data.message);
