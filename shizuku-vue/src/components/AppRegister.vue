@@ -12,7 +12,7 @@ const form = reactive({
     fName: '',
     fEmail: '',
     fPhone: '',
-    fGender: null,
+    fGender: 1,
     fBirthday: '',
     fPassword: '',
     confirmPassword: ''
