@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import OrderInfoSection from '@/components/OrderInfoSection.vue'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
-import { getOrderDetailAPI, repayOrderAPI,cancelOrderApi } from '@/api/order'
+import { getOrderDetailAPI, repayOrderAPI, cancelOrderApi } from '@/api/order'
 import { usePaymentWindow } from '@/composables/usePaymentWindow'
 import { useAuthStore } from '@/stores/auth'
 
@@ -14,7 +14,11 @@ const route = useRoute()
 const router = useRouter()
 const orderId = route.params.id
 
-//初始資料為null
+// 倒數計時相關變數
+const timeLeft = ref('')
+let timer = null
+
+// 初始資料為 null
 const orderData = ref(null)
 const isLoading = ref(true)
 
@@ -23,38 +27,59 @@ const showResultModal = ref(false)
 const resultStatus = ref('success')
 const resultMessage = ref('')
 
+// 啟動倒數計時器
+const startCountdown = () => {
+  // 只有在「待付款」狀態才需要倒數
+  if (!orderData.value || orderData.value.statusText !== '待付款') return
+
+  const updateTimer = () => {
+    const created = new Date(orderData.value.createdAt)
+    const deadline = new Date(created.getTime() + 10 * 60 * 1000) // 建立時間 + 10 分鐘
+    const now = new Date()
+    const diff = deadline - now
+
+    if (diff <= 0) {
+      timeLeft.value = '已逾時'
+      clearInterval(timer)
+      return
+    }
+
+    const minutes = Math.floor(diff / 1000 / 60)
+    const seconds = Math.floor((diff / 1000) % 60)
+    timeLeft.value = `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  updateTimer() // 立即執行一次
+  timer = setInterval(updateTimer, 1000)
+}
+
 const handleCountdownEnd = () => {
   showResultModal.value = false
-  // 重新整理頁面以取得最新訂單狀態
   window.location.reload()
 }
 
 // 處理重新付款
 const handleRepay = async (paymentMethodId) => {
   try {
-    // 1. 先跳出處理中的等待畫面
     resultStatus.value = 'processing'
     resultMessage.value = '請稍候，即將為您轉跳至付款頁面...'
     showResultModal.value = true
-    // 2. 向後端呼叫重新付款的 API，取得 res
+
     const res = await repayOrderAPI(orderId, paymentMethodId)
-    
-    // 3. 接下來才是你剛剛完美改好的 openPaymentWindow 邏輯
+
     if (res.success && res.data.paymentUrl) {
       openPaymentWindow(
         res.data.paymentUrl,
         () => {
-          // 成功時的動作
           resultStatus.value = 'success'
           resultMessage.value = '太棒了！您的訂單已付款成功。'
           showResultModal.value = true
         },
         (errorMsg) => {
-          // 失敗時的動作
           resultStatus.value = 'fail'
           resultMessage.value = errorMsg
           showResultModal.value = true
-        }
+        },
       )
     } else {
       resultStatus.value = 'fail'
@@ -68,35 +93,40 @@ const handleRepay = async (paymentMethodId) => {
     showResultModal.value = true
   }
 }
-//取消訂單
+
+// 取消訂單
 const handleCancel = async () => {
-  if (!confirm('確定要取消這筆訂單嗎？')) return;
-  const res = await cancelOrderApi(orderId);
+  if (!confirm('確定要取消這筆訂單嗎？')) return
+  const res = await cancelOrderApi(orderId)
   if (res.success) {
-    alert('訂單已取消！');
-    window.location.reload(); // 重新整理以更新狀態
+    alert('訂單已取消！')
+    window.location.reload()
   } else {
-    alert(res.message);
+    alert(res.message)
   }
 }
+
 onMounted(async () => {
   try {
     const res = await getOrderDetailAPI(orderId, authStore.user?.fId)
     if (res.success) {
-      // 把後端 DTO 轉成你前端需要的格式（或是直接對接）
       orderData.value = res.data
+      startCountdown() // 讀取資料後啟動倒數
     } else {
       alert(res.message)
       router.push({ name: 'MemberOrders' })
     }
   } catch (error) {
-    console.error("讀取訂單詳情失敗：", error)
-    alert("系統錯誤，請稍後再試")
+    console.error('讀取訂單詳情失敗：', error)
+    alert('系統錯誤，請稍後再試')
   } finally {
     isLoading.value = false
   }
 })
 
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 
 const goBack = () => {
   router.push({ name: 'MemberOrders' })
@@ -114,18 +144,49 @@ const goBack = () => {
         <Button icon="pi pi-arrow-left" text rounded @click="goBack" />
         <h1 class="text-3xl font-extrabold text-gray-800">訂單詳細內容</h1>
       </div>
-      
-      <!-- 引入原有的訂單明細元件，並監聽重新付款事件 -->
-      <OrderInfoSection :order="orderData" @repay="handleRepay" @cancel="handleCancel"/>
+
+      <!-- 倒數計時提示條 (僅待付款顯示) -->
+      <div
+        v-if="orderData.statusText === '待付款' && timeLeft !== '已逾時'"
+        class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
+      >
+        <div class="flex items-center gap-3 text-amber-800">
+          <i class="pi pi-exclamation-triangle text-2xl"></i>
+          <div>
+            <p class="font-bold text-sm">此訂單尚未付款</p>
+            <p class="text-xs text-amber-700/80">
+              請於倒數結束前完成付款，否則系統將自動取消訂單並釋放庫存。
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-amber-200 shadow-inner"
+        >
+          <span class="text-xs font-bold text-amber-500 uppercase tracking-widest">剩餘時間</span>
+          <span class="text-3xl font-black text-amber-600 font-mono leading-none">{{
+            timeLeft
+          }}</span>
+        </div>
+      </div>
+
+      <!-- 引入原有的訂單明細元件 -->
+      <OrderInfoSection :order="orderData" @repay="handleRepay" @cancel="handleCancel" />
     </div>
 
-    <!-- 加入付款結果的自訂彈出視窗 -->
-    <PaymentResultOverlay 
-      :visible="showResultModal" 
-      :status="resultStatus" 
-      :message="resultMessage" 
+    <!-- 付款結果彈出視窗 -->
+    <PaymentResultOverlay
+      :visible="showResultModal"
+      :status="resultStatus"
+      :message="resultMessage"
       @update:visible="showResultModal = $event"
       @countdown-end="handleCountdownEnd"
     />
   </div>
 </template>
+
+<style scoped>
+/* 讓數字看起來更像計時器 */
+.font-mono {
+  font-family: 'Courier New', Courier, monospace;
+}
+</style>
