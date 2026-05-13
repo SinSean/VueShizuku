@@ -1,24 +1,15 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
-  //. State (狀態)
-  const items = ref([
-    {
-      id: 1, // 這對應到剛剛 SQL 裡的 "黑色 M 號 T-Shirt"
-      name: '日系簡約純棉 T-Shirt (黑色 M)',
-      price: 590,
-      image: 'https://placehold.co/400x400/eeeeee/999999?text=T-Shirt',
-      quantity: 1,
-    },
-    {
-      id: 3, // 這對應到剛剛 SQL 裡的 "深藍 M 號牛仔褲"
-      name: '復古寬鬆牛仔褲 (深藍 M)',
-      price: 1280,
-      image: 'https://placehold.co/400x400/eeeeee/999999?text=Jeans',
-      quantity: 2,
-    }
-  ])
+  //初始化狀態,先看 localstorage 有沒有東西,沒有就給空陣列
+  const savedCart = localStorage.getItem('shizuku_cart')
+  const items = ref(savedCart ? JSON.parse(savedCart) : [])
+
+  //監聽items 變動
+  watch(items, (newItems) =>{
+    localStorage.setItem('shizuku_cart', JSON.stringify(newItems));
+  }, { deep: true })
 
   //  Getters (計算屬性)
   const totalPrice = computed(() => {
