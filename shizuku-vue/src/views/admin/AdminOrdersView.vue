@@ -17,7 +17,7 @@ const widgets = [
     title: '全站訂單管理',
     desc: '總覽全站交易，支援即時關鍵字查詢、明細檢視與強制狀態變更。',
     icon: 'pi pi-list',
-    gridSpan: 'md:col-span-2 lg:col-span-2', 
+    gridSpan: 'md:col-span-2 lg:col-span-3', 
     component: AllOrdersWidget
   },
   {

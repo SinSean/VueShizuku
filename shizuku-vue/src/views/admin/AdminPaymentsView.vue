@@ -1,77 +1,131 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { usePaymentAdmin } from '@/composables/usePaymentAdmin'
-import PaymentLogDialog from '@/components/admin/payments/PaymentLogDialog.vue'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
-import Tag from 'primevue/tag'
-import InputText from 'primevue/inputtext'
-import { FilterMatchMode } from '@primevue/core/api'
+import { ref, shallowRef } from 'vue'
+import Dialog from 'primevue/dialog'
 
-const { transactions, loading, fetchTransactions, getStatusInfo, formatDate } = usePaymentAdmin()
+// 1. 匯入子元件
+import AllPaymentsWidget from '@/components/admin/payments/AllPaymentsWidget.vue'
 
-const logDialogVisible = ref(false)
-const selectedTransaction = ref(null)
+// 目前被點擊打開的 Widget
+const activeWidget = ref(null)
+const activeWidgetComponent = shallowRef(null)
+const isDialogVisible = ref(false)
 
-//設定搜尋過濾器
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-})
+// 2. 定義金流泡泡卡片的陣容清單
+const widgets = [
+  {
+    id: 'all-payments',
+    title: '全站交易對帳',
+    desc: '監控全站金流流水，支援單號檢視、支付狀態查詢與詳細通訊日誌。',
+    icon: 'pi pi-credit-card',
+    gridSpan: 'md:col-span-2 lg:col-span-3',
+    component: AllPaymentsWidget
+  },
+  {
+    id: 'failed-monitor',
+    title: '異常支付監控',
+    desc: '即時追蹤付款失敗的交易，分析金流廠商回傳的異常代碼。',
+    icon: 'pi pi-exclamation-circle',
+    gridSpan: 'col-span-1',
+    component: null
+  },
+  {
+    id: 'daily-revenue',
+    title: '今日營收統計',
+    desc: '快速概覽今日已入帳總額與待核銷款項 (開發中)。',
+    icon: 'pi pi-chart-line',
+    gridSpan: 'col-span-1',
+    component: null
+  },
+  {
+    id: 'log-hub',
+    title: '通訊日誌中心',
+    desc: '集中管理 LINE Pay 與 ECPay 的原始 Request/Response 紀錄。',
+    icon: 'pi pi-database',
+    gridSpan: 'col-span-1',
+    component: null
+  }
+]
 
-const openLogs = (data) => {
-  selectedTransaction.value = data
-  logDialogVisible.value = true
+// 打開卡片
+const openWidget = (widget) => {
+  activeWidget.value = widget
+  activeWidgetComponent.value = widget.component
+  isDialogVisible.value = true
 }
 
-onMounted(fetchTransactions)
+// 關閉卡片時的清理動作
+const onDialogHide = () => {
+  activeWidget.value = null
+  activeWidgetComponent.value = null
+}
 </script>
 
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">金流對帳中心</h1>
-      <Button icon="pi pi-refresh" @click="fetchTransactions" :loading="loading" />
+  <div class="min-h-screen relative overflow-hidden flex flex-col bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100">
+    <!-- 內容容器 -->
+    <div class="relative z-10 p-6 md:p-8 flex-1">
+      <h1 class="text-4xl font-bold text-gray-800 mb-10 tracking-tight">金流控制中心</h1>
+
+      <!-- 泡泡卡片區塊 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div 
+          v-for="widget in widgets" 
+          :key="widget.id"
+          @click="openWidget(widget)"
+          class="bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 hover:bg-white/70 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between min-h-[200px]"
+          :class="widget.gridSpan"
+        >
+          <div>
+            <div class="flex items-center gap-4 mb-4">
+              <i :class="[widget.icon, 'text-4xl text-teal-600 filter drop-shadow-sm']"></i>
+              <h2 class="text-2xl font-bold text-gray-800">{{ widget.title }}</h2>
+            </div>
+            <p class="text-gray-600 font-medium leading-relaxed">{{ widget.desc }}</p>
+          </div>
+          
+          <div class="mt-6 flex justify-end">
+            <div class="bg-white/60 rounded-full p-2 text-gray-400 hover:text-teal-500 transition-colors shadow-sm">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <DataTable
-      :value="transactions"
-      :loading="loading"
-      stripedRows
-      paginator
-      :rows="10"
-      v-model:filters="filters"
-      :globalFilterFields="['fTransactionNo', 'orderNo', 'methodName']"
+    <!-- PrimeVue Dialog 作為功能容器 -->
+    <Dialog 
+      v-model:visible="isDialogVisible" 
+      modal 
+      maximizable
+      :draggable="false"
+      @hide="onDialogHide"
+      :style="{ width: '90vw', height: '90vh' }"
+      :pt="{
+        root: { class: 'rounded-2xl overflow-hidden shadow-2xl border-0' },
+        header: { class: 'bg-white border-b px-8 py-5' },
+        content: { class: 'bg-gray-50 p-0 h-full' },
+        maximizeButton: { class: 'hover:bg-gray-100 rounded-full w-10 h-10 transition-colors mr-2' },
+        closeButton: { class: 'hover:bg-red-100 hover:text-red-600 rounded-full w-10 h-10 transition-colors' }
+      }"
     >
       <template #header>
-        <div class="flex justify-end">
-          <InputText v-model="filters['global'].value" placeholder="搜尋訂單或支付單號" />
+        <div class="flex items-center gap-3">
+          <i :class="[activeWidget?.icon, 'text-3xl text-teal-600']"></i>
+          <h2 class="text-2xl font-bold text-gray-800">{{ activeWidget?.title }}</h2>
         </div>
       </template>
-      <Column field="fTransactionNo" header="支付單號" />
-      <Column field="orderNo" header="訂單號碼" />
-      <Column field="methodName" header="付款方式" />
-      <Column field="fAmount" header="金額">
-        <template #body="{ data }">${{ data.fAmount.toLocaleString() }}</template>
-      </Column>
-      <Column header="狀態">
-        <template #body="{ data }">
-          <Tag
-            :value="getStatusInfo(data.fStatus).label"
-            :severity="getStatusInfo(data.fStatus).severity"
-          />
-        </template>
-      </Column>
-      <Column header="建立時間">
-        <template #body="{ data }">{{ formatDate(data.fCreatedAt) }}</template>
-      </Column>
-      <Column header="操作">
-        <template #body="{ data }">
-          <Button label="日誌" icon="pi pi-search" class="p-button-text" @click="openLogs(data)" />
-        </template>
-      </Column>
-    </DataTable>
 
-    <PaymentLogDialog v-model:visible="logDialogVisible" :transaction="selectedTransaction" />
+      <component :is="activeWidgetComponent" v-if="activeWidgetComponent" />
+      
+      <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 py-20">
+        <i class="pi pi-wrench text-6xl mb-4 text-gray-300"></i>
+        <h2 class="text-2xl font-bold">金流工程師正加緊實作中...</h2>
+        <p class="mt-2">此進階分析功能尚未開放</p>
+      </div>
+    </Dialog>
   </div>
 </template>
+
+<style scoped>
+/* 專屬金流頁面的漸層感 */
+</style>
