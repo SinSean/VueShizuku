@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import * as signalR from '@microsoft/signalr';
-import { useAuthStore } from '@/stores/auth'; // 引入組員寫好的會員 Store
+import { useAuthStore } from '@/stores/auth';
 
-const authStore = useAuthStore(); // 初始化 Store
+const authStore = useAuthStore();
 const messages = ref([]);
 const inputMessage = ref('');
 const messagesContainer = ref(null);
@@ -12,15 +12,28 @@ const isConnected = ref(false);
 let connection = null;
 
 onMounted(async () => {
-  // 如果沒登入，就直接終止執行，不要連線
   if (!authStore.isLogin) return;
 
+  const memberId = authStore.user?.fId || authStore.user?.fMemberId || 0;
+
+  // 1. 先去資料庫把「歷史紀錄」撈回來
+  try {
+    const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${memberId}`);
+    if (response.ok) {
+      const history = await response.json();
+      messages.value = history; // 將撈回來的紀錄直接塞進陣列
+      await scrollToBottom();
+    }
+  } catch (err) {
+    console.error("歷史紀錄載入失敗: ", err);
+  }
+
+  // 2. 接著才啟動 SignalR 即時通訊
   connection = new signalR.HubConnectionBuilder()
     .withUrl("https://localhost:7197/chatHub")
     .withAutomaticReconnect()
     .build();
 
-  //  接收客服訊息，現在會接客服的真實姓名 (adminName)
   connection.on("ReceiveFromAdmin", (adminName, message) => {
     const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     messages.value.push({ sender: `客服 (${adminName})`, text: message, isMe: false, time: timeString });
@@ -32,13 +45,15 @@ onMounted(async () => {
     connectionStatus.value = '已連線';
     isConnected.value = true;
     
-    // 系統提示詞加上會員姓名
-    messages.value.push({
-        sender: '系統',
-        text: `您好，${authStore.userName}！客服連線成功。請輸入您想詢問的問題。`,
-        isMe: false,
-        isSystem: true
-    });
+    // 如果沒有歷史紀錄，才顯示歡迎詞 (避免每次重整都跑出一句歡迎詞)
+    if (messages.value.length === 0) {
+        messages.value.push({
+            sender: '系統',
+            text: `您好，${authStore.userName}！客服連線成功。請輸入您想詢問的問題。`,
+            isMe: false,
+            isSystem: true
+        });
+    }
   } catch (err) {
     connectionStatus.value = '連線失敗，請重新整理';
     console.error("連線失敗: ", err);
@@ -48,12 +63,12 @@ onMounted(async () => {
 const sendMessage = async () => {
   if (!inputMessage.value.trim() || !isConnected.value) return;
 
+  const memberId = authStore.user?.fId || authStore.user?.fMemberId || 0;
+
   try {
-    //  關鍵：呼叫 C# 時，把會員的真實姓名 (authStore.userName) 傳給後端
-    await connection.invoke("SendMessageToAdmin", authStore.userName, inputMessage.value);
+    await connection.invoke("SendMessageToAdmin", memberId, authStore.userName, inputMessage.value);
     
     const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    // 畫面上顯示自己的名字
     messages.value.push({ sender: authStore.userName, text: inputMessage.value, isMe: true, time: timeString });
     inputMessage.value = '';
     scrollToBottom();

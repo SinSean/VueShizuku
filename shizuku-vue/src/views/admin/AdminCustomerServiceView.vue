@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import * as signalR from '@microsoft/signalr';
-import { useAdminStore } from '@/stores/admin'; // ★ 1. 引入組員寫好的員工 Store
+import { useAdminStore } from '@/stores/admin';
 
-const adminStore = useAdminStore(); // 初始化 Store
+const adminStore = useAdminStore();
 const activeGuests = ref({});
 const currentGuestId = ref('');
 const inputMessage = ref('');
@@ -16,27 +16,65 @@ const getCurrentTime = () => {
 };
 
 onMounted(async () => {
+  // 1. 初始化：先去撈出所有有聊過天的會員名單
+  try {
+    const response = await fetch(`https://localhost:7197/api/ChatApi/GetChatMembers`);
+    if (response.ok) {
+      const memberList = await response.json();
+      memberList.forEach(m => {
+        // 使用一個虛擬的 guestId (因為此時還沒有即時連線 ID)
+        const tempId = `History_${m.memberId}`;
+        activeGuests.value[tempId] = {
+          id: tempId,
+          memberId: m.memberId,
+          realName: m.realName,
+          messages: [],
+          unreadCount: 0,
+          hasLoadedHistory: false
+        };
+      });
+    }
+  } catch (err) {
+    console.error("載入會員名單失敗:", err);
+  }
+
+  // 2. 啟動 SignalR 連線
   connection = new signalR.HubConnectionBuilder()
     .withUrl("https://localhost:7197/chatHub")
     .withAutomaticReconnect()
     .build();
 
-  //  2. 接收前台客人的訊息 (這裡多接了一個 memberName)
-  connection.on("ReceiveFromMember", (guestId, memberName, message) => {
-    if (!activeGuests.value[guestId]) {
+  // 解決重複訊息關鍵：先移除舊的監聽器，再加新的
+  connection.off("ReceiveFromMember"); 
+  
+  connection.on("ReceiveFromMember", (guestId, memberId, memberName, message) => {
+    // 檢查清單中是否已經有這個會員 (比對 memberId)
+    let targetId = Object.keys(activeGuests.value).find(key => activeGuests.value[key].memberId === memberId);
+
+    if (!targetId) {
+      // 完全新的客人
       activeGuests.value[guestId] = {
         id: guestId,
-        realName: memberName, // 把客人的真實姓名存起來
+        memberId: memberId,
+        realName: memberName,
         messages: [],
-        unreadCount: 0
+        unreadCount: 0,
+        hasLoadedHistory: false
       };
+      targetId = guestId;
+    } else {
+      // 如果已經在清單中 (歷史客人)，更新他的即時連線 ID
+      const oldData = activeGuests.value[targetId];
+      delete activeGuests.value[targetId];
+      activeGuests.value[guestId] = { ...oldData, id: guestId };
+      targetId = guestId;
     }
 
     const timeString = getCurrentTime();
-    activeGuests.value[guestId].messages.push({ sender: 'Member', text: message, time: timeString });
+    activeGuests.value[targetId].messages.push({ sender: 'Member', text: message, time: timeString });
 
-    if (currentGuestId.value !== guestId) {
-      activeGuests.value[guestId].unreadCount++;
+    if (currentGuestId.value !== targetId) {
+      activeGuests.value[targetId].unreadCount++;
     } else {
       scrollToBottom();
     }
@@ -45,26 +83,42 @@ onMounted(async () => {
   try {
     await connection.start();
     await connection.invoke("JoinAsAdmin");
-    // 在 Console 印出是哪位員工登入了客服系統
     console.log(`員工客服 [${adminStore.adminName}] 後台連線成功`);
   } catch (err) {
     console.error("連線失敗: ", err);
   }
 });
 
-const selectGuest = (guestId) => {
+const selectGuest = async (guestId) => {
   currentGuestId.value = guestId;
-  activeGuests.value[guestId].unreadCount = 0;
+  const guest = activeGuests.value[guestId];
+  guest.unreadCount = 0;
+
+  if (!guest.hasLoadedHistory) {
+    try {
+      const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${guest.memberId}`);
+      if (response.ok) {
+        const history = await response.json();
+        const formattedHistory = history.map(m => ({
+          sender: m.type,
+          text: m.text,
+          time: m.time
+        }));
+        guest.messages = formattedHistory; 
+        guest.hasLoadedHistory = true;
+      }
+    } catch (err) {
+      console.error("歷史紀錄載入失敗:", err);
+    }
+  }
   scrollToBottom();
 };
 
 const sendMessage = async () => {
   if (!inputMessage.value.trim() || !currentGuestId.value) return;
-
+  const targetMemberId = activeGuests.value[currentGuestId.value].memberId;
   try {
-    //  3. 關鍵：呼叫 C# 時，把員工的真實姓名 (adminStore.adminName) 傳回給客人
-    await connection.invoke("ReplyToMember", currentGuestId.value, adminStore.adminName, inputMessage.value);
-    
+    await connection.invoke("ReplyToMember", currentGuestId.value, targetMemberId, adminStore.adminName, inputMessage.value);
     const timeString = getCurrentTime();
     activeGuests.value[currentGuestId.value].messages.push({ sender: 'Admin', text: inputMessage.value, time: timeString });
     inputMessage.value = '';
