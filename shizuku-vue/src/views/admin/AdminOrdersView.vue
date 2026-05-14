@@ -16,7 +16,7 @@ const widgets = [
     id: 'all-orders',
     title: '全站訂單管理',
     desc: '總覽全站交易，支援即時關鍵字查詢、明細檢視與強制狀態變更。',
-    icon: '📋',
+    icon: 'pi pi-list',
     gridSpan: 'md:col-span-2 lg:col-span-2', 
     component: AllOrdersWidget
   },
@@ -24,7 +24,7 @@ const widgets = [
     id: 'shipping-hub',
     title: '出貨作業中心',
     desc: '倉儲人員專屬！集中顯示「待出貨」訂單，一鍵批次更改狀態。',
-    icon: '📦',
+    icon: 'pi pi-box',
     gridSpan: 'col-span-1',
     component: null 
   },
@@ -32,7 +32,7 @@ const widgets = [
     id: 'anomaly-orders',
     title: '異常訂單監控',
     desc: '迅速追蹤「已取消」與「待退款」的潛在問題訂單。',
-    icon: '⚠️',
+    icon: 'pi pi-exclamation-triangle',
     gridSpan: 'col-span-1',
     component: null
   },
@@ -40,7 +40,7 @@ const widgets = [
     id: 'countdown-orders',
     title: '未結帳防流失 (倒數中)',
     desc: '即時監控即將超過 10 分鐘被作廢的訂單，攔截流失客源。',
-    icon: '⏳',
+    icon: 'pi pi-clock',
     gridSpan: 'col-span-1',
     component: null
   }
@@ -81,7 +81,7 @@ const onDialogHide = () => {
         >
           <div>
             <div class="flex items-center gap-4 mb-4">
-              <span class="text-4xl filter drop-shadow-md">{{ widget.icon }}</span>
+              <i :class="[widget.icon, 'text-4xl text-blue-600 filter drop-shadow-sm']"></i>
               <h2 class="text-2xl font-bold text-gray-800">{{ widget.title }}</h2>
             </div>
             <p class="text-gray-600 font-medium leading-relaxed">{{ widget.desc }}</p>
@@ -116,7 +116,7 @@ const onDialogHide = () => {
       <!-- 自訂 Header 標題 -->
       <template #header>
         <div class="flex items-center gap-3">
-          <span class="text-3xl">{{ activeWidget?.icon }}</span>
+          <i :class="[activeWidget?.icon, 'text-3xl text-blue-600']"></i>
           <h2 class="text-2xl font-bold text-gray-800">{{ activeWidget?.title }}</h2>
         </div>
       </template>
@@ -126,11 +126,12 @@ const onDialogHide = () => {
       
       <!-- 尚未開發的防呆提示 -->
       <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 py-20">
-        <span class="text-6xl mb-4">🚧</span>
+        <i class="pi pi-wrench text-6xl mb-4 text-gray-300"></i>
         <h2 class="text-2xl font-bold">工程師正爆肝開發中...</h2>
         <p class="mt-2">此功能尚未實作 Vue Component</p>
       </div>
     </Dialog>
+
 
   </div>
 </template>
