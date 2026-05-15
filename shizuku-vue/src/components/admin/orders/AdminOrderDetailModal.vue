@@ -224,11 +224,24 @@ const getShippingStatusUI = (status) => {
             v-model="newStatus"
             class="border border-blue-300 bg-white rounded-md px-4 py-2 w-full md:w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none font-medium"
           >
-            <option :value="1">待付款 (未處理)</option>
-            <option :value="2">已付款 (準備出貨)</option>
-            <option :value="3">已出貨 (物流配送中)</option>
-            <option :value="4">已完成 (包裹已送達)</option>
-            <option :value="5">已取消 (退款並回補庫存)</option>
+            <!-- 為了防止破壞金流一致性，禁止手動切換至待付款/已付款 -->
+            <!-- 僅當目前狀態是 1 或 2 時，才顯示該選項且設為禁用 (Disabled)，避免下拉選單空白 -->
+            <option v-if="selectedOrder?.status === 1" :value="1" disabled>
+              待付款 (等候金流 Webhook)
+            </option>
+            <option v-if="selectedOrder?.status === 2" :value="2" disabled>
+              已付款 (準備出貨)
+            </option>
+
+            <option :value="3" :disabled="selectedOrder?.status < 2 || selectedOrder?.status >= 3">
+              已出貨 (物流配送中)
+            </option>
+            <option :value="4" :disabled="selectedOrder?.status < 3 || selectedOrder?.status >= 4">
+              已完成 (包裹已送達)
+            </option>
+            <option :value="5" :disabled="selectedOrder?.status === 5">
+              訂單取消 (強制作廢並回補庫存)
+            </option>
           </select>
           <button
             @click="saveStatus"
