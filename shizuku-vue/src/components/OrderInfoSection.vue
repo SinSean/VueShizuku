@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
+import Timeline from 'primevue/timeline'
+import { orderStatusManager } from '@/services/orderStatusManager'
 
 const props = defineProps({
   order: {
@@ -39,6 +41,19 @@ const shippingStatus = computed(() => {
   return { text: '未知狀態', severity: 'danger', icon: 'pi pi-question-circle' }
 })
 
+const timelineEvents = computed(() => {
+  // 由於前台 API 可能只回傳 statusText (如 '待付款')，我們將其映射回對應的數字狀態碼
+  const map = {
+    待付款: 1,
+    已付款: 2,
+    已出貨: 3,
+    已完成: 4,
+    已取消: 5,
+  }
+  const currentStatus = props.order.status || map[props.order.statusText] || 1
+  return orderStatusManager.getTimelineSteps(Number(currentStatus))
+})
+
 const emit = defineEmits(['repay', 'cancel'])
 
 const menu = ref()
@@ -66,7 +81,7 @@ const toggleMenu = (event) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 mt-8">
+  <div class="flex flex-col gap-6 mt-2">
     <!-- 隱藏的 Menu，用於選擇付款方式 -->
     <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
 
@@ -121,8 +136,34 @@ const toggleMenu = (event) => {
           </div>
         </div>
       </div>
-      <!-- 配送資訊 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- 訂單處理進度-->
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 my-4">
+        <h2 class="text-lg font-bold text-gray-800 border-b pb-2 mb-6">訂單處理進度</h2>
+        <div class="py-2">
+          <Timeline :value="timelineEvents" layout="horizontal" class="custom-timeline">
+            <template #marker="slotProps">
+              <span
+                class="flex w-8 h-8 items-center justify-center text-white rounded-full shadow-sm"
+                :style="{ backgroundColor: slotProps.item.color }"
+              >
+                <i :class="slotProps.item.icon" class="text-xs"></i>
+              </span>
+            </template>
+            <template #content="slotProps">
+              <div
+                class="text-xs font-bold mt-2"
+                :class="slotProps.item.active ? 'text-blue-600' : 'text-gray-400'"
+              >
+                {{ slotProps.item.label }}
+              </div>
+            </template>
+          </Timeline>
+        </div>
+      </div>
+
+      <!-- 配送與付款 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h2 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">配送與付款</h2>
           <div class="flex flex-col gap-3 text-gray-700">

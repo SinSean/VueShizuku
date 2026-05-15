@@ -1,15 +1,27 @@
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue'
+import { ref, watch, computed, defineProps, defineEmits } from 'vue'
 import Dialog from 'primevue/dialog'
-import { getAdminOrderDetailAPI, updateOrderStatusAPI, cancelOrderForAdminAPI } from '@/api/adminOrder'
+import {
+  getAdminOrderDetailAPI,
+  updateOrderStatusAPI,
+  cancelOrderForAdminAPI,
+} from '@/api/adminOrder'
+import Timeline from 'primevue/timeline'
+import { orderStatusManager, ORDER_STATUS } from '@/services/orderStatusManager'
 
 const props = defineProps({
   visible: Boolean,
   orderNo: String,
-  currentStatus: Number // 傳入目前的狀態碼作為初始值
+  currentStatus: Number, // 傳入目前的狀態碼作為初始值
 })
 
 const emit = defineEmits(['update:visible', 'updated'])
+
+//處理時間軸資料
+const timelineEvents = computed(() => {
+  if (!selectedOrder.value) return []
+  return orderStatusManager.getTimelineSteps(Number(newStatus.value))
+})
 
 const loading = ref(false)
 const selectedOrder = ref(null)
@@ -17,12 +29,15 @@ const selectedOrderDetails = ref([])
 const newStatus = ref(1)
 
 // 監聽 orderNo 變化，開啟時抓取資料
-watch(() => props.visible, async (newVal) => {
-  if (newVal && props.orderNo) {
-    await fetchDetail()
-    newStatus.value = props.currentStatus || 1
-  }
-})
+watch(
+  () => props.visible,
+  async (newVal) => {
+    if (newVal && props.orderNo) {
+      await fetchDetail()
+      newStatus.value = props.currentStatus || 1
+    }
+  },
+)
 
 const fetchDetail = async () => {
   try {
@@ -41,7 +56,13 @@ const fetchDetail = async () => {
 
 const saveStatus = async () => {
   if (!selectedOrder.value) return
-  if (!confirm('確定要更新此訂單的狀態嗎？')) return
+  if (!orderStatusManager.isValidTransition(selectedOrder.value.status, Number(newStatus.value))) {
+    if (!confirm(`⚠️ 偵測到非標準的狀態跳轉，您確定要手動強改訂單狀態嗎？`)) {
+      return
+    }
+  } else {
+    if (!confirm('確定要更新此訂單的狀態嗎？')) return
+  }
 
   try {
     let res
@@ -67,12 +88,22 @@ const saveStatus = async () => {
 const getShippingStatusUI = (status) => {
   const map = {
     1: { text: '尚未出貨', color: 'bg-gray-100 text-gray-500', icon: 'pi pi-box' },
-    2: { text: '理貨中 (準備出貨)', color: 'bg-blue-100 text-blue-600', icon: 'pi pi-spin pi-spinner' },
+    2: {
+      text: '理貨中 (準備出貨)',
+      color: 'bg-blue-100 text-blue-600',
+      icon: 'pi pi-spin pi-spinner',
+    },
     3: { text: '已交寄 (配送中)', color: 'bg-orange-100 text-orange-600', icon: 'pi pi-truck' },
     4: { text: '已送達', color: 'bg-green-100 text-green-600', icon: 'pi pi-check-circle' },
     5: { text: '訂單已取消', color: 'bg-red-100 text-red-600', icon: 'pi pi-times-circle' },
   }
-  return map[status] || { text: '未知狀態', color: 'bg-gray-100 text-gray-400', icon: 'pi pi-question-circle' }
+  return (
+    map[status] || {
+      text: '未知狀態',
+      color: 'bg-gray-100 text-gray-400',
+      icon: 'pi pi-question-circle',
+    }
+  )
 }
 </script>
 
@@ -87,8 +118,8 @@ const getShippingStatusUI = (status) => {
     class="admin-order-detail-dialog"
   >
     <div v-if="loading" class="flex flex-col items-center justify-center py-12">
-        <i class="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4"></i>
-        <p class="text-gray-500">正在讀取訂單資料...</p>
+      <i class="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4"></i>
+      <p class="text-gray-500">正在讀取訂單資料...</p>
     </div>
 
     <div v-else-if="selectedOrder" class="space-y-6 pt-2">
@@ -116,20 +147,38 @@ const getShippingStatusUI = (status) => {
       </div>
 
       <!-- 出貨狀態顯示列 -->
-      <div class="mt-2 pt-3 border-t border-dashed border-gray-200 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-500 font-medium">目前出貨進度：</span>
+      <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-6">
+        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">訂單進度</h3>
+
+        <Timeline :value="timelineEvents" layout="horizontal" class="custom-timeline">
+          <template #marker="slotProps">
+            <span
+              class="flex w-8 h-8 items-center justify-center text-white rounded-full shadow-sm z-10"
+              :style="{ backgroundColor: slotProps.item.color }"
+            >
+              <i :class="slotProps.item.icon" class="text-xs"></i>
+            </span>
+          </template>
+          <template #content="slotProps">
+            <div
+              class="text-xs font-bold mt-2"
+              :class="slotProps.item.active ? 'text-blue-600' : 'text-gray-400'"
+            >
+              {{ slotProps.item.label }}
+            </div>
+          </template>
+        </Timeline>
+        <!-- 如果訂單已取消，另外顯示一個警告標籤 -->
+        <div
+          v-if="selectedOrder.status === ORDER_STATUS.CANCELLED"
+          class="mt-4 flex justify-center"
+        >
           <span
-            :class="[
-              'px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1',
-              getShippingStatusUI(newStatus).color,
-            ]"
+            class="bg-red-100 text-red-600 px-4 py-1 rounded-full text-xs font-black flex items-center gap-2"
           >
-            <i :class="getShippingStatusUI(newStatus).icon"></i>
-            {{ getShippingStatusUI(newStatus).text }}
+            <i class="pi pi-times-circle"></i> 訂單已於後台作廢
           </span>
         </div>
-        <span class="text-xs text-gray-400 italic">依照下方管理選單更新狀態</span>
       </div>
 
       <!-- 商品清單 -->
@@ -146,7 +195,11 @@ const getShippingStatusUI = (status) => {
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr v-for="(item, index) in selectedOrderDetails" :key="index" class="hover:bg-gray-50">
+              <tr
+                v-for="(item, index) in selectedOrderDetails"
+                :key="index"
+                class="hover:bg-gray-50"
+              >
                 <td class="p-3 font-medium text-gray-800">{{ item.productName }}</td>
                 <td class="p-3 text-gray-500">{{ item.variantName || '無' }}</td>
                 <td class="p-3 text-right">NT$ {{ item.unitPrice?.toLocaleString() }}</td>
@@ -197,5 +250,17 @@ const getShippingStatusUI = (status) => {
 </template>
 
 <style scoped>
-/* 可以在這裡加入 Dialog 的自訂樣式 */
+:deep(.p-timeline-event-content) {
+  text-align: center;
+  padding-top: 0.5rem;
+}
+:deep(.p-timeline-event-separator) {
+  height: 2px;
+  background: #e5e7eb;
+  top: 1rem;
+}
+:deep(.p-timeline-event-marker) {
+  border: none;
+  background: transparent;
+}
 </style>
