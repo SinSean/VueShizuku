@@ -50,9 +50,10 @@ const goToCart = () => {
 
           <div class="flex flex-col flex-1">
             <span class="text-sm font-bold text-gray-800">{{ item.name }}</span>
+            <span class="text-[10px] text-gray-400 mt-0.5">{{ item.color }} / {{ item.size }}</span>
             
             <div class="flex items-center justify-between mt-2">
-              <span class="text-xs font-bold text-gray-500">NT$ {{ item.price.toLocaleString() }}</span>
+              <span class="text-xs font-bold text-gray-500">NT$ {{ (item.price * item.quantity).toLocaleString() }}</span>
               
               <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded px-2 py-0.5">
                 <button 
