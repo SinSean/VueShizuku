@@ -3,8 +3,9 @@ import { ref, watch } from 'vue'
 import { getPaymentTransactionLogsForAdminAPI } from '@/api/adminPayment'
 import Dialog from 'primevue/dialog'
 import Accordion from 'primevue/accordion'
-import AccordionTab from 'primevue/accordiontab'
-import { paymentErrorParser } from '@/services/paymentErrorParser'
+import AccordionPanel from 'primevue/accordionpanel'
+import AccordionHeader from 'primevue/accordionheader'
+import AccordionContent from 'primevue/accordioncontent'
 
 const props = defineProps({
   visible: Boolean,
@@ -114,9 +115,9 @@ watch(
       <p><strong>金流商交易序號：</strong> {{ transaction.fGatewayTradeNo || '無' }}</p>
     </div>
 
-    <Accordion v-if="logs.length > 0">
-      <AccordionTab v-for="(log, index) in logs" :key="index">
-        <template #header>
+    <Accordion v-if="logs.length > 0" multiple>
+      <AccordionPanel v-for="(log, index) in logs" :key="index" :value="String(index)">
+        <AccordionHeader>
           <div class="flex justify-between items-center w-full pr-4">
             <!-- 左側：中文標題 + 原始英文標籤 -->
             <div class="flex items-center gap-3">
@@ -135,77 +136,80 @@ watch(
               {{ new Date(log.fCreatedAt).toLocaleString() }}
             </span>
           </div>
-        </template>
+        </AccordionHeader>
 
         <!-- 改為動態顯示：如果有資料才顯示該區塊，並改用 flex-col 滿版排列 -->
-        <div class="flex flex-col gap-4">
-          <!-- 發送請求區塊 (只有當 fRequestData 有值時才渲染) -->
-          <div
-            v-if="log.fRequestData"
-            class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm"
-          >
-            <h4 class="font-bold text-gray-700 mb-3 border-b pb-2 flex items-center gap-2">
-              <i class="pi pi-send text-blue-500"></i> 系統發送內容 (Request)
-            </h4>
-            <div v-if="typeof parseLogData(log.fRequestData) === 'object' && log.fRequestData">
-              <div
-                v-for="(value, key) in parseLogData(log.fRequestData)"
-                :key="key"
-                class="text-sm mb-2 flex flex-col"
-              >
-                <span class="text-gray-400 text-xs">{{ key }}</span>
-                <span class="font-semibold text-gray-700">
-                  {{ translateKey(key) }}：
-                  <span class="text-blue-600 font-normal break-all">{{ value }}</span>
-                </span>
-              </div>
-            </div>
-            <pre v-else class="text-sm text-gray-600 whitespace-pre-wrap">{{
-              log.fRequestData
-            }}</pre>
-          </div>
-
-          <!-- 接收回應區塊 (只有當 fResponseData 有值時才渲染) -->
-          <div
-            v-if="log.fResponseData"
-            class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm"
-          >
-            <h4 class="font-bold text-gray-700 mb-3 border-b pb-2 flex items-center gap-2">
-              <i class="pi pi-download text-green-500"></i> 金流商回應 (Response)
-            </h4>
-            <div v-if="typeof parseLogData(log.fResponseData) === 'object' && log.fResponseData">
-              <div
-                v-for="(value, key) in parseLogData(log.fResponseData)"
-                :key="key"
-                class="text-sm mb-2 flex flex-col"
-              >
-                <span class="text-gray-400 text-xs">{{ key }}</span>
-                <span class="font-semibold text-gray-700">
-                  {{ translateKey(key) }}：
-                  <!-- 特別針對成功代碼標色，加入字串 '1' 的判斷相容綠界 -->
-                  <span
-                    :class="{
-                      'text-green-600 font-bold': value === 1 || value === '0000' || value === '1',
-                      'text-red-600': value === 0 || value === '0',
-                      'text-gray-800 font-normal break-all':
-                        value !== 1 &&
-                        value !== '0000' &&
-                        value !== 0 &&
-                        value !== '1' &&
-                        value !== '0',
-                    }"
-                  >
-                    {{ value }}
+        <AccordionContent>
+          <div class="flex flex-col gap-4">
+            <!-- 發送請求區塊 (只有當 fRequestData 有值時才渲染) -->
+            <div
+              v-if="log.fRequestData"
+              class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm"
+            >
+              <h4 class="font-bold text-gray-700 mb-3 border-b pb-2 flex items-center gap-2">
+                <i class="pi pi-send text-blue-500"></i> 系統發送內容 (Request)
+              </h4>
+              <div v-if="typeof parseLogData(log.fRequestData) === 'object' && log.fRequestData">
+                <div
+                  v-for="(value, key) in parseLogData(log.fRequestData)"
+                  :key="key"
+                  class="text-sm mb-2 flex flex-col"
+                >
+                  <span class="text-gray-400 text-xs">{{ key }}</span>
+                  <span class="font-semibold text-gray-700">
+                    {{ translateKey(key) }}：
+                    <span class="text-blue-600 font-normal break-all">{{ value }}</span>
                   </span>
-                </span>
+                </div>
               </div>
+              <pre v-else class="text-sm text-gray-600 whitespace-pre-wrap">{{
+                log.fRequestData
+              }}</pre>
             </div>
-            <pre v-else class="text-sm text-gray-600 whitespace-pre-wrap">{{
-              log.fResponseData
-            }}</pre>
+
+            <!-- 接收回應區塊 (只有當 fResponseData 有值時才渲染) -->
+            <div
+              v-if="log.fResponseData"
+              class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm"
+            >
+              <h4 class="font-bold text-gray-700 mb-3 border-b pb-2 flex items-center gap-2">
+                <i class="pi pi-download text-green-500"></i> 金流商回應 (Response)
+              </h4>
+              <div v-if="typeof parseLogData(log.fResponseData) === 'object' && log.fResponseData">
+                <div
+                  v-for="(value, key) in parseLogData(log.fResponseData)"
+                  :key="key"
+                  class="text-sm mb-2 flex flex-col"
+                >
+                  <span class="text-gray-400 text-xs">{{ key }}</span>
+                  <span class="font-semibold text-gray-700">
+                    {{ translateKey(key) }}：
+                    <!-- 特別針對成功代碼標色，加入字串 '1' 的判斷相容綠界 -->
+                    <span
+                      :class="{
+                        'text-green-600 font-bold':
+                          value === 1 || value === '0000' || value === '1',
+                        'text-red-600': value === 0 || value === '0',
+                        'text-gray-800 font-normal break-all':
+                          value !== 1 &&
+                          value !== '0000' &&
+                          value !== 0 &&
+                          value !== '1' &&
+                          value !== '0',
+                      }"
+                    >
+                      {{ value }}
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <pre v-else class="text-sm text-gray-600 whitespace-pre-wrap">{{
+                log.fResponseData
+              }}</pre>
+            </div>
           </div>
-        </div>
-      </AccordionTab>
+        </AccordionContent>
+      </AccordionPanel>
     </Accordion>
 
     <div v-else-if="loading" class="text-center py-10">載入中...</div>
