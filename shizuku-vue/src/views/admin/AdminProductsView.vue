@@ -32,8 +32,9 @@ const showPriceModal = ref(false)
 const editingPriceProduct = ref(null)
 const editingPrice = ref(0)
 const batchPrice = ref('') //批次編輯使用
-const editingPriceVariants = ref([]) // ✨ 這個漏掉了
+const editingPriceVariants = ref([]) //  這個漏掉了
 const batchStock = ref('')
+const baseUrl = 'https://localhost:7197'
 
 function applyBatchStock() {
   if (batchStock.value === '') return
@@ -440,7 +441,7 @@ onMounted(async () => {
                 >
                   <img
                     v-if="product.fImage"
-                    :src="product.fImage"
+                    :src="baseUrl + product.fImage"
                     class="w-full h-full object-cover rounded-lg"
                   />
                   <i v-else class="pi pi-image text-sm"></i>
