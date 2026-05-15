@@ -1,9 +1,11 @@
 // src/composables/useProductCart.js
 import { computed } from 'vue'
 import { useCartStore } from '@/stores/cartStore'
+import { useToast } from 'primevue/usetoast'
 
 export function useProductCart(product, variants, selectedColor, selectedSize, quantity) {
   const cartStore = useCartStore()
+  const toast = useToast()
 
   // 找出目前選中的規格物件
   const currentVariant = computed(() => {
@@ -18,7 +20,12 @@ export function useProductCart(product, variants, selectedColor, selectedSize, q
   // 加入購物車邏輯
   const handleAddToCart = () => {
     if (!currentVariant.value) {
-      alert('請先選擇規格！')
+      toast.add({
+        severity: 'warn',
+        summary: '提示',
+        detail: '請先選擇商品規格！',
+        life: 3000,
+      })
       return
     }
 
@@ -32,7 +39,14 @@ export function useProductCart(product, variants, selectedColor, selectedSize, q
     }
 
     cartStore.addToCart(itemToAdd, quantity.value)
-    alert(`已將 ${product.value.fName} 加入購物車！`)
+    
+    // 呼叫 Toast 動畫取代原生 alert
+    toast.add({
+      severity: 'success',
+      summary: '加入成功',
+      detail: `已將 ${product.value.fName} 加入購物車！`,
+      life: 3000,
+    })
   }
 
   return {
