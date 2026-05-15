@@ -4,6 +4,7 @@ import { getPaymentTransactionLogsForAdminAPI } from '@/api/adminPayment'
 import Dialog from 'primevue/dialog'
 import Accordion from 'primevue/accordion'
 import AccordionTab from 'primevue/accordiontab'
+import { paymentErrorParser } from '@/services/paymentErrorParser'
 
 const props = defineProps({
   visible: Boolean,
@@ -163,6 +164,7 @@ watch(
               log.fRequestData
             }}</pre>
           </div>
+
           <!-- 接收回應區塊 (只有當 fResponseData 有值時才渲染) -->
           <div
             v-if="log.fResponseData"

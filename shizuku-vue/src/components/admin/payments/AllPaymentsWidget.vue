@@ -2,8 +2,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { usePaymentAdmin } from '@/composables/usePaymentAdmin'
 import PaymentLogDialog from '@/components/admin/payments/PaymentLogDialog.vue'
+import PaymentDiagnosisDialog from '@/components/admin/payments/PaymentDiagnosisDialog.vue'
 
 const { transactions, loading, fetchTransactions, getStatusInfo, formatDate } = usePaymentAdmin()
+
+const diagnosisDialogVisible = ref(false) // 診斷彈窗狀態
 
 const searchQuery = ref('')
 const logDialogVisible = ref(false)
@@ -25,6 +28,11 @@ const filteredTransactions = computed(() => {
       t.methodName?.toLowerCase().includes(keyword),
   )
 })
+
+const openDiagnosis = (data) => {
+  selectedTransaction.value = data
+  diagnosisDialogVisible.value = true
+}
 
 onMounted(fetchTransactions)
 </script>
@@ -69,17 +77,18 @@ onMounted(fetchTransactions)
             <th class="py-3 px-4 font-semibold text-right">金額</th>
             <th class="py-3 px-4 font-semibold text-center">狀態</th>
             <th class="py-3 px-4 font-semibold text-center">建立時間</th>
-            <th class="py-3 px-4 font-semibold text-center">操作</th>
+            <th class="py-3 px-4 font-semibold text-center">通訊日誌</th>
+            <th class="py-3 px-4 font-semibold text-center">支付狀態</th>
           </tr>
         </thead>
         <tbody class="text-sm divide-y divide-gray-100">
           <tr v-if="loading">
-            <td colspan="7" class="py-8 text-center text-gray-500">
+            <td colspan="8" class="py-8 text-center text-gray-500">
               <i class="pi pi-spin pi-spinner mr-2"></i>資料載入中...
             </td>
           </tr>
           <tr v-else-if="filteredTransactions.length === 0">
-            <td colspan="7" class="py-8 text-center text-gray-500">找不到符合條件的交易紀錄</td>
+            <td colspan="8" class="py-8 text-center text-gray-500">找不到符合條件的交易紀錄</td>
           </tr>
           <tr
             v-else
@@ -138,6 +147,15 @@ onMounted(fetchTransactions)
                 日誌
               </button>
             </td>
+            <td class="py-3 px-4 text-center">
+              <button
+                @click="openDiagnosis(data)"
+                class="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-1 transition-colors"
+              >
+                <i class="pi pi-shield text-xs"></i>
+                檢視
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -145,6 +163,11 @@ onMounted(fetchTransactions)
 
     <!-- 金流日誌彈窗 -->
     <PaymentLogDialog v-model:visible="logDialogVisible" :transaction="selectedTransaction" />
+    <!-- 診斷報告彈窗 -->
+    <PaymentDiagnosisDialog
+      v-model:visible="diagnosisDialogVisible"
+      :transaction="selectedTransaction"
+    />
   </div>
 </template>
 
