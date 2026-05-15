@@ -1,21 +1,30 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { apiMemberRegister } from '@/api/member';
+import { apiMemberRegister, apiVerifyCode } from '@/api/member';
 
 const router = useRouter();
 const isLoading = ref(false);
 const errorMessage = ref('');
 
+// 驗證碼燈箱控制
+const showVerifyModal = ref(false);
+const isVerifying = ref(false);
+const verifyErrorMessage = ref('');
+const savedMemberId = ref(null); // 用來暫存後端傳回的 responseData.fId
+
+// 驗證碼輸入框綁定
+const verifyCode = ref('');
+
 // 依據 DTO 結構定義響應式表單
 const form = reactive({
-    fName: '',
-    fEmail: '',
-    fPhone: '',
+    fName: '張明祥',
+    fEmail: 'sealll4001@gmail.com',
+    fPhone: '0978854654',
     fGender: 1,
-    fBirthday: '',
-    fPassword: '',
-    confirmPassword: ''
+    fBirthday: '2000-09-01',
+    fPassword: 'Password123!',
+    confirmPassword: 'Password123!'
 });
 
 const handleRegister = async () => {
@@ -29,16 +38,19 @@ const handleRegister = async () => {
     errorMessage.value = '';
 
     try {
-        // 2. 呼叫 API 函式
         const response = await apiMemberRegister(form);
 
-        // 3. 處理後端 ApiResponse 結構
+        // 處理後端 ApiResponse 結構
         if (response.data.success) {
-            alert(response.data.message || '註冊成功！');
-            router.push({ name: 'Login' });
+            // 儲存後端傳回的流水號主鍵 fId
+            savedMemberId.value = response.data.data.fId;
+
+            // 提示使用者，並彈出驗證碼 Modal (不切頁)
+            alert(response.data.message || '註冊成功！驗證碼已發送。');
+            showVerifyModal.value = true;
         }
     } catch (error) {
-        // 4. 錯誤處理 (抓取後端 BadRequest 或 Conflict 的訊息)
+        // 錯誤處理 (抓取後端 BadRequest 或 Conflict 的訊息)
         if (error.response && error.response.data) {
             errorMessage.value = error.response.data.message || '註冊失敗';
         } else {
@@ -46,6 +58,44 @@ const handleRegister = async () => {
         }
     } finally {
         isLoading.value = false;
+    }
+};
+
+// 處理驗證碼送出
+const handleVerify = async () => {
+    if (!verifyCode.value) {
+        verifyErrorMessage.value = '請輸入 6 位數驗證碼';
+        return;
+    }
+
+    isVerifying.value = true;
+    verifyErrorMessage.value = '';
+
+    try {
+        // 配合後端 VerifyRequestDto 結構
+        const payload = {
+            memberId: savedMemberId.value,
+            code: verifyCode.value
+        };
+
+        const response = await apiVerifyCode(payload);
+
+        if (response.data.success) {
+            alert(response.data.message || '驗證成功！');
+            showVerifyModal.value = false; // 關閉燈箱
+            router.push({ name: 'Login' }); // 引導至登入頁
+        } else {
+            // 處理後端回傳 success: true 但內容有錯的情況 (若是拋例外會進 catch)
+            verifyErrorMessage.value = response.data.message || '驗證失敗';
+        }
+    } catch (error) {
+        if (error.response && error.response.data) {
+            verifyErrorMessage.value = error.response.data.message || '驗證發生錯誤';
+        } else {
+            verifyErrorMessage.value = '連線伺服器失敗，請稍後再試';
+        }
+    } finally {
+        isVerifying.value = false;
     }
 };
 </script>
@@ -144,17 +194,68 @@ const handleRegister = async () => {
                 </div>
             </div>
         </div>
+        <div v-if="showVerifyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-md"></div>
+
+            <div
+                class="relative z-10 w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 text-center animate-fade-in">
+                <h3 class="text-2xl font-serif font-bold text-slate-800 mb-2">輸入驗證碼</h3>
+                <p class="text-slate-600 text-sm mb-6">
+                    我們已發送信箱驗證碼至 <span class="font-semibold text-blue-600">{{ form.fEmail }}</span>，請於 10 分鐘內輸入。
+                </p>
+
+                <div v-if="verifyErrorMessage"
+                    class="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
+                    {{ verifyErrorMessage }}
+                </div>
+
+                <form @submit.prevent="handleVerify" class="space-y-4">
+                    <div>
+                        <input v-model="verifyCode" type="text" required maxlength="6" placeholder="請輸入 6 位數字"
+                            class="w-full p-4 text-center text-2xl font-mono tracking-[10px] bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/50 outline-none transition">
+                    </div>
+
+                    <button type="submit" :disabled="isVerifying"
+                        class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg active:scale-95 disabled:bg-slate-400">
+                        <span v-if="isVerifying">驗證中...</span>
+                        <span v-else>確認驗證</span>
+                    </button>
+                </form>
+
+                <p class="mt-4 text-xs text-slate-400">
+                    沒收到信件？請檢查垃圾信箱，或確認輸入的 Email 是否正確。
+                </p>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
 h1,
-h2 {
+h2,
+h3 {
     font-family: 'Georgia', serif;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0.6;
+}
+
+/* 簡單的 Modal 登場動畫 */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 </style>

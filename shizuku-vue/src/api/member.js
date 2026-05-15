@@ -10,6 +10,11 @@ export const apiMemberRegister = (data) => {
     return request.post('/MemberApi/Register', data);
 }
 
+// 驗證電子郵件驗證碼
+export const apiVerifyCode = (data) => {
+    return request.post('/VerificationApi/verify-code', data);
+};
+
 // 會員資料 (預留)
 // export const getMemberInfoAPI = (id) => request.get(`/MemberApi/${id}`);
 
