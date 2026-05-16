@@ -5,6 +5,7 @@ import Dialog from 'primevue/dialog' // 引入 PrimeVue 對話框
 // 1. 匯入子元件
 import AllOrdersWidget from '@/components/admin/orders/AllOrdersWidget.vue'
 import AnomalyOrdersWidget from '@/components/admin/orders/AnomalyOrdersWidget.vue'
+import ShippingHubWidget from '@/components/admin/orders/ShippingHubWidget.vue'
 
 // 目前被點擊打開的 Widget
 const activeWidget = ref(null)
@@ -27,7 +28,7 @@ const widgets = [
     desc: '倉儲人員專屬！集中顯示「待出貨」訂單，一鍵批次更改狀態。',
     icon: 'pi pi-box',
     gridSpan: 'col-span-1',
-    component: null,
+    component: ShippingHubWidget,
   },
   {
     id: 'anomaly-orders',

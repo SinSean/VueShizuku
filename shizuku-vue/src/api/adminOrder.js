@@ -35,3 +35,15 @@ export const rescueOrderAPI = async (orderNo) => {
   const response = await request.post(`/AdminOrderApi/${orderNo}/rescue`)
   return response.data
 }
+
+// 取得出貨中心清單
+export const getShippingOrdersAPI = async (status) => {
+  const response = await request.get(`/AdminOrderApi/shipping`, { params: { status } })
+  return response.data
+}
+
+// 批次更新訂單狀態
+export const batchUpdateStatusAPI = async (orderNos, newStatus) => {
+  const response = await request.post('/AdminOrderApi/batch-status', { orderNos, newStatus })
+  return response.data
+}
