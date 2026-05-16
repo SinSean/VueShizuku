@@ -171,8 +171,8 @@ const relatedProducts = ref([
               </div>
             </div>
 
-            <!-- 尺寸選擇 -->
-            <!-- <div class="flex items-start gap-3">
+            <!-- 尺寸選擇  -->
+            <div class="flex items-start gap-3">
               <span class="w-10 shrink-0 pt-1 text-gray-500">尺寸</span>
               <div class="flex flex-wrap gap-2.5">
                 <button
@@ -189,7 +189,7 @@ const relatedProducts = ref([
                   {{ size }}
                 </button>
               </div>
-            </div> -->
+            </div>
 
             <!-- 庫存顯示 -->
             <div v-if="selectedColor && selectedSize" class="text-xs text-gray-400">
