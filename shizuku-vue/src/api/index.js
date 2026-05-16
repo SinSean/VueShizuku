@@ -1,5 +1,5 @@
 import axios from 'axios';
-import router from '@/router'; // 引入路由以便處理過期跳轉
+import router from '@/router';
 
 const request = axios.create({
     baseURL: 'https://localhost:7197/api',
@@ -8,14 +8,10 @@ const request = axios.create({
 // 【JWT 自動化】請求攔截器
 request.interceptors.request.use(
     (config) => {
-        // 先抓出整個 user 字串
         const userStr = localStorage.getItem('memberUser');
-
         if (userStr) {
             const userData = JSON.parse(userStr);
-            // 注意：這裡要對應你貼出的資料結構，屬性名是小寫 "token"
             const token = userData.token;
-
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
@@ -29,13 +25,18 @@ request.interceptors.request.use(
 request.interceptors.response.use(
     (response) => response,
     (error) => {
-        // 如果後端回傳 401 Unauthorized，代表 Token 過期或無效
-        if (error.response && error.response.status === 401) {
+        // 新增：檢查是不是登入請求（忽略大小寫）
+        const isLoginRequest = error.config?.url?.toLowerCase().includes('/memberapi/login');
+
+        // 如果後端回傳 401 Unauthorized，且【不是】登入 API，才認定為 Token 過期
+        if (error.response && error.response.status === 401 && !isLoginRequest) {
             alert('登入時效已過，請重新登入');
             localStorage.removeItem('memberUser');
             localStorage.removeItem('memberToken');
-            router.push('/login'); // 自動踢回登入頁
+            router.push('/login');
         }
+
+        // 記得要把 error reject 回去，這樣 AppLogin.vue 的 catch 才能接得到
         return Promise.reject(error);
     }
 );
