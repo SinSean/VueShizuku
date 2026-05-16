@@ -19,19 +19,19 @@ const menuItems = [
         title: '我的帳戶',
         icon: 'pi pi-user',
         children: [
-            { name: '個人檔案', routeName: 'MemberProfile' }, //已完成畫面
+            { name: '個人檔案', routeName: 'MemberProfile' }, //已完成
             { name: '銀行帳號 / 信用卡', routeName: 'MemberPayMentmetod' },//已完成畫面
-            { name: '地址', routeName: 'MemberAddress' },  //已完成畫面
+            { name: '地址', routeName: 'MemberAddress' },  //已完成
             { name: '更改密碼', routeName: 'MemberSetPassword' },//已完成畫面
             { name: '通知設置', routeName: 'MemberNotificationSet' },//已完成畫面
             { name: '隱私設定', routeName: 'MemberPrivacySetting' }//已完成畫面
         ]
     },
     { title: '訂單列表', icon: 'pi pi-list', routeName: 'MemberOrders' },//已完成轉接
-    { title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
+    //{ title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
     { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberVouchers' },
     { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberPointsDashboard' },//已完成畫面
-    { title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberEmpty' }
+    //{ title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberEmpty' }
 ];
 </script>
 
