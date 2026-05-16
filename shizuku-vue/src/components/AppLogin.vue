@@ -10,7 +10,6 @@ const password = ref('Password123!');
 const isRemember = ref(false);
 const isLoading = ref(false);
 const router = useRouter();
-const portAddressNumber = ref('7197');
 
 // 驗證碼相關的響應式變數
 const captchaAnswer = ref('');   // 使用者輸入的答案
@@ -70,10 +69,12 @@ const handleLogin = async () => {
             const apiMessage = error.response.data?.message || '認證失敗';
             alert(apiMessage);
 
-            // 判斷是否需要圖形驗證碼（包含「驗證碼」或「上限」關鍵字）
-            if (apiMessage.includes('驗證碼') || apiMessage.includes('上限')) {
+            // 如果錯誤訊息提及驗證碼、失敗上限，或者畫面上已經在顯示驗證碼了
+            if (apiMessage.includes('驗證碼') || apiMessage.includes('上限') || showCaptcha.value) {
                 showCaptcha.value = true;
-                await fetchCaptcha(); // 立刻刷出一張新的驗證碼圖
+
+                // 不管是驗證碼錯還是密碼錯，只要在驗證碼模式下失敗，舊驗證碼就失效了，必須刷新
+                await fetchCaptcha();
             }
         } else if (error.code === 'ECONNABORTED') {
             alert('伺服器回應太久（逾時），請檢查後端是否掛掉');
@@ -121,7 +122,7 @@ const handleLogin = async () => {
                 </div>
 
                 <div v-if="showCaptcha" class="space-y-2 animate-fade-in">
-                    <label class="block text-sm font-medium text-slate-700 ml-1">安全圖形驗證碼</label>
+                    <label class="block text-sm font-medium text-slate-700 ml-1">圖形驗證碼</label>
                     <div class="flex gap-3 items-center">
                         <!-- 驗證碼圖片，點擊可更換 -->
                         <img :src="captchaImg" @click="fetchCaptcha" alt="點擊更換驗證碼"
