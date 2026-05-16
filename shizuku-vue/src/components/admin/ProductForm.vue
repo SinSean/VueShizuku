@@ -234,7 +234,7 @@ async function save() {
 
       console.log('新增結果：', res.data)
 
-      if (res.data.data?.Id) {
+      if (res.data.data?.fId) {
         const newId = res.data.data.fId
         console.log('商品 ID：', newId)
 
@@ -399,16 +399,16 @@ async function save() {
           <span class="px-3 py-2 bg-white text-gray-400 text-xs border-r border-gray-200">NT$</span>
           <input
             type="number"
-            v-model="batchVariantPrice"
-            placeholder="價格"
+            v-model="batchVariantStock"
+            placeholder="數量"
             class="flex-1 px-3 py-2 text-xs focus:outline-none bg-white"
           />
         </div>
         <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden flex-1">
           <input
             type="number"
-            v-model="batchVariantStock"
-            placeholder="數量"
+            v-model="batchVariantPrice"
+            placeholder="價格"
             class="flex-1 px-3 py-2 text-xs focus:outline-none bg-white"
           />
         </div>
