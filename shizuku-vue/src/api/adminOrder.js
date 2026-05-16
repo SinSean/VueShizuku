@@ -23,3 +23,15 @@ export const cancelOrderForAdminAPI = async (orderNo) => {
   const response = await request.patch(`/AdminOrderApi/${orderNo}/cancel`)
   return response.data
 }
+
+// 取得異常監控訂單清單
+export const getAbnormalOrdersAPI = async () => {
+  const response = await request.get('/AdminOrderApi/abnormal')
+  return response.data
+}
+
+// 執行訂單救援 (恢復誤殺訂單)
+export const rescueOrderAPI = async (orderNo) => {
+  const response = await request.post(`/AdminOrderApi/${orderNo}/rescue`)
+  return response.data
+}
