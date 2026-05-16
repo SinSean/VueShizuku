@@ -17,13 +17,13 @@ const widgets = [
     title: '全站交易對帳',
     desc: '監控全站金流流水，支援單號檢視、支付狀態查詢與詳細通訊日誌。',
     icon: 'pi pi-credit-card',
-    gridSpan: 'md:col-span-2 lg:col-span-3',
+    gridSpan: 'md:col-span-3',
     component: AllPaymentsWidget
   },
   {
     id: 'failed-monitor',
     title: '異常支付監控',
-    desc: '即時追蹤付款失敗的交易，分析金流廠商回傳的異常代碼。',
+    desc: '即時偵測金額不符、高頻失敗與金流逾時，守護交易安全。',
     icon: 'pi pi-exclamation-circle',
     gridSpan: 'col-span-1',
     component: null
@@ -31,16 +31,16 @@ const widgets = [
   {
     id: 'daily-revenue',
     title: '今日營收統計',
-    desc: '快速概覽今日已入帳總額與待核銷款項 (開發中)。',
+    desc: '即時統計 GMV、支付管道佔比與分時銷售趨勢圖表。',
     icon: 'pi pi-chart-line',
     gridSpan: 'col-span-1',
     component: null
   },
   {
-    id: 'log-hub',
-    title: '通訊日誌中心',
-    desc: '集中管理 LINE Pay 與 ECPay 的原始 Request/Response 紀錄。',
-    icon: 'pi pi-database',
+    id: 'refund-center',
+    title: '退款管理中心',
+    desc: '集中處理退款申請、線上退刷審核與退款原因數據分析。',
+    icon: 'pi pi-undo',
     gridSpan: 'col-span-1',
     component: null
   }
@@ -66,8 +66,8 @@ const onDialogHide = () => {
     <div class="relative z-10 p-6 md:p-8 flex-1">
       <h1 class="text-4xl font-bold text-gray-800 mb-10 tracking-tight">金流控制中心</h1>
 
-      <!-- 泡泡卡片區塊 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 泡泡卡片區塊 - 採 3 欄制佈局 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
         <div 
           v-for="widget in widgets" 
           :key="widget.id"
