@@ -18,7 +18,7 @@ const widgets = [
     title: '全站訂單管理',
     desc: '總覽全站交易，支援即時關鍵字查詢、明細檢視與強制狀態變更。',
     icon: 'pi pi-list',
-    gridSpan: 'md:col-span-2 lg:col-span-3',
+    gridSpan: 'md:col-span-2',
     component: AllOrdersWidget,
   },
   {
@@ -62,8 +62,8 @@ const onDialogHide = () => {
     <div class="relative z-10 p-6 md:p-8 flex-1">
       <h1 class="text-4xl font-bold text-gray-800 mb-10 tracking-tight">訂單控制中心</h1>
 
-      <!-- 瀑布流/Grid 泡泡卡片區塊 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 瀑布流/Grid 泡泡卡片區塊 - 採 2 欄制以達成 1大+2等長 佈局 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
         <!-- 單一泡泡卡片 -->
         <div
           v-for="widget in widgets"
