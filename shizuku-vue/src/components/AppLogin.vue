@@ -1,42 +1,62 @@
 <script setup>
 import { ref } from 'vue';
-import { loginAPI } from '@/api/member';
+import { loginAPI, getCaptchaAPI } from '@/api/member';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth'; // 1. 引入
-const authStore = useAuthStore(); // 2. 初始化
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore();
 
 const email = ref('user@email.com');
 const password = ref('Password123!');
 const isRemember = ref(false);
-const isLoading = ref(false); // 2. 新增：增加載入狀態防止重複點擊
+const isLoading = ref(false);
 const router = useRouter();
-const portAddressNumber = ref('7197')
+const portAddressNumber = ref('7197');
+
+// 驗證碼相關的響應式變數
+const captchaAnswer = ref('');   // 使用者輸入的答案
+const captchaId = ref('');       // 後端傳來的驗證碼 ID
+const captchaImg = ref('');      // 驗證碼圖片的 Base64 網址
+const showCaptcha = ref(false);  // 是否顯示驗證碼欄位 (預設隱藏)
+
+// 向後端獲取新驗證碼的函式
+const fetchCaptcha = async () => {
+    try {
+        const response = await getCaptchaAPI();
+        const res = response.data;
+        if (res.success) {
+            captchaId.value = res.data.captchaId;
+            captchaImg.value = res.data.imgBase64;
+            captchaAnswer.value = ''; // 切換驗證碼時清空輸入框
+        }
+    } catch (error) {
+        console.error("無法取得驗證碼:", error);
+    }
+};
 
 const handleLogin = async () => {
-    if (isLoading.value) return; // 防止連點
-    isLoading.value = true;      // 開始轉圈圈
+    if (isLoading.value) return;
+    isLoading.value = true;
 
     try {
+        // 送出的 DTO 加上驗證碼欄位 (若沒觸發，預設就是 null/空字串)
         const response = await loginAPI({
             fEmail: email.value,
-            fPassword: password.value
+            fPassword: password.value,
+            captchaAnswer: captchaAnswer.value || null,
+            captchaId: captchaId.value || null
         });
 
         const res = response.data;
         if (res.success) {
-            // 存入 Store 並「等待」存入完成 (避免跳轉後拿不到資料)
+            // 將後端回傳含有 token 的整個物件傳進 store
             await authStore.login(res.data);
 
-            // 預載地址 (因為你說地址是另一支 API)
             try {
-                // 如果 authStore.fetchUserAddress 出現 await 警告
-                // 請確認該 function 在 authStore 裡面有沒有加 "async"
                 await authStore.fetchUserAddress();
             } catch (e) {
                 console.warn("預載地址失敗，但不影響登入流程");
             }
 
-            // 成功後才跳轉
             alert('登入成功');
             router.push({ name: 'home' });
         } else {
@@ -44,14 +64,24 @@ const handleLogin = async () => {
         }
     } catch (error) {
         console.error("捕捉到錯誤:", error);
-        if (error.code === 'ECONNABORTED') {
+
+        // 攔截後端的 401 Unauthorized 狀態碼
+        if (error.response && error.response.status === 401) {
+            const apiMessage = error.response.data?.message || '認證失敗';
+            alert(apiMessage);
+
+            // 判斷是否需要圖形驗證碼（包含「驗證碼」或「上限」關鍵字）
+            if (apiMessage.includes('驗證碼') || apiMessage.includes('上限')) {
+                showCaptcha.value = true;
+                await fetchCaptcha(); // 立刻刷出一張新的驗證碼圖
+            }
+        } else if (error.code === 'ECONNABORTED') {
             alert('伺服器回應太久（逾時），請檢查後端是否掛掉');
         } else {
             const errorMsg = error.response?.data?.message || '系統連線錯誤';
             alert(errorMsg);
         }
     } finally {
-        // 無論成功失敗，都要關閉讀取狀態
         isLoading.value = false;
     }
 };
@@ -90,6 +120,20 @@ const handleLogin = async () => {
                         class="w-full p-3.5 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition placeholder:text-slate-400">
                 </div>
 
+                <div v-if="showCaptcha" class="space-y-2 animate-fade-in">
+                    <label class="block text-sm font-medium text-slate-700 ml-1">安全圖形驗證碼</label>
+                    <div class="flex gap-3 items-center">
+                        <!-- 驗證碼圖片，點擊可更換 -->
+                        <img :src="captchaImg" @click="fetchCaptcha" alt="點擊更換驗證碼"
+                            class="h-12 rounded-xl cursor-pointer hover:opacity-80 transition border border-slate-200 shadow-sm"
+                            title="看不清？點擊換一張" />
+
+                        <input v-model="captchaAnswer" type="text" placeholder="輸入 4 位驗證碼" maxLength="4"
+                            class="flex-1 p-3 bg-white/60 border border-slate-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition placeholder:text-slate-400 uppercase font-mono tracking-widest text-center text-lg">
+                    </div>
+                    <p class="text-[11px] text-slate-500 ml-1">看不清圖片？點擊圖片即可更換新驗證碼</p>
+                </div>
+
                 <div class="flex items-center justify-between text-xs text-slate-600 mt-2">
                     <label class="flex items-center gap-2 cursor-pointer hover:text-slate-800 transition">
                         <input v-model="isRemember" type="checkbox" class="accent-emerald-600">
@@ -121,5 +165,22 @@ const handleLogin = async () => {
 <style scoped>
 h1 {
     font-family: 'Georgia', serif;
+}
+
+/* 讓驗證碼欄位跑出來時有個淡入效果 */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>

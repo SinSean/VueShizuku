@@ -1,5 +1,10 @@
 import request from '@/api/index';
 
+// 取得圖形驗證碼
+export const getCaptchaAPI = () => {
+    return request.get('/MemberApi/captcha');
+};
+
 // 登入
 export const loginAPI = (data) => {
     return request.post('/MemberApi/login', data);

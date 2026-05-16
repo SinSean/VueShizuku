@@ -6,16 +6,20 @@ import { getAddressesAPI } from '@/api/member';
 export const useAuthStore = defineStore('auth', () => {
     const user = ref(JSON.parse(localStorage.getItem('memberUser')) || null);
     const token = ref(localStorage.getItem('memberToken') || '');
-    // 新增：用來存放抓回來的地址
     const addressList = ref([]);
 
     const isLogin = computed(() => user.value !== null);
     const userName = computed(() => user.value ? user.value.fName : '訪客');
 
     // 1：加上 async
-    async function login(userData, userToken = '') {
+    async function login(loginResultData) {
+        if (!loginResultData) return false;
+
+        const { token: userToken, ...userData } = loginResultData;
+
         user.value = userData;
-        token.value = userToken;
+        token.value = userToken || '';
+
         localStorage.setItem('memberUser', JSON.stringify(userData));
         if (userToken) {
             localStorage.setItem('memberToken', userToken);
@@ -23,9 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
         return true;
     }
 
-    // 2：新增抓取地址的 Action
     async function fetchUserAddress() {
-        // 從目前的 user 狀態拿 ID
         const memberId = user.value?.fId || user.value?.fMemberId;
         if (!memberId) return;
 
@@ -37,7 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
             }
         } catch (error) {
             console.error("Store: 抓取地址失敗", error);
-            throw error; // 丟出錯誤讓外部 catch
+            throw error;
         }
     }
 
