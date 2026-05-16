@@ -46,4 +46,7 @@ export const productApi = {
   getStats: () => axios.get(`${base}/stats`),
   getInventory: () => axios.get(`${base}/inventory`),
   getImages: (id) => axios.get(`${base}/${id}/images`),
+
+  getStockRecords: () => axios.get(`{{base}}/stock-records`),
+  addStockRecord: (dto) => axios.post(`{{base}}/stock-records`, dto),
 }
