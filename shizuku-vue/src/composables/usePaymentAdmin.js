@@ -38,11 +38,20 @@ export function usePaymentAdmin() {
 
   const formatDate = (dateString) => (dateString ? new Date(dateString).toLocaleString() : 'N/A')
 
+  const getPaymentMethodIcon = (methodName) => {
+    if (!methodName) return 'pi pi-credit-card'
+    const name = methodName.toUpperCase()
+    if (name.includes('LINE')) return 'pi pi-mobile text-green-500'
+    if (name.includes('APPLE')) return 'pi pi-apple text-gray-900'
+    return 'pi pi-credit-card text-blue-500'
+  }
+
   return {
     transactions,
     loading,
     fetchTransactions,
     getStatusInfo,
     formatDate,
+    getPaymentMethodIcon,
   }
 }

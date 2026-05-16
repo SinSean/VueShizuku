@@ -4,7 +4,8 @@ import { usePaymentAdmin } from '@/composables/usePaymentAdmin'
 import PaymentLogDialog from '@/components/admin/payments/PaymentLogDialog.vue'
 import PaymentDiagnosisDialog from '@/components/admin/payments/PaymentDiagnosisDialog.vue'
 
-const { transactions, loading, fetchTransactions, getStatusInfo, formatDate } = usePaymentAdmin()
+const { transactions, loading, fetchTransactions, getStatusInfo, formatDate, getPaymentMethodIcon } =
+  usePaymentAdmin()
 
 const diagnosisDialogVisible = ref(false) // 診斷彈窗狀態
 
@@ -100,13 +101,7 @@ onMounted(fetchTransactions)
             <td class="py-3 px-4 font-mono text-blue-600 font-medium">{{ data.orderNo }}</td>
             <td class="py-3 px-4 text-gray-600">
               <span class="flex items-center gap-2">
-                <i
-                  :class="
-                    data.methodName?.includes('LINE')
-                      ? 'pi pi-mobile text-green-500'
-                      : 'pi pi-credit-card text-blue-500'
-                  "
-                ></i>
+                <i :class="getPaymentMethodIcon(data.methodName)"></i>
                 {{ data.methodName }}
               </span>
             </td>

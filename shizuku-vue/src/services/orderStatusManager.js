@@ -65,6 +65,7 @@ export const orderStatusManager = {
         icon: info.icon,
         color: isCompleted ? info.color : '#e5e7eb', // 未完成則變灰色
         active: isCurrent,
+        completed: isCompleted,
       }
     })
   },
