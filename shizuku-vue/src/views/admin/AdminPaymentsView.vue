@@ -4,6 +4,7 @@ import Dialog from 'primevue/dialog'
 
 // 1. 匯入子元件
 import AllPaymentsWidget from '@/components/admin/payments/AllPaymentsWidget.vue'
+import RevenueDataWidget from '@/components/admin/payments/RevenueDataWidget.vue'
 
 // 目前被點擊打開的 Widget
 const activeWidget = ref(null)
@@ -29,12 +30,12 @@ const widgets = [
     component: null
   },
   {
-    id: 'daily-revenue',
-    title: '今日營收統計',
-    desc: '即時統計 GMV、支付管道佔比與分時銷售趨勢圖表。',
+    id: 'revenue-stats',
+    title: '營收數據視覺化',
+    desc: '將交易數據量化、圖示化，即時掌握 GMV 增長與支付管道佔比紀錄。',
     icon: 'pi pi-chart-line',
     gridSpan: 'col-span-1',
-    component: null
+    component: RevenueDataWidget 
   },
   {
     id: 'refund-center',

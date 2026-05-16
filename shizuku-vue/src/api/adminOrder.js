@@ -47,3 +47,12 @@ export const batchUpdateStatusAPI = async (orderNos, newStatus) => {
   const response = await request.post('/AdminOrderApi/batch-status', { orderNos, newStatus })
   return response.data
 }
+
+// 取得營收統計數據
+export const getRevenueStatsAPI = async (startDate, endDate) => {
+  const params = {}
+  if (startDate) params.startDate = startDate
+  if (endDate) params.endDate = endDate
+  const response = await request.get('/AdminOrderApi/revenue-stats', { params })
+  return response.data
+}
