@@ -15,7 +15,7 @@ const emit = defineEmits(['repay', 'cancel'])
 const menu = ref()
 const items = ref([
   {
-    label: '信用卡 (綠界)',
+    label: '信用卡',
     icon: 'pi pi-credit-card',
     command: () => {
       emit('repay', 1)
@@ -26,6 +26,13 @@ const items = ref([
     icon: 'pi pi-mobile',
     command: () => {
       emit('repay', 2)
+    },
+  },
+  {
+    label: '貨到付款',
+    icon: 'pi pi-box',
+    command: () => {
+      emit('repay', 3)
     },
   },
 ])

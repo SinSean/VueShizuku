@@ -67,20 +67,27 @@ const handleRepay = async (paymentMethodId) => {
 
     const res = await repayOrderAPI(orderId, paymentMethodId)
 
-    if (res.success && res.data.paymentUrl) {
-      openPaymentWindow(
-        res.data.paymentUrl,
-        () => {
-          resultStatus.value = 'success'
-          resultMessage.value = '太棒了！您的訂單已付款成功。'
-          showResultModal.value = true
-        },
-        (errorMsg) => {
-          resultStatus.value = 'fail'
-          resultMessage.value = errorMsg
-          showResultModal.value = true
-        },
-      )
+    if (res.success) {
+      if (res.data.paymentUrl) {
+        openPaymentWindow(
+          res.data.paymentUrl,
+          () => {
+            resultStatus.value = 'success'
+            resultMessage.value = '太棒了！您的訂單已付款成功。'
+            showResultModal.value = true
+          },
+          (errorMsg) => {
+            resultStatus.value = 'fail'
+            resultMessage.value = errorMsg
+            showResultModal.value = true
+          },
+        )
+      } else {
+        // 沒有付款連結，代表轉為貨到付款成功
+        resultStatus.value = 'success'
+        resultMessage.value = '已將您的付款方式更改為「貨到付款」，訂單已準備出貨！'
+        showResultModal.value = true
+      }
     } else {
       resultStatus.value = 'fail'
       resultMessage.value = res.message || '無法產生付款連結，請聯絡客服。'
