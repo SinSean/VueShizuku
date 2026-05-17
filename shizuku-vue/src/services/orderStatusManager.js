@@ -4,7 +4,7 @@
  */
 
 export const ORDER_STATUS = {
-  PENDING: 1, // 待付款
+  PENDING: 1, // 未付款
   PAID: 2, // 已付款 (準備出貨)
   SHIPPING: 3, // 已出貨 (配送中)
   DELIVERED: 4, // 已送達 (完成)
@@ -12,7 +12,7 @@ export const ORDER_STATUS = {
 }
 
 const statusMap = {
-  [ORDER_STATUS.PENDING]: { text: '待付款', color: '#f59e0b', icon: 'pi pi-clock' },
+  [ORDER_STATUS.PENDING]: { text: '未付款', color: '#f59e0b', icon: 'pi pi-clock' },
   [ORDER_STATUS.PAID]: { text: '已付款', color: '#3b82f6', icon: 'pi pi-shopping-bag' },
   [ORDER_STATUS.SHIPPING]: { text: '已出貨', color: '#6366f1', icon: 'pi pi-truck' },
   [ORDER_STATUS.DELIVERED]: { text: '已送達', color: '#10b981', icon: 'pi pi-check-circle' },

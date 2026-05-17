@@ -1,68 +1,77 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { getAllOrdersForAdminAPI } from "@/api/adminOrder";
-import AdminOrderListTable from "./AdminOrderListTable.vue";
-import AdminOrderDetailModal from "./AdminOrderDetailModal.vue";
+import { ref, onMounted, computed } from 'vue'
+import { getAllOrdersForAdminAPI } from '@/api/adminOrder'
+import AdminOrderListTable from './AdminOrderListTable.vue'
+import AdminOrderDetailModal from './AdminOrderDetailModal.vue'
+import { ORDER_STATUS, orderStatusManager } from '@/services/orderStatusManager'
 
-const orders = ref([]);
-const loading = ref(false);
+const orders = ref([])
+const loading = ref(false)
 
 // 篩選與搜尋狀態
-const searchQuery = ref("");
-const statusFilter = ref("all");
+const searchQuery = ref('')
+const statusFilter = ref('all')
 
 // Modal 控制狀態
-const isModalOpen = ref(false);
-const selectedOrderNo = ref("");
-const selectedOrderCurrentStatus = ref(1);
+const isModalOpen = ref(false)
+const selectedOrderNo = ref('')
+const selectedOrderCurrentStatus = ref(ORDER_STATUS.PENDING)
 
 // 取得所有訂單
 const fetchOrders = async () => {
   try {
-    loading.value = true;
-    const res = await getAllOrdersForAdminAPI();
+    loading.value = true
+    const res = await getAllOrdersForAdminAPI()
     if (res.success) {
-      orders.value = res.data;
+      orders.value = res.data
     } else {
-      alert(res.message || "獲取訂單失敗");
+      alert(res.message || '獲取訂單失敗')
     }
   } catch (error) {
-    console.error("Fetch Orders Error:", error);
+    console.error('Fetch Orders Error:', error)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 開啟明細 Modal
 const openDetailModal = (orderNo) => {
-  selectedOrderNo.value = orderNo;
-  const currentOrder = orders.value.find((o) => o.orderNo === orderNo);
-  selectedOrderCurrentStatus.value = currentOrder ? currentOrder.status : 1;
-  isModalOpen.value = true;
-};
+  selectedOrderNo.value = orderNo
+  const currentOrder = orders.value.find((o) => o.orderNo === orderNo)
+  selectedOrderCurrentStatus.value = currentOrder ? currentOrder.status : ORDER_STATUS.PENDING
+  isModalOpen.value = true
+}
+
+// 動態生成狀態選單選項，全面由狀態機驅動
+const statusOptions = computed(() => {
+  return Object.values(ORDER_STATUS).map((status) => {
+    const info = orderStatusManager.getStatusInfo(status)
+    return { value: status, label: info.text }
+  })
+})
 
 // 計算屬性：負責搜尋與過濾的聯動
 const filteredOrders = computed(() => {
-  let result = orders.value;
+  let result = orders.value
 
   // 過濾狀態
-  if (statusFilter.value !== "all") {
-    result = result.filter((o) => o.status === Number(statusFilter.value));
+  if (statusFilter.value !== 'all') {
+    result = result.filter((o) => o.status === Number(statusFilter.value))
   }
 
   // 過濾訂單編號
   if (searchQuery.value) {
-    const keyword = searchQuery.value.toLowerCase();
-    result = result.filter((o) => o.orderNo.toLowerCase().includes(keyword));
+    const keyword = searchQuery.value.toLowerCase()
+    result = result.filter((o) => o.orderNo.toLowerCase().includes(keyword))
   }
 
-  return result;
-});
+  return result
+})
 
 // 元件載入時，自動抓取一次訂單列表
 onMounted(() => {
-  fetchOrders();
-});
+  fetchOrders()
+})
 </script>
 
 <template>
@@ -79,17 +88,11 @@ onMounted(() => {
     </div>
 
     <!-- 搜尋與過濾區塊 -->
-    <div
-      class="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-wrap gap-4 items-end"
-    >
+    <div class="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-wrap gap-4 items-end">
       <div class="flex-1 min-w-[200px]">
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >搜尋訂單編號</label
-        >
+        <label class="block text-sm font-medium text-gray-700 mb-1">搜尋訂單編號</label>
         <div class="relative">
-          <i
-            class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          ></i>
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input
             v-model="searchQuery"
             type="text"
@@ -99,19 +102,15 @@ onMounted(() => {
         </div>
       </div>
       <div class="w-48">
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >訂單狀態</label
-        >
+        <label class="block text-sm font-medium text-gray-700 mb-1">訂單狀態</label>
         <select
           v-model="statusFilter"
           class="w-full border-gray-300 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
         >
           <option value="all">全部狀態</option>
-          <option value="1">待付款</option>
-          <option value="2">已付款</option>
-          <option value="3">已出貨</option>
-          <option value="4">已完成</option>
-          <option value="5">已取消</option>
+          <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </option>
         </select>
       </div>
     </div>

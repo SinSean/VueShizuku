@@ -1,8 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-
-import Tag from 'primevue/tag'
-import Button from 'primevue/button'
+import { ORDER_STATUS } from '@/services/orderStatusManager'
 
 // 呼叫司機待命
 const router = useRouter()
@@ -15,14 +13,26 @@ const props = defineProps({
   },
 })
 
-// 顯示狀態文字
-const getSeverity = (status) => {
-  if (status === '已完成') return 'secondary'   // 綠色
-  if (status === '已付款') return 'info'      // 藍色
-  if (status === '已出貨') return 'warn'      // 黃色
-  if (status === '待付款') return 'secondary'  // 黑色/深色
-  if (status === '已取消') return 'primary' // 灰色
-  return 'danger'                             // 紅色 (預設或錯誤)
+// 統一對照表
+const statusTextToCode = {
+  未付款: ORDER_STATUS.PENDING,
+  已付款: ORDER_STATUS.PAID,
+  出貨中: ORDER_STATUS.SHIPPING,
+  已出貨: ORDER_STATUS.SHIPPING,
+  已送達: ORDER_STATUS.DELIVERED,
+  已完成: ORDER_STATUS.DELIVERED,
+  已取消: ORDER_STATUS.CANCELLED,
+}
+
+// 顯示狀態樣式
+const getSeverity = (statusText) => {
+  const code = statusTextToCode[statusText]
+  if (code === ORDER_STATUS.DELIVERED) return 'success'
+  if (code === ORDER_STATUS.PAID) return 'info'
+  if (code === ORDER_STATUS.SHIPPING) return 'warn'
+  if (code === ORDER_STATUS.PENDING) return 'secondary'
+  if (code === ORDER_STATUS.CANCELLED) return 'danger'
+  return 'secondary'
 }
 
 // 跳轉到詳情頁的動作

@@ -57,7 +57,7 @@ const fetchDetail = async () => {
 const saveStatus = async () => {
   if (!selectedOrder.value) return
   if (!orderStatusManager.isValidTransition(selectedOrder.value.status, Number(newStatus.value))) {
-    if (!confirm(`⚠️ 偵測到非標準的狀態跳轉，您確定要手動強改訂單狀態嗎？`)) {
+    if (!confirm(`偵測到非標準的狀態跳轉，您確定要手動強改訂單狀態嗎？`)) {
       return
     }
   } else {
@@ -83,27 +83,6 @@ const saveStatus = async () => {
     console.error('Update Status Error:', error)
     alert('系統發生錯誤')
   }
-}
-
-const getShippingStatusUI = (status) => {
-  const map = {
-    1: { text: '尚未出貨', color: 'bg-gray-100 text-gray-500', icon: 'pi pi-box' },
-    2: {
-      text: '理貨中 (準備出貨)',
-      color: 'bg-blue-100 text-blue-600',
-      icon: 'pi pi-spin pi-spinner',
-    },
-    3: { text: '已交寄 (配送中)', color: 'bg-orange-100 text-orange-600', icon: 'pi pi-truck' },
-    4: { text: '已送達', color: 'bg-green-100 text-green-600', icon: 'pi pi-check-circle' },
-    5: { text: '訂單已取消', color: 'bg-red-100 text-red-600', icon: 'pi pi-times-circle' },
-  }
-  return (
-    map[status] || {
-      text: '未知狀態',
-      color: 'bg-gray-100 text-gray-400',
-      icon: 'pi pi-question-circle',
-    }
-  )
 }
 </script>
 
@@ -226,22 +205,16 @@ const getShippingStatusUI = (status) => {
           >
             <!-- 為了防止破壞金流一致性，禁止手動切換至待付款/已付款 -->
             <!-- 僅當目前狀態是 1 或 2 時，才顯示該選項且設為禁用 (Disabled)，避免下拉選單空白 -->
-            <option v-if="selectedOrder?.status === 1" :value="1" disabled>
-              待付款 (等候金流 Webhook)
-            </option>
-            <option v-if="selectedOrder?.status === 2" :value="2" disabled>
-              已付款 (準備出貨)
-            </option>
+            <option v-if="selectedOrder?.status === 1" :value="1" disabled>未付款</option>
+            <option v-if="selectedOrder?.status === 2" :value="2" disabled>已付款</option>
 
             <option :value="3" :disabled="selectedOrder?.status < 2 || selectedOrder?.status >= 3">
-              已出貨 (物流配送中)
+              已出貨
             </option>
             <option :value="4" :disabled="selectedOrder?.status < 3 || selectedOrder?.status >= 4">
-              已完成 (包裹已送達)
+              已完成
             </option>
-            <option :value="5" :disabled="selectedOrder?.status === 5">
-              訂單取消 (強制作廢並回補庫存)
-            </option>
+            <option :value="5" :disabled="selectedOrder?.status === 5">訂單取消</option>
           </select>
           <button
             @click="saveStatus"

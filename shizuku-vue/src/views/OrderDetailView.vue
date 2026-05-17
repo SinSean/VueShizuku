@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import { ORDER_STATUS } from '@/services/orderStatusManager'
 import OrderInfoSection from '@/components/OrderInfoSection.vue'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
 import { getOrderDetailAPI, repayOrderAPI, cancelOrderApi } from '@/api/order'
@@ -29,8 +30,8 @@ const resultMessage = ref('')
 
 // 啟動倒數計時器
 const startCountdown = () => {
-  // 只有在「待付款」狀態才需要倒數
-  if (!orderData.value || orderData.value.statusText !== '待付款') return
+  // 只有在「未付款」狀態才需要倒數 (採用狀態機 PENDING 常數)
+  if (!orderData.value || orderData.value.status !== ORDER_STATUS.PENDING) return
 
   const updateTimer = () => {
     const created = new Date(orderData.value.createdAt)
@@ -152,9 +153,9 @@ const goBack = () => {
         <h1 class="text-3xl font-extrabold text-gray-800">訂單詳細內容</h1>
       </div>
 
-      <!-- 倒數計時提示條 (僅待付款顯示) -->
+      <!-- 倒數計時提示條 (僅未付款顯示) -->
       <div
-        v-if="orderData.statusText === '待付款' && timeLeft !== '已逾時'"
+        v-if="orderData.status === ORDER_STATUS.PENDING && timeLeft !== '已逾時'"
         class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
       >
         <div class="flex items-center gap-3 text-amber-800">

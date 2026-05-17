@@ -15,9 +15,6 @@ const statusTextToCode = {
   出貨中: ORDER_STATUS.SHIPPING,
   已送達: ORDER_STATUS.DELIVERED,
   已取消: ORDER_STATUS.CANCELLED,
-  待付款: ORDER_STATUS.PENDING,
-  已出貨: ORDER_STATUS.SHIPPING,
-  已完成: ORDER_STATUS.DELIVERED,
 }
 
 const currentStatus = computed(() => {

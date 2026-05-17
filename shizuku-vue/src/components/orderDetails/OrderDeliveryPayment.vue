@@ -17,9 +17,6 @@ const statusTextToCode = {
   出貨中: ORDER_STATUS.SHIPPING,
   已送達: ORDER_STATUS.DELIVERED,
   已取消: ORDER_STATUS.CANCELLED,
-  待付款: ORDER_STATUS.PENDING,
-  已出貨: ORDER_STATUS.SHIPPING,
-  已完成: ORDER_STATUS.DELIVERED,
 }
 
 const currentStatus = computed(() => {
@@ -71,7 +68,8 @@ const shippingStatus = computed(() => {
         <div class="flex flex-col">
           <span class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">收件人</span>
           <span class="font-bold text-gray-800">{{ props.order.receiverName }}</span>
-          <span class="text-sm text-gray-500 mt-0.5">{{ props.order.receiverPhone }}</span>
+          <span class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">電話</span>
+          <span class="font-bold text-gray-800">{{ props.order.receiverPhone }}</span>
         </div>
       </div>
 
