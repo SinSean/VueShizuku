@@ -2,10 +2,13 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
 import { getMemberOrdersAPI } from '@/api/order'
 import OrderItemCard from '@/components/OrderItemCard.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const toast = useToast()
 const authStore = useAuthStore()
 const router = useRouter()
 const ordersList = ref([])
@@ -31,7 +34,12 @@ onMounted(async () => {
         
     } catch (error) {
         console.error("取得訂單失敗：", error)
-        alert("無法載入訂單資料，請稍後再試！")
+        toast.add({
+          severity: 'error',
+          summary: '載入訂單失敗',
+          detail: '無法載入您的訂單資料，請檢查網路狀態或稍後再試！',
+          life: 3000
+        })
     }
 })
 
@@ -80,5 +88,8 @@ const hasMore = computed(() => {
         僅顯示近半年的訂單紀錄，若需查詢更早之前的訂單請聯絡客服。
       </p>
     </div>
+    
+    <!-- PrimeVue Toast 懸浮即時通知 -->
+    <Toast />
   </div>
 </template>

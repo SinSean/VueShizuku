@@ -1,10 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
 import { getAllOrdersForAdminAPI } from '@/api/adminOrder'
 import AdminOrderListTable from './AdminOrderListTable.vue'
 import AdminOrderDetailModal from './AdminOrderDetailModal.vue'
 import { ORDER_STATUS, orderStatusManager } from '@/services/orderStatusManager'
 
+const toast = useToast()
 const orders = ref([])
 const loading = ref(false)
 
@@ -25,10 +28,21 @@ const fetchOrders = async () => {
     if (res.success) {
       orders.value = res.data
     } else {
-      alert(res.message || '獲取訂單失敗')
+      toast.add({
+        severity: 'error',
+        summary: '讀取資料失敗',
+        detail: res.message || '無法載入後台訂單列表。',
+        life: 3000
+      })
     }
   } catch (error) {
     console.error('Fetch Orders Error:', error)
+    toast.add({
+      severity: 'error',
+      summary: '系統連線錯誤',
+      detail: '無法與伺服器建立連線，請檢查網路狀態。',
+      life: 3000
+    })
   } finally {
     loading.value = false
   }
@@ -129,6 +143,9 @@ onMounted(() => {
       :currentStatus="selectedOrderCurrentStatus"
       @updated="fetchOrders"
     />
+
+    <!-- PrimeVue Toast 懸浮即時通知 -->
+    <Toast />
   </div>
 </template>
 

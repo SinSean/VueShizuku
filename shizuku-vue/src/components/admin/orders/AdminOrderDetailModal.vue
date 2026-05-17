@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed, defineProps, defineEmits } from 'vue'
 import Dialog from 'primevue/dialog'
+import { useToast } from 'primevue/usetoast'
 import {
   getAdminOrderDetailAPI,
   updateOrderStatusAPI,
@@ -16,6 +17,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'updated'])
+const toast = useToast()
 
 //處理時間軸資料
 const timelineEvents = computed(() => {
@@ -49,6 +51,12 @@ const fetchDetail = async () => {
     }
   } catch (error) {
     console.error('Fetch Detail Error:', error)
+    toast.add({
+      severity: 'error',
+      summary: '讀取詳情失敗',
+      detail: '無法載入該筆訂單明細。',
+      life: 3000
+    })
   } finally {
     loading.value = false
   }
@@ -73,15 +81,30 @@ const saveStatus = async () => {
     }
 
     if (res.success) {
-      alert('狀態更新成功！')
+      toast.add({
+        severity: 'success',
+        summary: '更新狀態成功',
+        detail: '訂單狀態已成功更新！',
+        life: 2000
+      })
       emit('updated')
       emit('update:visible', false)
     } else {
-      alert(res.message || '更新失敗')
+      toast.add({
+        severity: 'error',
+        summary: '更新狀態失敗',
+        detail: res.message || '無法儲存新的訂單狀態。',
+        life: 3000
+      })
     }
   } catch (error) {
     console.error('Update Status Error:', error)
-    alert('系統發生錯誤')
+    toast.add({
+      severity: 'error',
+      summary: '系統連線錯誤',
+      detail: '發生未知錯誤，請聯絡客服人員或稍後再試。',
+      life: 3000
+    })
   }
 }
 </script>

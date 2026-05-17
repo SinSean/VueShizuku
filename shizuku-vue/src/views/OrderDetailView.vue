@@ -2,6 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
 import { ORDER_STATUS } from '@/services/orderStatusManager'
 import OrderInfoSection from '@/components/OrderInfoSection.vue'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
@@ -9,6 +11,7 @@ import { getOrderDetailAPI, repayOrderAPI, cancelOrderApi } from '@/api/order'
 import { usePaymentWindow } from '@/composables/usePaymentWindow'
 import { useAuthStore } from '@/stores/auth'
 
+const toast = useToast()
 const authStore = useAuthStore()
 const { openPaymentWindow } = usePaymentWindow()
 const route = useRoute()
@@ -107,26 +110,67 @@ const handleCancel = async () => {
   if (!confirm('確定要取消這筆訂單嗎？')) return
   const res = await cancelOrderApi(orderId)
   if (res.success) {
-    alert('訂單已取消！')
-    window.location.reload()
+    toast.add({
+      severity: 'success',
+      summary: '訂單取消成功',
+      detail: '此筆訂單已被成功取消。',
+      life: 2000
+    })
+    setTimeout(() => {
+      window.location.reload()
+    }, 1500)
   } else {
-    alert(res.message)
+    toast.add({
+      severity: 'error',
+      summary: '取消訂單失敗',
+      detail: res.message || '發生未知錯誤，請聯絡客服人員。',
+      life: 3000
+    })
   }
 }
 
 onMounted(async () => {
   try {
     const res = await getOrderDetailAPI(orderId, authStore.user?.fId)
-    if (res.success) {
-      orderData.value = res.data
+    if (res.success && res.data) {
+      // 統一將後端的 statusText 狀態文字對應轉換為數值狀態 code，確保狀態機正常對接
+      const statusTextToCode = {
+        未付款: ORDER_STATUS.PENDING,
+        已付款: ORDER_STATUS.PAID,
+        出貨中: ORDER_STATUS.SHIPPING,
+        已出貨: ORDER_STATUS.SHIPPING,
+        已送達: ORDER_STATUS.DELIVERED,
+        Spacer: null,
+        已完成: ORDER_STATUS.DELIVERED,
+        已取消: ORDER_STATUS.CANCELLED,
+      }
+
+      const mappedData = {
+        ...res.data,
+        status: statusTextToCode[res.data.statusText] || ORDER_STATUS.PENDING,
+      }
+
+      orderData.value = mappedData
       startCountdown() // 讀取資料後啟動倒數
     } else {
-      alert(res.message)
-      router.push({ name: 'MemberOrders' })
+      toast.add({
+        severity: 'error',
+        summary: '讀取資料失敗',
+        detail: res.message || '無法載入訂單詳情。',
+        life: 3000
+      })
+      setTimeout(() => {
+        router.push({ name: 'MemberOrders' })
+      }, 1500)
     }
   } catch (error) {
     console.error('讀取訂單詳情失敗：', error)
-    alert('系統錯誤，請稍後再試')
+    toast.add({
+      severity: 'error',
+      summary: '系統連線錯誤',
+      detail: '無法與伺服器取得連線，請檢查您的網路狀態。',
+      life: 3000
+    })
   } finally {
     isLoading.value = false
   }
@@ -189,6 +233,9 @@ const goBack = () => {
       @update:visible="showResultModal = $event"
       @countdown-end="handleCountdownEnd"
     />
+
+    <!-- PrimeVue Toast 懸浮即時通知 -->
+    <Toast />
   </div>
 </template>
 
