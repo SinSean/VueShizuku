@@ -14,26 +14,28 @@ const statusTextToCode = {
   未付款: ORDER_STATUS.PENDING,
   已付款: ORDER_STATUS.PAID,
   出貨中: ORDER_STATUS.SHIPPING,
+  已出貨: ORDER_STATUS.SHIPPING,
   已送達: ORDER_STATUS.DELIVERED,
+  已完成: ORDER_STATUS.DELIVERED,
   已取消: ORDER_STATUS.CANCELLED,
 }
 
-// 顏色邏輯對齊
+// 顏色邏輯對齊狀態機 (PrimeVue Tag Severity 語意)
 const getSeverity = (statusText) => {
   const status = statusTextToCode[statusText]
   switch (status) {
-    case ORDER_STATUS.DELIVERED:
-      return 'secondary'
+    case ORDER_STATUS.PENDING:
+      return 'warn'
     case ORDER_STATUS.PAID:
       return 'info'
     case ORDER_STATUS.SHIPPING:
       return 'warn'
-    case ORDER_STATUS.PENDING:
-      return 'secondary'
+    case ORDER_STATUS.DELIVERED:
+      return 'success'
     case ORDER_STATUS.CANCELLED:
-      return 'primary'
+      return 'secondary'
     default:
-      return 'danger'
+      return 'secondary'
   }
 }
 </script>
