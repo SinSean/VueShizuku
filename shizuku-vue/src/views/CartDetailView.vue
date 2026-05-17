@@ -1,36 +1,9 @@
 <script setup>
-//import { ref, onMounted } from 'vue'
 import CartItemList from '@/components/AppCartItemList.vue'
 import CartSummary from '@/components/AppCartSummary.vue'
 import { useCartStore } from '@/stores/cartStore'
-// const cartItems = ref([])
+
 const cartStore = useCartStore()
-// onMounted(() => {
-//   cartItems.value = [
-//     // 第一個假商品
-//     {
-//       id: 1,
-//       name: '日系簡約純棉 T-Shirt',
-//       price: 590,
-//       image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+1',
-//       quantity: 1,
-//     },
-//     // 第二個假商品
-//     {
-//       id: 2,
-//       name: '復古寬鬆牛仔褲',
-//       price: 1280,
-//       image: 'https://placehold.co/100x100/eeeeee/999999?text=Item+2',
-//       quantity: 2,
-//     },
-//   ]
-// })
-
-
-const removeItem = (id) => {
-  // .filter 就像濾網，把不要的商品從畫面上剔除
-  cartItems.value = cartItems.value.filter((item) => item.id !== id)
-}
 </script>
 
 <template>
