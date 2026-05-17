@@ -30,7 +30,7 @@ export function useAdminNotification(toast, targetCategory = 'all') {
 
         toast.add({
           severity: severity === 'danger' ? 'error' : 'warn',
-          summary: `⚠️ ${title}`,
+          summary: title,
           detail: message,
           life: 12000,
         })
