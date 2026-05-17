@@ -120,13 +120,8 @@ watch(
         // 呼叫後端 API 拿取日誌資料
         const res = await getPaymentTransactionLogsForAdminAPI(props.transaction.fId)
 
-        // 判斷回傳的資料是不是標準的陣列
-        if (Array.isArray(res)) {
-          // 如果是，直接放進日誌盒子
-          logs.value = res
-        } else if (res && res.success) {
-          // 如果是特定格式，檢查有沒有包含 .value 處理 .NET 導出的物件清單，並放入盒子
-          logs.value = res.data && res.data.$values ? res.data.$values : res.data
+        if (res && res.success) {
+          logs.value = res.data || []
         }
       } finally {
         // 不管成功或失敗，最後都要把載入中狀態關閉

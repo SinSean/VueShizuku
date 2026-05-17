@@ -1,60 +1,58 @@
 <script setup>
-import { ref, watch } from "vue";
-import Dialog from "primevue/dialog";
-import { getPaymentTransactionLogsForAdminAPI } from "@/api/adminPayment";
-import { paymentErrorParser } from "@/services/paymentErrorParser";
+import { ref, watch } from 'vue'
+import Dialog from 'primevue/dialog'
+import { getPaymentTransactionLogsForAdminAPI } from '@/api/adminPayment'
+import { paymentErrorParser } from '@/services/paymentErrorParser'
 
 const props = defineProps({
   visible: Boolean,
   transaction: Object,
-});
+})
 
-const emit = defineEmits(["update:visible"]);
-const loading = ref(false);
-const diagnosisResult = ref(null);
+const emit = defineEmits(['update:visible'])
+const loading = ref(false)
+const diagnosisResult = ref(null)
 
 const fetchAndDiagnose = async () => {
-  if (!props.transaction) return;
-  loading.value = true;
+  if (!props.transaction) return
+  loading.value = true
   try {
-    const res = await getPaymentTransactionLogsForAdminAPI(
-      props.transaction.fId,
-    );
-    let logs = [];
-    if (Array.isArray(res)) logs = res;
-    else if (res?.success) logs = res.data?.$values || res.data || [];
+    const res = await getPaymentTransactionLogsForAdminAPI(props.transaction.fId)
+    let logs = []
+    if (res && res.success) {
+      // API 層已在網路防線洗淨 $values，表現層元件只需接收標準陣列
+      logs = res.data || []
+    }
 
     // 尋找最後一筆有回應資料的紀錄來進行診斷
-    const lastResponseLog = [...logs]
-      .reverse()
-      .find((log) => log.fResponseData);
+    const lastResponseLog = [...logs].reverse().find((log) => log.fResponseData)
     if (lastResponseLog) {
-      const rawData = JSON.parse(lastResponseLog.fResponseData);
-      diagnosisResult.value = paymentErrorParser.autoDiagnose(rawData);
+      const rawData = JSON.parse(lastResponseLog.fResponseData)
+      diagnosisResult.value = paymentErrorParser.autoDiagnose(rawData)
     } else {
       diagnosisResult.value = {
-        msg: "尚無通訊回應",
-        suggestion: "目前金流商尚未回傳任何資料，請確認支付流程是否已啟動。",
+        msg: '尚無通訊回應',
+        suggestion: '目前金流商尚未回傳任何資料，請確認支付流程是否已啟動。',
         isSuccess: false,
-      };
+      }
     }
   } catch (e) {
     diagnosisResult.value = {
-      msg: "資料解析失敗",
-      suggestion: "日誌資料格式異常，無法自動診斷。",
+      msg: '資料解析失敗',
+      suggestion: '日誌資料格式異常，無法自動診斷。',
       isSuccess: false,
-    };
+    }
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 watch(
   () => props.visible,
   (newVal) => {
-    if (newVal) fetchAndDiagnose();
+    if (newVal) fetchAndDiagnose()
   },
-);
+)
 </script>
 
 <template>
@@ -75,9 +73,7 @@ watch(
       <!-- 診斷狀態卡片 -->
       <div
         :class="
-          diagnosisResult.isSuccess
-            ? 'bg-green-50 border-green-200'
-            : 'bg-red-50 border-red-200'
+          diagnosisResult.isSuccess ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
         "
         class="p-6 rounded-2xl border-2 text-center"
       >
@@ -95,9 +91,7 @@ watch(
         >
           {{ diagnosisResult.msg }}
         </h3>
-        <p class="text-sm opacity-70">
-          交易單號：{{ transaction?.fTransactionNo }}
-        </p>
+        <p class="text-sm opacity-70">交易單號：{{ transaction?.fTransactionNo }}</p>
       </div>
 
       <!-- 建議操作區 -->

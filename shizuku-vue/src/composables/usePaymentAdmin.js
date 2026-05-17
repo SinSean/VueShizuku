@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { getPaymentTransactionsForAdminAPI } from '@/api/adminPayment'
+import { orderStatusManager } from '@/services/orderStatusManager'
 
 export function usePaymentAdmin() {
   const transactions = ref([])
@@ -10,14 +11,8 @@ export function usePaymentAdmin() {
     loading.value = true
     try {
       const res = await getPaymentTransactionsForAdminAPI()
-      if (Array.isArray(res)) {
-        transactions.value = res
-      } else if (res && res.success) {
-        if (res.data && res.data.$values) {
-          transactions.value = res.data.$values
-        } else {
-          transactions.value = res.data
-        }
+      if (res && res.success) {
+        transactions.value = res.data || []
       }
     } catch (err) {
       console.error('抓取金流資料失敗', err)
@@ -27,13 +22,8 @@ export function usePaymentAdmin() {
   }
 
   const getStatusInfo = (status) => {
-    const map = {
-      0: { label: '待付款', severity: 'warning' },
-      1: { label: '付款成功', severity: 'success' },
-      2: { label: '交易失敗', severity: 'danger' },
-      3: { label: '已退款', severity: 'info' },
-    }
-    return map[status] || { label: '未知', severity: 'info' }
+    // 100% 委派給狀態機統一管理，徹底剷除本地對照表
+    return orderStatusManager.getPaymentStatusInfo(status)
   }
 
   const formatDate = (dateString) => (dateString ? new Date(dateString).toLocaleString() : 'N/A')

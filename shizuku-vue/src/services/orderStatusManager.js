@@ -1,8 +1,8 @@
 /*
- * 訂單狀態機 (Finite State Machine) 管理器
- * 負責定義合法的狀態轉移路徑與顯示邏輯
+ * 訂單與金流狀態機 (Finite State Machine) 管理器
  */
 
+// 1. 訂單狀態常數
 export const ORDER_STATUS = {
   PENDING: 1, // 未付款
   PAID: 2, // 已付款 (準備出貨)
@@ -11,6 +11,15 @@ export const ORDER_STATUS = {
   CANCELLED: 5, // 已取消
 }
 
+// 2. 金流交易狀態常數 (對齊 C# 交易記錄 fStatus)
+export const PAYMENT_STATUS = {
+  UNPAID: 0, // 未付款
+  SUCCESS: 1, // 付款成功
+  FAILED: 2, // 交易失敗
+  REFUNDED: 3, // 已退款
+}
+
+// 訂單狀態 UI 對照表
 const statusMap = {
   [ORDER_STATUS.PENDING]: { text: '未付款', color: '#f59e0b', icon: 'pi pi-clock' },
   [ORDER_STATUS.PAID]: { text: '已付款', color: '#3b82f6', icon: 'pi pi-shopping-bag' },
@@ -19,8 +28,16 @@ const statusMap = {
   [ORDER_STATUS.CANCELLED]: { text: '已取消', color: '#ef4444', icon: 'pi pi-times-circle' },
 }
 
+// 金流交易狀態 UI 對照表
+const paymentStatusMap = {
+  [PAYMENT_STATUS.UNPAID]: { label: '未付款', severity: 'warning', icon: 'pi pi-clock' },
+  [PAYMENT_STATUS.SUCCESS]: { label: '付款成功', severity: 'success', icon: 'pi pi-check-circle' },
+  [PAYMENT_STATUS.FAILED]: { label: '交易失敗', severity: 'danger', icon: 'pi pi-times-circle' },
+  [PAYMENT_STATUS.REFUNDED]: { label: '已退款', severity: 'info', icon: 'pi pi-undo' },
+}
+
 /**
- * 定義合法的狀態轉移路徑
+ * 訂單合法的狀態轉移路徑
  * Key: 目前狀態, Value: 允許轉向的狀態陣列
  */
 const validTransitions = {
@@ -32,9 +49,14 @@ const validTransitions = {
 }
 
 export const orderStatusManager = {
-  // 取得狀態顯示資訊
+  // 取得訂單狀態顯示資訊
   getStatusInfo(status) {
     return statusMap[status] || { text: '未知', color: '#9ca3af', icon: 'pi pi-question' }
+  },
+
+  // 取得金流交易狀態顯示資訊
+  getPaymentStatusInfo(status) {
+    return paymentStatusMap[status] || { label: '未知', severity: 'info', icon: 'pi pi-question' }
   },
 
   // 驗證狀態轉移是否合法
@@ -46,7 +68,6 @@ export const orderStatusManager = {
 
   // 取得時間軸所需的節點數據
   getTimelineSteps(currentStatus) {
-    // 這裡定義標準的進度順序
     const steps = [
       ORDER_STATUS.PENDING,
       ORDER_STATUS.PAID,
