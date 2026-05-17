@@ -1,4 +1,4 @@
-import request from '@/api/index'
+import request from '@/api/myRequest'
 const sanitizeApiResponse = (response) => {
   const res = response.data
   if (res && res.success && res.data) {

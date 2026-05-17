@@ -1,4 +1,4 @@
-import request from '@/api/index'
+import request from '@/api/myRequest'
 
 // 取得全站所有訂單
 export const getAllOrdersForAdminAPI = async () => {

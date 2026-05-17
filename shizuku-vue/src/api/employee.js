@@ -1,4 +1,4 @@
-import request from '@/api/index'
+import request from '@/api/myRequest'
 
 // 員工後台登入
 export const employeeLoginAPI = async (data) => {

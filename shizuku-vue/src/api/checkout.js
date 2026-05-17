@@ -1,4 +1,4 @@
-import request from '@/api/index'
+import request from '@/api/myRequest'
 
 // 預檢商品庫存與最新售價
 export const checkCheckoutItemsAPI = async (variantIds) => {

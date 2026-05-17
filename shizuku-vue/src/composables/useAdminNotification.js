@@ -13,8 +13,13 @@ export function useAdminNotification(toast, targetCategory = 'all') {
 
   const connect = async () => {
     try {
+      // 直接讀取 .env 配置
+      const backendUrl = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7197/api'
+      const backendOrigin = new URL(backendUrl).origin
+      const hubUrl = `${backendOrigin}/adminNotificationHub`
+
       connection.value = new signalR.HubConnectionBuilder()
-        .withUrl('https://localhost:7197/adminNotificationHub')
+        .withUrl(hubUrl)
         .withAutomaticReconnect()
         .build()
 
