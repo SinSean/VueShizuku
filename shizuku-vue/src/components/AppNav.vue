@@ -117,7 +117,7 @@ const handleLogout = () => {
         <li>
           <router-link to="/admin" class="hover:text-gray-400 cursor-pointer transition-colors">後台</router-link>
         </li>
-        <li>
+        <li v-if="authStore.isLogin && authStore.userLevel !== null && authStore.userLevel > 0">
           <router-link :to="{ name: 'point-store' }"
             class="hover:text-gray-400 cursor-pointer transition-colors">點數商城💧</router-link>
         </li>
