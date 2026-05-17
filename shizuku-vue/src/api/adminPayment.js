@@ -11,3 +11,9 @@ export const getPaymentTransactionLogsForAdminAPI = async (transactionId) => {
   const response = await request.get(`/admin/payments/${transactionId}/logs`)
   return response.data
 }
+
+// 取得異常支付資料
+export const getAbnormalPaymentsAPI = async () => {
+  const response = await request.get('/AdminOrderApi/payment-anomalies')
+  return response.data
+}

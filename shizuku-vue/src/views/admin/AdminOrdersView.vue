@@ -1,8 +1,13 @@
 <script setup>
-import { ref, shallowRef } from 'vue'
-import Dialog from 'primevue/dialog' // 引入 PrimeVue 對話框
+import { ref, shallowRef, onMounted, onUnmounted } from 'vue'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
+import { triggerOrderScanAPI } from '@/api/adminOrder'
+import { useAdminNotification } from '@/composables/useAdminNotification'
 
-// 1. 匯入子元件
+//匯入子元件
 import AllOrdersWidget from '@/components/admin/orders/AllOrdersWidget.vue'
 import AnomalyOrdersWidget from '@/components/admin/orders/AnomalyOrdersWidget.vue'
 import ShippingHubWidget from '@/components/admin/orders/ShippingHubWidget.vue'
@@ -10,9 +15,9 @@ import ShippingHubWidget from '@/components/admin/orders/ShippingHubWidget.vue'
 // 目前被點擊打開的 Widget
 const activeWidget = ref(null)
 const activeWidgetComponent = shallowRef(null)
-const isDialogVisible = ref(false) // 控制 PrimeVue Dialog 的開關
+const isDialogVisible = ref(false)
 
-// 2. 定義泡泡卡片的陣容清單 (維持純陣列，效能最好)
+// 定義泡泡卡片的陣容清單
 const widgets = [
   {
     id: 'all-orders',
@@ -33,7 +38,7 @@ const widgets = [
   {
     id: 'anomaly-orders',
     title: '異常訂單監控',
-    desc: '掃描金流衝突、異常刷卡行為與惡意鎖單，並提供一鍵自動化救援機制。',
+    desc: '掃描金流衝突、惡意鎖單行為，並提供一鍵自動化救援機制。',
     icon: 'pi pi-exclamation-triangle',
     gridSpan: 'col-span-1',
     component: AnomalyOrdersWidget,
@@ -52,20 +57,63 @@ const onDialogHide = () => {
   activeWidget.value = null
   activeWidgetComponent.value = null
 }
+
+// ── 即時通知：只接收 category = 'order' 的警報 ──
+const toast = useToast()
+const { connect, disconnect } = useAdminNotification(toast, 'order')
+onMounted(() => connect())
+onUnmounted(() => disconnect())
+
+// ── 手動觸發訂單異常掃描 ──
+const scanning = ref(false)
+const triggerScan = async () => {
+  scanning.value = true
+  try {
+    await triggerOrderScanAPI()
+    toast.add({
+      severity: 'info',
+      summary: '掃描已執行',
+      detail: '訂單異常掃描完成，若有偵測到異常將立即推播通知。',
+      life: 4000,
+    })
+  } catch (err) {
+    toast.add({
+      severity: 'error',
+      summary: '掃描失敗',
+      detail: '無法執行掃描，請確認後端服務是否正常。',
+      life: 5000,
+    })
+  } finally {
+    scanning.value = false
+  }
+}
 </script>
 
 <template>
-  <!--內部區塊再給間距 -->
   <div
     class="min-h-screen relative overflow-hidden flex flex-col bg-gradient-to-br from-blue-100 via-indigo-50 to-pink-100"
   >
+    <!-- 訂單控制中心專屬 Toast（右上角） -->
+    <Toast position="top-right" />
+
     <!-- 內容容器 -->
     <div class="relative z-10 p-6 md:p-8 flex-1">
-      <h1 class="text-4xl font-bold text-gray-800 mb-10 tracking-tight">訂單控制中心</h1>
+      <div class="flex items-center justify-between mb-10 max-w-7xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-800 tracking-tight">訂單控制中心</h1>
+        <!-- 手動觸發掃描按鈕（走真實偵測邏輯） -->
+        <Button
+          label="立即掃描訂單異常"
+          icon="pi pi-search"
+          severity="secondary"
+          outlined
+          size="small"
+          :loading="scanning"
+          @click="triggerScan"
+        />
+      </div>
 
-      <!-- 瀑布流/Grid 泡泡卡片區塊 - 採 2 欄制以達成 1大+2等長 佈局 -->
+      <!-- 瀑布流/Grid 泡泡卡片區塊 -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
-        <!-- 單一泡泡卡片 -->
         <div
           v-for="widget in widgets"
           :key="widget.id"
@@ -81,7 +129,6 @@ const onDialogHide = () => {
             <p class="text-gray-600 font-medium leading-relaxed">{{ widget.desc }}</p>
           </div>
 
-          <!-- 卡片底部小箭頭 -->
           <div class="mt-6 flex justify-end">
             <div
               class="bg-white/60 rounded-full p-2 text-gray-400 hover:text-blue-500 transition-colors shadow-sm"
@@ -100,7 +147,7 @@ const onDialogHide = () => {
       </div>
     </div>
 
-    <!-- PrimeVue Dialog (取代手刻的全螢幕視窗) -->
+    <!-- PrimeVue Dialog -->
     <Dialog
       v-model:visible="isDialogVisible"
       modal
@@ -120,7 +167,6 @@ const onDialogHide = () => {
         },
       }"
     >
-      <!-- 自訂 Header 標題 -->
       <template #header>
         <div class="flex items-center gap-3">
           <i :class="[activeWidget?.icon, 'text-3xl text-blue-600']"></i>
@@ -128,10 +174,8 @@ const onDialogHide = () => {
         </div>
       </template>
 
-      <!-- 裡面真正執行功能的 Component -->
       <component :is="activeWidgetComponent" v-if="activeWidgetComponent" />
 
-      <!-- 尚未開發的防呆提示 -->
       <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 py-20">
         <i class="pi pi-wrench text-6xl mb-4 text-gray-300"></i>
         <h2 class="text-2xl font-bold">工程師正爆肝開發中...</h2>

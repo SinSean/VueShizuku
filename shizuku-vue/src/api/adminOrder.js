@@ -56,3 +56,15 @@ export const getRevenueStatsAPI = async (startDate, endDate) => {
   const response = await request.get('/AdminOrderApi/revenue-stats', { params })
   return response.data
 }
+
+// 手動觸發金流異常掃描
+export const triggerPaymentScanAPI = async () => {
+  const response = await request.post('/AdminOrderApi/trigger-payment-scan')
+  return response.data
+}
+
+// 手動觸發訂單異常掃描
+export const triggerOrderScanAPI = async () => {
+  const response = await request.post('/AdminOrderApi/trigger-order-scan')
+  return response.data
+}
