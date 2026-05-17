@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, defineProps, defineEmits } from 'vue'
+import { ref, watch, defineProps, defineEmits } from 'vue'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import {
@@ -7,8 +7,11 @@ import {
   updateOrderStatusAPI,
   cancelOrderForAdminAPI,
 } from '@/api/adminOrder'
-import Timeline from 'primevue/timeline'
 import { orderStatusManager, ORDER_STATUS } from '@/services/orderStatusManager'
+import OrderProgressStepper from '@/components/orderDetails/OrderProgressStepper.vue'
+import OrderDeliveryPayment from '@/components/orderDetails/OrderDeliveryPayment.vue'
+import OrderProductList from '@/components/orderDetails/OrderProductList.vue'
+import OrderAmountSummary from '@/components/orderDetails/OrderAmountSummary.vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -18,12 +21,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'updated'])
 const toast = useToast()
-
-//處理時間軸資料
-const timelineEvents = computed(() => {
-  if (!selectedOrder.value) return []
-  return orderStatusManager.getTimelineSteps(Number(newStatus.value))
-})
 
 const loading = ref(false)
 const selectedOrder = ref(null)
@@ -46,8 +43,25 @@ const fetchDetail = async () => {
     loading.value = true
     const res = await getAdminOrderDetailAPI(props.orderNo)
     if (res.success) {
-      selectedOrder.value = res.data
-      selectedOrderDetails.value = res.data.items || []
+      // 進行資料結構防禦性相容包裝，確保完全支援前台元件所需的 subtotal, discount, shippingFee 等欄位
+      const orderData = res.data
+      const items = orderData.items || []
+      const computedSubtotal = items.reduce(
+        (sum, item) => sum + (item.unitPrice || 0) * (item.quantity || 0),
+        0,
+      )
+
+      selectedOrder.value = {
+        ...orderData,
+        subtotal: orderData.subtotal !== undefined ? orderData.subtotal : computedSubtotal,
+        shippingFee: orderData.shippingFee !== undefined ? orderData.shippingFee : 0,
+        discount: orderData.discount !== undefined ? orderData.discount : 0,
+        totalAmount:
+          orderData.totalAmount !== undefined
+            ? orderData.totalAmount
+            : orderData.total || computedSubtotal,
+      }
+      selectedOrderDetails.value = items
     }
   } catch (error) {
     console.error('Fetch Detail Error:', error)
@@ -55,7 +69,7 @@ const fetchDetail = async () => {
       severity: 'error',
       summary: '讀取詳情失敗',
       detail: '無法載入該筆訂單明細。',
-      life: 3000
+      life: 3000,
     })
   } finally {
     loading.value = false
@@ -74,7 +88,7 @@ const saveStatus = async () => {
 
   try {
     let res
-    if (newStatus.value == 5) {
+    if (Number(newStatus.value) === ORDER_STATUS.CANCELLED) {
       res = await cancelOrderForAdminAPI(selectedOrder.value.orderNo)
     } else {
       res = await updateOrderStatusAPI(selectedOrder.value.orderNo, Number(newStatus.value))
@@ -85,7 +99,7 @@ const saveStatus = async () => {
         severity: 'success',
         summary: '更新狀態成功',
         detail: '訂單狀態已成功更新！',
-        life: 2000
+        life: 2000,
       })
       emit('updated')
       emit('update:visible', false)
@@ -94,7 +108,7 @@ const saveStatus = async () => {
         severity: 'error',
         summary: '更新狀態失敗',
         detail: res.message || '無法儲存新的訂單狀態。',
-        life: 3000
+        life: 3000,
       })
     }
   } catch (error) {
@@ -103,7 +117,7 @@ const saveStatus = async () => {
       severity: 'error',
       summary: '系統連線錯誤',
       detail: '發生未知錯誤，請聯絡客服人員或稍後再試。',
-      life: 3000
+      life: 3000,
     })
   }
 }
@@ -125,94 +139,15 @@ const saveStatus = async () => {
     </div>
 
     <div v-else-if="selectedOrder" class="space-y-6 pt-2">
-      <!-- 收件資訊 -->
-      <div class="bg-white p-4 rounded-lg border shadow-sm">
-        <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">收件人資訊</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <p>
-            <span class="text-gray-500 w-16 inline-block">姓名：</span>
-            <span class="font-medium text-gray-800">{{ selectedOrder.receiverName }}</span>
-          </p>
-          <p>
-            <span class="text-gray-500 w-16 inline-block">電話：</span>
-            <span class="font-medium text-gray-800">{{ selectedOrder.receiverPhone }}</span>
-          </p>
-          <p class="md:col-span-2">
-            <span class="text-gray-500 w-16 inline-block">地址：</span>
-            <span class="font-medium text-gray-800">{{ selectedOrder.receiverAddress }}</span>
-          </p>
-          <p class="md:col-span-2">
-            <span class="text-gray-500 w-16 inline-block">備註：</span>
-            <span class="font-medium text-gray-800">{{ selectedOrder.note || '無' }}</span>
-          </p>
-        </div>
-      </div>
+      <!-- 配送與收件人資訊：重用前台精美卡片元件 -->
+      <OrderDeliveryPayment :order="selectedOrder" />
 
-      <!-- 出貨狀態顯示列 -->
-      <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-6">
-        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">訂單進度</h3>
+      <OrderProgressStepper :order="selectedOrder" />
 
-        <Timeline :value="timelineEvents" layout="horizontal" class="custom-timeline">
-          <template #marker="slotProps">
-            <span
-              class="flex w-8 h-8 items-center justify-center text-white rounded-full shadow-sm z-10"
-              :style="{ backgroundColor: slotProps.item.color }"
-            >
-              <i :class="slotProps.item.icon" class="text-xs"></i>
-            </span>
-          </template>
-          <template #content="slotProps">
-            <div
-              class="text-xs font-bold mt-2"
-              :class="slotProps.item.active ? 'text-blue-600' : 'text-gray-400'"
-            >
-              {{ slotProps.item.label }}
-            </div>
-          </template>
-        </Timeline>
-        <!-- 如果訂單已取消，另外顯示一個警告標籤 -->
-        <div
-          v-if="selectedOrder.status === ORDER_STATUS.CANCELLED"
-          class="mt-4 flex justify-center"
-        >
-          <span
-            class="bg-red-100 text-red-600 px-4 py-1 rounded-full text-xs font-black flex items-center gap-2"
-          >
-            <i class="pi pi-times-circle"></i> 訂單已於後台作廢
-          </span>
-        </div>
-      </div>
-
-      <!-- 商品清單 -->
-      <div>
-        <h3 class="font-bold text-gray-800 mb-3">購買商品</h3>
-        <div class="border rounded-lg overflow-hidden">
-          <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 border-b">
-              <tr>
-                <th class="p-3 font-semibold text-gray-600">商品名稱</th>
-                <th class="p-3 font-semibold text-gray-600">規格</th>
-                <th class="p-3 font-semibold text-gray-600 text-right">單價</th>
-                <th class="p-3 font-semibold text-gray-600 text-right">數量</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr
-                v-for="(item, index) in selectedOrderDetails"
-                :key="index"
-                class="hover:bg-gray-50"
-              >
-                <td class="p-3 font-medium text-gray-800">{{ item.productName }}</td>
-                <td class="p-3 text-gray-500">{{ item.variantName || '無' }}</td>
-                <td class="p-3 text-right">NT$ {{ item.unitPrice?.toLocaleString() }}</td>
-                <td class="p-3 text-right font-medium">{{ item.quantity }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-4 text-right text-xl font-bold text-red-600">
-          總計: NT$ {{ selectedOrder.totalAmount?.toLocaleString() }}
-        </div>
+      <!-- 商品清單與結帳明細：重用前台左右兩欄的商品細目與圖片卡片元件 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <OrderProductList :items="selectedOrderDetails" />
+        <OrderAmountSummary :order="selectedOrder" />
       </div>
 
       <!-- 後台更改狀態區 -->
@@ -227,17 +162,46 @@ const saveStatus = async () => {
             class="border border-blue-300 bg-white rounded-md px-4 py-2 w-full md:w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none font-medium"
           >
             <!-- 為了防止破壞金流一致性，禁止手動切換至待付款/已付款 -->
-            <!-- 僅當目前狀態是 1 或 2 時，才顯示該選項且設為禁用 (Disabled)，避免下拉選單空白 -->
-            <option v-if="selectedOrder?.status === 1" :value="1" disabled>未付款</option>
-            <option v-if="selectedOrder?.status === 2" :value="2" disabled>已付款</option>
+            <!-- 僅當目前狀態是 PENDING 或 PAID 時，才顯示該選項且設為禁用 (Disabled)，避免下拉選單空白 -->
+            <option
+              v-if="selectedOrder?.status === ORDER_STATUS.PENDING"
+              :value="ORDER_STATUS.PENDING"
+              disabled
+            >
+              未付款
+            </option>
+            <option
+              v-if="selectedOrder?.status === ORDER_STATUS.PAID"
+              :value="ORDER_STATUS.PAID"
+              disabled
+            >
+              已付款
+            </option>
 
-            <option :value="3" :disabled="selectedOrder?.status < 2 || selectedOrder?.status >= 3">
+            <option
+              :value="ORDER_STATUS.SHIPPING"
+              :disabled="
+                selectedOrder?.status < ORDER_STATUS.PAID ||
+                selectedOrder?.status >= ORDER_STATUS.SHIPPING
+              "
+            >
               已出貨
             </option>
-            <option :value="4" :disabled="selectedOrder?.status < 3 || selectedOrder?.status >= 4">
+            <option
+              :value="ORDER_STATUS.DELIVERED"
+              :disabled="
+                selectedOrder?.status < ORDER_STATUS.SHIPPING ||
+                selectedOrder?.status >= ORDER_STATUS.DELIVERED
+              "
+            >
               已完成
             </option>
-            <option :value="5" :disabled="selectedOrder?.status === 5">訂單取消</option>
+            <option
+              :value="ORDER_STATUS.CANCELLED"
+              :disabled="selectedOrder?.status === ORDER_STATUS.CANCELLED"
+            >
+              訂單取消
+            </option>
           </select>
           <button
             @click="saveStatus"
@@ -247,7 +211,7 @@ const saveStatus = async () => {
           </button>
         </div>
         <p
-          v-if="newStatus == 5"
+          v-if="Number(newStatus) === ORDER_STATUS.CANCELLED"
           class="text-sm text-red-600 mt-3 font-bold bg-red-50 p-2 rounded inline-block border border-red-200"
         >
           <i class="pi pi-exclamation-triangle mr-1"></i>
@@ -258,18 +222,4 @@ const saveStatus = async () => {
   </Dialog>
 </template>
 
-<style scoped>
-:deep(.p-timeline-event-content) {
-  text-align: center;
-  padding-top: 0.5rem;
-}
-:deep(.p-timeline-event-separator) {
-  height: 2px;
-  background: #e5e7eb;
-  top: 1rem;
-}
-:deep(.p-timeline-event-marker) {
-  border: none;
-  background: transparent;
-}
-</style>
+<style scoped></style>

@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
+import { ORDER_STATUS } from '@/services/orderStatusManager'
 
 const props = defineProps({
   orders: {
@@ -65,11 +66,11 @@ const formatDate = (dateString) => {
             <span
               class="px-2.5 py-1 rounded-full text-xs font-semibold"
               :class="{
-                'bg-yellow-100 text-yellow-800': order.status === 1,
-                'bg-blue-100 text-blue-800': order.status === 2,
-                'bg-indigo-100 text-indigo-800': order.status === 3,
-                'bg-green-100 text-green-800': order.status === 4,
-                'bg-red-100 text-red-800': order.status === 5,
+                'bg-yellow-100 text-yellow-800': order.status === ORDER_STATUS.PENDING,
+                'bg-blue-100 text-blue-800': order.status === ORDER_STATUS.PAID,
+                'bg-indigo-100 text-indigo-800': order.status === ORDER_STATUS.SHIPPING,
+                'bg-green-100 text-green-800': order.status === ORDER_STATUS.DELIVERED,
+                'bg-red-100 text-red-800': order.status === ORDER_STATUS.CANCELLED,
               }"
             >
               {{ order.statusText }}
@@ -89,3 +90,6 @@ const formatDate = (dateString) => {
     </table>
   </div>
 </template>
+
+<style scoped>
+</style>
