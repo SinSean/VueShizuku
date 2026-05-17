@@ -134,7 +134,7 @@ const handleLogout = () => {
 
         <template v-if="authStore.isLogin">
           <div class="flex items-center gap-3 bg-gray-200/50 p-1 pr-3 rounded-full border border-gray-300">
-            <router-link to="/member" class="flex items-center gap-2 group">
+            <router-link :to="{ name: 'MemberProfile' }" class="flex items-center gap-2 group">
               <div
                 class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white overflow-hidden group-hover:bg-emerald-600 transition-colors">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
