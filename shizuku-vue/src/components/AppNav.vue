@@ -117,6 +117,10 @@ const handleLogout = () => {
         <li>
           <router-link to="/admin" class="hover:text-gray-400 cursor-pointer transition-colors">後台</router-link>
         </li>
+        <li>
+          <router-link :to="{ name: 'point-store' }"
+            class="hover:text-gray-400 cursor-pointer transition-colors">點數商城💧</router-link>
+        </li>
       </ul>
       <div class="absolute right-4 lg:right-10 flex items-center gap-5 text-gray-600">
         <button class="hover:text-gray-400 transition-colors">
@@ -148,7 +152,7 @@ const handleLogout = () => {
         </template>
 
         <template v-else>
-          <router-link to="/auth"
+          <router-link :to="{ name: 'Login' }"
             class="hidden lg:block border border-gray-400 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-gray-800 hover:text-white transition-all">
             登入/註冊
           </router-link>

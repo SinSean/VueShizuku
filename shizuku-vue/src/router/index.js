@@ -142,6 +142,7 @@ const router = createRouter({
             },
           ],
         },
+        { path: '/point-store', name: 'point-store', component: () => import('@/components/member/MemberStore.vue'), },
       ],
     },
 
