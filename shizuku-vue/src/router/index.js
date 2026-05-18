@@ -224,6 +224,11 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminInventoryView.vue'),
         },
         {
+          path: 'inventory/create',
+          name: 'admin-inventory-create',
+          component: () => import('@/views/admin/AdminPurchaseCreateView.vue'),
+        },
+        {
           path: 'categories',
           name: 'admin-categories',
           meta: { requiresAdmin: true },
