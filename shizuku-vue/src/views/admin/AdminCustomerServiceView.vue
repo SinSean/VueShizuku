@@ -8,6 +8,16 @@ const chatAdminStore = useChatAdminStore();
 const inputMessage = ref('');
 const messagesContainer = ref(null);
 
+// ★ 畫面優化：改為「標籤」與「內文」分離的設計，並加上小圖示提升辨識度
+const quickReplies = ref([
+  { label: "👋 招呼", text: "您好，請問有什麼能為您服務？" },
+  { label: "🔍 查詢中", text: "您的問題我們已經收到，正在為您查詢中，請稍候。" },
+  { label: "🙇‍♂️ 久等了", text: "不好意思讓您久等了！" },
+  { label: "📦 問訂單", text: "請問您的訂單編號是多少呢？" },
+  { label: "✅ 有現貨", text: "這個商品目前有現貨喔，歡迎直接下單！" },
+  { label: "💖 結語", text: "感謝您的詢問，祝您有美好的一天！" }
+]);
+
 onMounted(async () => {
   await chatAdminStore.initConnection(adminStore.adminName);
   scrollToBottom();
@@ -23,9 +33,13 @@ const selectGuest = async (memberId) => {
       const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${memberId}`);
       if (response.ok) {
         const apiResult = await response.json();
-        // 配合組長規範：從 apiResult.data 對應聊天陣列
         if (apiResult.success && apiResult.data) {
-          guest.messages = apiResult.data.map(m => ({ sender: m.type,realSenderName: m.senderName, text: m.text, time: m.time })); 
+          guest.messages = apiResult.data.map(m => ({ 
+              sender: m.type, 
+              realSenderName: m.senderName, 
+              text: m.text, 
+              time: m.time 
+          })); 
           guest.hasLoadedHistory = true;
         }
       }
@@ -34,6 +48,11 @@ const selectGuest = async (memberId) => {
     }
   }
   scrollToBottom();
+};
+
+// ★ 點擊時，把物件裡的 .text 完整帶入輸入框
+const insertQuickReply = (text) => {
+  inputMessage.value = text;
 };
 
 const sendMessage = async () => {
@@ -112,7 +131,16 @@ watch(
           </div>
         </div>
 
-        <div class="p-4 border-t border-gray-200 bg-white">
+        <div class="p-4 border-t border-gray-200 bg-white flex flex-col gap-3">
+          
+          <div class="flex flex-wrap gap-2 pb-1">
+            <button v-for="(reply, index) in quickReplies" :key="index"
+                    @click="insertQuickReply(reply.text)"
+                    class="whitespace-nowrap px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] rounded-full border border-blue-200 transition-colors shadow-sm">
+              {{ reply.label }}
+            </button>
+          </div>
+
           <div class="flex gap-2">
             <input v-model="inputMessage" @keyup.enter="sendMessage"
                    type="text" class="flex-grow border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -131,3 +159,7 @@ watch(
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 移除原本的 scrollbar-hide 因為我們現在用自動換行了 */
+</style>
