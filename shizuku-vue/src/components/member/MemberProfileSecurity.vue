@@ -32,6 +32,9 @@ const newPhone = ref('');
 const newBirthday = ref(''); // 新增生日綁定變數
 const errorMessage = ref('');
 
+// 全局非同步請求載入狀態
+const isLoading = ref(false);
+
 // 倒數計時狀態
 const countdown = ref(60);
 const isCounting = ref(false);
@@ -68,6 +71,8 @@ const handleSendEmail = async () => {
         return;
     }
 
+    isLoading.value = true; // 開啟讀取中狀態
+
     try {
         const res = await sendSecurityCodeAPI({
             fEmail: email.value,
@@ -82,6 +87,8 @@ const handleSendEmail = async () => {
         }
     } catch (error) {
         errorMessage.value = error.response?.data?.message || '系統錯誤，請稍後再試';
+    } finally {
+        isLoading.value = false; // 關閉讀取中狀態
     }
 };
 
@@ -92,6 +99,8 @@ const handleVerifyCode = async () => {
         errorMessage.value = '請輸入驗證碼';
         return;
     }
+
+    isLoading.value = true;
 
     try {
         const res = await verifySecurityCodeAPI({
@@ -107,6 +116,8 @@ const handleVerifyCode = async () => {
         }
     } catch (error) {
         errorMessage.value = error.response?.data?.message || '驗證失敗，請確認驗證碼';
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -120,6 +131,8 @@ const handleUpdateSubmit = async () => {
             errorMessage.value = '請輸入新手機號碼';
             return;
         }
+
+        isLoading.value = true;
 
         try {
             const res = await updatePhoneWithCodeAPI({
@@ -141,6 +154,8 @@ const handleUpdateSubmit = async () => {
             }
         } catch (error) {
             errorMessage.value = error.response?.data?.message || '變更失敗，請稍後再試';
+        } finally {
+            isLoading.value = false;
         }
     } else if (currentType.value === 2) {
         // 處理生日更動
@@ -148,6 +163,8 @@ const handleUpdateSubmit = async () => {
             errorMessage.value = '請選擇新出生日期';
             return;
         }
+
+        isLoading.value = true;
 
         try {
             const res = await updateBirthdayWithCodeAPI({
@@ -169,12 +186,14 @@ const handleUpdateSubmit = async () => {
             }
         } catch (error) {
             errorMessage.value = error.response?.data?.message || '變更失敗，請稍後再試';
+        } finally {
+            isLoading.value = false;
         }
     }
 };
 
 const goBack = () => {
-    if (step.value > 1) {
+    if (step.value > 1 && !isLoading.value) { // 發送中不允許返回，避免狀態衝突
         step.value--;
         errorMessage.value = '';
     }
@@ -184,58 +203,70 @@ const goBack = () => {
 <template>
     <div
         class="relative max-w-[480px] mx-auto my-[60px] p-10 bg-white border border-gray-100 rounded-2xl shadow-sm text-center">
-        <div v-if="step > 1" class="absolute left-[30px] top-[35px] cursor-pointer" @click="goBack">
+        <!-- 當載入中時，停用返回按鈕 -->
+        <div v-if="step > 1" class="absolute left-[30px] top-[35px]"
+            :class="isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'" @click="goBack">
             <span class="text-2xl text-blue-600 font-bold">&larr;</span>
         </div>
 
+        <!-- 步驟 1：輸入 Email -->
         <div v-if="step === 1">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">{{ titleText }}</h3>
             <div class="mb-6">
-                <input type="email" v-model="email" placeholder="請輸入原帳號 Email"
-                    class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border" />
+                <input type="email" v-model="email" placeholder="請輸入原帳號 Email" :disabled="isLoading"
+                    class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
             </div>
             <button
-                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer"
-                @click="handleSendEmail">
-                下一個
+                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center"
+                :disabled="isLoading" @click="handleSendEmail">
+                <span v-if="isLoading">發送中...</span>
+                <span v-else>下一個</span>
             </button>
         </div>
 
+        <!-- 步驟 2：輸入驗證碼 -->
         <div v-if="step === 2">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">輸入驗證碼</h3>
             <p class="text-sm text-gray-400 mb-1">您的驗證碼已透過電子郵件傳送至</p>
             <p class="text-sm text-gray-800 font-medium mb-6">{{ email }}</p>
 
             <div class="mb-6">
-                <input type="text" v-model="code" placeholder="請輸入 6 位數驗證碼" maxlength="6"
-                    class="w-full h-14 border-b-2 border-gray-300 text-2xl text-center tracking-[8px] focus:border-blue-600 focus:outline-none bg-transparent box-border" />
+                <input type="text" v-model="code" placeholder="請輸入 6 位數驗證碼" maxlength="6" :disabled="isLoading"
+                    class="w-full h-14 border-b-2 border-gray-300 text-2xl text-center tracking-[8px] focus:border-blue-600 focus:outline-none bg-transparent box-border disabled:text-gray-400" />
             </div>
 
             <div class="text-xs text-gray-400 mb-7.5">
                 <span v-if="isCounting">{{ countdown }} 秒後重新傳送</span>
-                <span v-else class="text-blue-600 cursor-pointer underline" @click="handleSendEmail">重新傳送驗證碼</span>
+                <!-- 在發送中時，阻斷重新傳送的點擊 -->
+                <span v-else class="underline"
+                    :class="isLoading ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 cursor-pointer'"
+                    @click="!isLoading && handleSendEmail">重新傳送驗證碼</span>
             </div>
 
             <button
-                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer"
-                @click="handleVerifyCode">
-                下一步
+                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center"
+                :disabled="isLoading" @click="handleVerifyCode">
+                <span v-if="isLoading">驗證中...</span>
+                <span v-else>下一步</span>
             </button>
         </div>
 
+        <!-- 步驟 3：設定新資料 -->
         <div v-if="step === 3">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">{{ step3TitleText }}</h3>
             <div class="mb-6">
                 <input v-if="currentType === 1" type="tel" v-model="newPhone" :placeholder="inputPlaceholder"
-                    class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border" />
+                    :disabled="isLoading"
+                    class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
 
-                <input v-if="currentType === 2" type="date" v-model="newBirthday"
-                    class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border" />
+                <input v-if="currentType === 2" type="date" v-model="newBirthday" :disabled="isLoading"
+                    class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
             </div>
             <button type="button"
-                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center"
-                @click="handleUpdateSubmit">
-                儲存變更
+                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center disabled:bg-blue-300 disabled:cursor-not-allowed"
+                :disabled="isLoading" @click="handleUpdateSubmit">
+                <span v-if="isLoading">儲存中...</span>
+                <span v-else>儲存變更</span>
             </button>
         </div>
 
