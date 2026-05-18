@@ -37,14 +37,14 @@ const activeStepIndex = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+  <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
     <h2
       class="text-lg font-bold text-gray-800 border-l-4 border-emerald-500 pl-3 mb-8 flex items-center gap-2"
     >
       <i class="pi pi-map text-emerald-500"></i> 訂單處理進度
     </h2>
 
-    <div class="min-w-[600px] p-2">
+    <div class="w-full p-2">
       <div class="relative flex justify-between w-full">
         <div class="absolute top-4 left-0 right-0 h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
 
