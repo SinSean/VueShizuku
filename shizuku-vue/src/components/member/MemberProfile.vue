@@ -141,8 +141,7 @@ const formatBirthday = (dateStr) => {
                                 <p class="text-xs text-slate-400 font-semibold uppercase">手機號碼</p>
                                 <p class="text-slate-700 font-medium">{{ maskPhone(profile.fPhone) }}</p>
                             </div>
-                            <!-- 這裡你可以選擇連結到變更頁面，或者點擊後讓 input 出現 -->
-                            <router-link :to="{ name: 'security' }"
+                            <router-link :to="{ name: 'security', query: { type: 'phone' } }"
                                 class="text-blue-600 font-medium hover:underline text-sm">[變更]</router-link>
                         </div>
 
@@ -152,7 +151,7 @@ const formatBirthday = (dateStr) => {
                                 <p class="text-xs text-slate-400 font-semibold uppercase">生日</p>
                                 <p class="text-slate-700 font-medium">{{ formatBirthday(profile.fBirthday) }}</p>
                             </div>
-                            <router-link to="/verify/birthday"
+                            <router-link :to="{ name: 'security', query: { type: 'birthday' } }"
                                 class="text-blue-600 font-medium hover:underline text-sm">[變更]</router-link>
                         </div>
 

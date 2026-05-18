@@ -53,3 +53,8 @@ export const verifySecurityCodeAPI = (data) => {
 export const updatePhoneWithCodeAPI = (data) => {
     return request.post('/MemberApi/security/update-phone', data);
 };
+
+// 執行更新生日
+export const updateBirthdayWithCodeAPI = (data) => {
+    return request.post('/MemberApi/security/update-birthday', data);
+};
