@@ -42,8 +42,8 @@ const menuItems = [
                 <i class="pi pi-user text-2xl"></i>
             </div>
             <div>
-                <h3 class="font-bold text-slate-800">{{ authStore.userName }}</h3>
-                <p class="text-xs text-blue-600 cursor-pointer hover:underline">編輯個人簡介</p>
+                <h3 class="font-bold text-slate-1000">{{ authStore.userName }}</h3>
+                <p class="text-xs text-green-700">會員等級:{{ authStore.userLevel }}</p>
             </div>
         </div>
 
