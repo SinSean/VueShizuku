@@ -8,7 +8,7 @@ const chatAdminStore = useChatAdminStore();
 const inputMessage = ref('');
 const messagesContainer = ref(null);
 
-// ★ 畫面優化：改為「標籤」與「內文」分離的設計，並加上小圖示提升辨識度
+//  畫面優化：改為「標籤」與「內文」分離的設計，並加上小圖示提升辨識度
 const quickReplies = ref([
   { label: "👋 招呼", text: "您好，請問有什麼能為您服務？" },
   { label: "🔍 查詢中", text: "您的問題我們已經收到，正在為您查詢中，請稍候。" },
@@ -50,7 +50,7 @@ const selectGuest = async (memberId) => {
   scrollToBottom();
 };
 
-// ★ 點擊時，把物件裡的 .text 完整帶入輸入框
+//  點擊時，把物件裡的 .text 完整帶入輸入框
 const insertQuickReply = (text) => {
   inputMessage.value = text;
 };
