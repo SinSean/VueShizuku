@@ -1,41 +1,25 @@
 <script setup>
-// 從 Vue 工具箱中拿出 ref（用來做資料響應盒子）和 watch（用來監聽資料變化的監視器）
 import { ref, watch } from 'vue'
-// 引入向後端拿取金流日誌資料的 API 工具
 import { getPaymentTransactionLogsForAdminAPI } from '@/api/adminPayment'
-// 引入 Primevue 視窗元件
 import Dialog from 'primevue/dialog'
-// 引入 Primevue 手風琴外殼元件
 import Accordion from 'primevue/accordion'
-// 引入 Primevue 手風琴單個面板元件
 import AccordionPanel from 'primevue/accordionpanel'
-// 引入 Primevue 手風琴標題元件
 import AccordionHeader from 'primevue/accordionheader'
-// 引入 Primevue 手風琴內容元件
 import AccordionContent from 'primevue/accordioncontent'
 
-// 定義從父元件傳進來的資料（顯示狀態與目前的交易資料）
 const props = defineProps({
-  visible: Boolean, // 視窗是否顯示的開關
-  transaction: Object, // 目前選中的交易物件
+  visible: Boolean,
+  transaction: Object,
 })
 
-// 定義要傳回給父元件的通知事件
 const emit = defineEmits(['update:visible'])
-// 宣告一個用來裝日誌列表的盒子，預設是空陣列
 const logs = ref([])
-// 宣告一個紀錄是否正在載入中的狀態盒子，預設是不用載入
 const loading = ref(false)
-
-// 定義一個工具：將 JSON 字串解析成 JavaScript 看得懂的物件
 const parseLogData = (dataStr) => {
-  // 如果沒有傳入任何資料，就直接回傳空值
   if (!dataStr) return null
   try {
-    // 嘗試用 JSON 工具將文字轉成物件結構
     return JSON.parse(dataStr)
   } catch (e) {
-    // 如果對方的資料本來就不是 JSON 格式，就直接把原字串回傳
     return dataStr
   }
 }
@@ -85,6 +69,16 @@ const translateKey = (key) => {
     price: '商品單價', // 商品的單一售價
     confirmUrl: '消費者同意付款後的導向網址', // 成功付款後的跳轉頁面
     cancelUrl: '消費者取消付款後的導向網址', // 取消付款後的跳轉頁面
+    info: '金流詳細交易資訊',
+    payInfo: '付款明細資訊',
+    method: '付款管道',
+    maskedCardNumber: '信用卡卡號 (遮罩)',
+    paymentAccessToken: '付款授權 Token',
+    cardBrand: '發卡組織 (Visa/Master/JCB)',
+    cardType: '卡片種類 (Credit/Debit)',
+    paymentUrl: '金流支付跳轉網址',
+    web: '電腦版網頁支付連結',
+    app: '手機版 App 支付連結',
   }
   // 查字典，如果找不到對應的中文，就顯示原本的英文名稱
   return dictionary[key] || key
@@ -323,29 +317,142 @@ watch(
                 <div
                   v-for="(value, key) in parseLogData(log.fResponseData)"
                   :key="key"
-                  class="text-sm mb-2 flex flex-col"
+                  class="text-sm mb-4 flex flex-col border-b border-gray-100 pb-2 last:border-0 last:pb-0"
                 >
                   <!-- 顯示原始英文鍵名 -->
                   <span class="text-gray-400 text-xs">{{ key }}</span>
                   <!-- 顯示翻譯後的中文鍵名 -->
-                  <span class="font-semibold text-gray-700">
+                  <span class="font-semibold text-gray-700 text-base mb-1">
                     {{ translateKey(key) }}：
-                    <!-- 針對代表成功的代碼特別標註顏色 -->
-                    <span
-                      :class="{
-                        'text-green-600 font-bold':
-                          value === 1 || value === '0000' || value === '1',
-                        'text-red-600': value === 0 || value === '0',
-                        'text-gray-800 font-normal break-all':
-                          value !== 1 &&
-                          value !== '0000' &&
-                          value !== 0 &&
-                          value !== '1' &&
-                          value !== '0',
-                      }"
+                  </span>
+
+                  <!-- 如果是巢狀物件 (例如 info) -->
+                  <div
+                    v-if="typeof value === 'object' && value !== null"
+                    class="mt-2 pl-4 border-l-4 border-purple-400 bg-purple-50 p-3 rounded-md flex flex-col gap-2"
+                  >
+                    <div
+                      v-for="(subVal, subKey) in value"
+                      :key="subKey"
+                      class="text-xs flex flex-col border-b border-gray-100/50 pb-2 last:border-0 last:pb-0"
                     >
-                      {{ value }}
-                    </span>
+                      <!-- 原始子欄位英文鍵名 -->
+                      <span class="text-gray-400 font-mono text-[10px]">{{ subKey }}</span>
+                      <!-- 中文翻譯子欄位與值 -->
+                      <span class="font-semibold text-gray-700">
+                        {{ translateKey(subKey) }}：
+                        
+                        <!-- 1. 如果是 payInfo 付款明細陣列 -->
+                        <div v-if="subKey === 'payInfo' && Array.isArray(subVal)" class="mt-2 flex flex-col gap-2">
+                          <div v-for="(pay, pIdx) in subVal" :key="pIdx" class="bg-white p-3 rounded-lg border border-purple-200 flex flex-col gap-1.5 shadow-sm font-normal">
+                            <div class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5">
+                              <i class="pi pi-credit-card"></i> 實體付款明細 #{{ pIdx + 1 }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-gray-600">
+                              <div>
+                                <span class="text-gray-400">付款管道:</span>
+                                <strong class="text-gray-800 ml-1">{{ pay.method || '未載明' }}</strong>
+                              </div>
+                              <div>
+                                <span class="text-gray-400">交易金額:</span>
+                                <strong class="text-emerald-600 ml-1">${{ pay.amount?.toLocaleString() }}</strong>
+                              </div>
+                              <div v-if="pay.maskedCardNumber" class="col-span-1 md:col-span-2">
+                                <span class="text-gray-400">信用卡卡號 (遮罩):</span>
+                                <strong class="font-mono bg-gray-50 px-1.5 py-0.5 rounded ml-1 text-gray-700 border border-gray-100">{{ pay.maskedCardNumber }}</strong>
+                              </div>
+                              <div v-if="pay.cardBrand">
+                                <span class="text-gray-400">發卡組織:</span>
+                                <strong class="text-gray-800 ml-1">{{ pay.cardBrand }}</strong>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- 2. 如果是 packages 商品包裹明細陣列 -->
+                        <div v-else-if="subKey === 'packages' && Array.isArray(subVal)" class="mt-2 flex flex-col gap-2">
+                          <div v-for="(pkg, pIdx) in subVal" :key="pIdx" class="bg-white p-3 rounded-lg border border-purple-200 shadow-sm flex flex-col gap-1.5 font-normal">
+                            <div class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5">
+                              <i class="pi pi-box"></i> 包裹明細 #{{ pIdx + 1 }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-gray-600">
+                              <div>
+                                <span class="text-gray-400">包裹編號:</span>
+                                <strong class="font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 ml-1">{{ pkg.id }}</strong>
+                              </div>
+                              <div>
+                                <span class="text-gray-400">包裹金額:</span>
+                                <strong class="text-amber-600 font-bold ml-1">${{ pkg.amount?.toLocaleString() }}</strong>
+                              </div>
+                              <div class="col-span-1 md:col-span-2">
+                                <span class="text-gray-400">包裹名稱:</span>
+                                <strong class="text-gray-800 ml-1">{{ pkg.name }}</strong>
+                              </div>
+                            </div>
+                            <!-- 包裹內的產品明細 -->
+                            <div v-if="pkg.products && Array.isArray(pkg.products)" class="bg-purple-50/50 p-2 rounded-lg border border-purple-100/50 mt-2 font-normal">
+                              <div class="text-[10px] font-black text-purple-700 mb-1 flex items-center gap-1">
+                                <i class="pi pi-list"></i> 包裹內商品清單：
+                              </div>
+                              <div
+                                v-for="(prod, prIdx) in pkg.products"
+                                :key="prIdx"
+                                class="text-[11px] text-gray-700 flex justify-between py-1 border-b border-purple-100/20 last:border-0"
+                              >
+                                <span>名稱: <strong class="text-gray-900">{{ prod.name }}</strong></span>
+                                <span>數量: <strong class="text-gray-900">{{ prod.quantity }}</strong></span>
+                                <span>單價: <strong class="text-emerald-600">${{ prod.price }}</strong></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- 3. 如果是 paymentUrl 金流支付跳轉網址 (含有 web, app 鍵) -->
+                        <div v-else-if="subKey === 'paymentUrl' && typeof subVal === 'object' && subVal !== null" class="mt-2 flex flex-col gap-2 font-normal">
+                          <div class="bg-white p-3 rounded-lg border border-purple-200 shadow-sm flex flex-col gap-2">
+                            <div class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5">
+                              <i class="pi pi-link"></i> 支付通道跳轉網址
+                            </div>
+                            <div class="flex flex-col gap-2 text-xs">
+                              <!-- Web 網頁版連結 -->
+                              <div v-if="subVal.web" class="flex flex-col md:flex-row md:items-center gap-1.5">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold scale-90 origin-left shrink-0 flex items-center gap-1">
+                                  <i class="pi pi-desktop"></i> 電腦網頁
+                                </span>
+                                <a :href="subVal.web" target="_blank" class="text-blue-600 hover:underline break-all font-mono">{{ subVal.web }}</a>
+                              </div>
+                              <!-- App 行動版連結 -->
+                              <div v-if="subVal.app" class="flex flex-col md:flex-row md:items-center gap-1.5 mt-1">
+                                <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold scale-90 origin-left shrink-0 flex items-center gap-1">
+                                  <i class="pi pi-mobile"></i> 手機 App
+                                </span>
+                                <a :href="subVal.app" target="_blank" class="text-emerald-600 hover:underline break-all font-mono">{{ subVal.app }}</a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- 4. 其他巢狀 JSON 回應 (萬用後備) -->
+                        <div v-else-if="typeof subVal === 'object' && subVal !== null" class="mt-1 bg-white p-2 rounded border border-purple-100 font-normal">
+                          <pre class="text-[10px] text-gray-500 font-mono whitespace-pre-wrap leading-relaxed">{{ JSON.stringify(subVal, null, 2) }}</pre>
+                        </div>
+                        
+                        <!-- 4. 純文字 -->
+                        <span v-else class="text-gray-900 font-mono break-all">{{ subVal }}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 如果是一般純文字欄位 -->
+                  <span
+                    v-else
+                    :class="{
+                      'text-green-600 font-bold': value === 1 || value === '0000' || value === '1',
+                      'text-red-600': value === 0 || value === '0',
+                      'text-blue-600 font-normal break-all': value !== 1 && value !== '0000' && value !== 0 && value !== '1' && value !== '0',
+                    }"
+                  >
+                    {{ value }}
                   </span>
                 </div>
               </div>
