@@ -13,22 +13,22 @@ let connection = null;
 
 onMounted(async () => {
   if (!authStore.isLogin) return;
-
   const memberId = authStore.user?.fId || authStore.user?.fMemberId || 0;
 
-  // 1. 先去資料庫把「歷史紀錄」撈回來
   try {
     const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${memberId}`);
     if (response.ok) {
-      const history = await response.json();
-      messages.value = history; // 將撈回來的紀錄直接塞進陣列
-      await scrollToBottom();
+      const apiResult = await response.json();
+      // 配合組長規範：先判斷 success，再從 data 欄位拿資料
+      if (apiResult.success && apiResult.data) {
+        messages.value = apiResult.data;
+        scrollToBottom();
+      }
     }
   } catch (err) {
     console.error("歷史紀錄載入失敗: ", err);
   }
 
-  // 2. 接著才啟動 SignalR 即時通訊
   connection = new signalR.HubConnectionBuilder()
     .withUrl("https://localhost:7197/chatHub")
     .withAutomaticReconnect()
@@ -42,32 +42,23 @@ onMounted(async () => {
 
   try {
     await connection.start();
+    await connection.invoke("JoinAsMember", memberId);
+    
     connectionStatus.value = '已連線';
     isConnected.value = true;
-    
-    // 如果沒有歷史紀錄，才顯示歡迎詞 (避免每次重整都跑出一句歡迎詞)
     if (messages.value.length === 0) {
-        messages.value.push({
-            sender: '系統',
-            text: `您好，${authStore.userName}！客服連線成功。請輸入您想詢問的問題。`,
-            isMe: false,
-            isSystem: true
-        });
+        messages.value.push({ sender: '系統', text: `您好，${authStore.userName}！客服連線成功。請輸入您想詢問的問題。`, isMe: false, isSystem: true });
     }
   } catch (err) {
     connectionStatus.value = '連線失敗，請重新整理';
-    console.error("連線失敗: ", err);
   }
 });
 
 const sendMessage = async () => {
   if (!inputMessage.value.trim() || !isConnected.value) return;
-
   const memberId = authStore.user?.fId || authStore.user?.fMemberId || 0;
-
   try {
     await connection.invoke("SendMessageToAdmin", memberId, authStore.userName, inputMessage.value);
-    
     const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     messages.value.push({ sender: authStore.userName, text: inputMessage.value, isMe: true, time: timeString });
     inputMessage.value = '';
@@ -77,11 +68,12 @@ const sendMessage = async () => {
   }
 };
 
-const scrollToBottom = async () => {
-  await nextTick();
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-  }
+const scrollToBottom = () => {
+  setTimeout(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    }
+  }, 100);
 };
 </script>
 
