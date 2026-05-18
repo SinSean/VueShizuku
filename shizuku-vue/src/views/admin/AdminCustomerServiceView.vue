@@ -25,7 +25,7 @@ const selectGuest = async (memberId) => {
         const apiResult = await response.json();
         // 配合組長規範：從 apiResult.data 對應聊天陣列
         if (apiResult.success && apiResult.data) {
-          guest.messages = apiResult.data.map(m => ({ sender: m.type, text: m.text, time: m.time })); 
+          guest.messages = apiResult.data.map(m => ({ sender: m.type,realSenderName: m.senderName, text: m.text, time: m.time })); 
           guest.hasLoadedHistory = true;
         }
       }
@@ -103,7 +103,7 @@ watch(
           <div v-for="(msg, index) in chatAdminStore.activeGuests[chatAdminStore.currentMemberId].messages" :key="index" 
                :class="['flex flex-col', msg.sender === 'Admin' ? 'items-end' : 'items-start']">
             <span class="text-[11px] text-gray-400 mb-1">
-              {{ msg.sender === 'Admin' ? `客服 (${adminStore.adminName})` : chatAdminStore.activeGuests[chatAdminStore.currentMemberId].realName }} · {{ msg.time }}
+              {{ msg.sender === 'Admin' ? `客服 (${msg.realSenderName})` : chatAdminStore.activeGuests[chatAdminStore.currentMemberId].realName }} · {{ msg.time }}
             </span>
             <div :class="['px-4 py-2 rounded-2xl max-w-[70%] text-sm shadow-sm', 
                         msg.sender === 'Admin' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-800']">

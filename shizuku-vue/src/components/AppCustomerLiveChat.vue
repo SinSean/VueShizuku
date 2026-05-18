@@ -19,9 +19,14 @@ onMounted(async () => {
     const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${memberId}`);
     if (response.ok) {
       const apiResult = await response.json();
-      // 配合組長規範：先判斷 success，再從 data 欄位拿資料
       if (apiResult.success && apiResult.data) {
-        messages.value = apiResult.data;
+        //  關鍵：如果是 Admin 發的，強制顯示 '線上客服'，否則顯示客人自己的名字
+        messages.value = apiResult.data.map(m => ({
+          sender: m.type === 'Admin' ? '線上客服' : m.senderName,
+          text: m.text,
+          isMe: m.isMe,
+          time: m.time
+        }));
         scrollToBottom();
       }
     }
@@ -34,9 +39,10 @@ onMounted(async () => {
     .withAutomaticReconnect()
     .build();
 
+  //  收到客服即時回覆時，直接忽略 adminName，強制顯示 '線上客服'
   connection.on("ReceiveFromAdmin", (adminName, message) => {
     const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    messages.value.push({ sender: `客服 (${adminName})`, text: message, isMe: false, time: timeString });
+    messages.value.push({ sender: '線上客服', text: message, isMe: false, time: timeString });
     scrollToBottom();
   });
 

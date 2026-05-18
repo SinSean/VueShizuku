@@ -82,8 +82,9 @@ export const useChatAdminStore = defineStore('chatAdmin', () => {
       
       const now = new Date();
       const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-      
-      activeGuests.value[currentMemberId.value].messages.push({ sender: 'Admin', text: message, time: timeString });
+
+      //  多加一個 realSenderName 屬性
+      activeGuests.value[currentMemberId.value].messages.push({ sender: 'Admin',realSenderName: adminName, text: message, time: timeString });
       return true;
     } catch (err) {
       console.error("SignalR 發送失敗:", err);
