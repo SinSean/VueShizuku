@@ -41,11 +41,22 @@ const isCounting = ref(false);
 let timer = null;
 
 onMounted(() => {
-    // 從網址 query 取得 type，若為 'birthday' 則切換為 Type 2
-    if (route.query.type === 'birthday') {
-        currentType.value = 2;
-    } else {
-        currentType.value = 1;
+    const queryType = route.query.type;
+    switch (queryType) {
+        case 'phone':
+            currentType.value = 1;
+            break;
+        case 'birthday':
+            currentType.value = 2;
+            break;
+        // 未來若要擴充其他類型，直接在這裡加 case 即可
+        // case 'password':
+        //     currentType.value = 3;
+        //     break;
+        default:
+            // 預設防呆：如果網址沒帶 type 或亂打，預設回歸手機號碼修改 (1)
+            currentType.value = 1;
+            break;
     }
 });
 
