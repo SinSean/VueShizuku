@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router'; // 補上引入路由
 import {
-    sendPhoneVerificationCodeAPI,
-    verifyPhoneSecurityCodeAPI,
+    sendSecurityCodeAPI,
+    verifySecurityCodeAPI,
     updatePhoneWithCodeAPI
 } from '@/api/member';
 import { useAuthStore } from '@/stores/auth';
@@ -49,7 +49,7 @@ const handleSendEmail = async () => {
     }
 
     try {
-        const res = await sendPhoneVerificationCodeAPI({
+        const res = await sendSecurityCodeAPI({
             fEmail: email.value,
             fType: currentType.value
         });
@@ -74,7 +74,7 @@ const handleVerifyCode = async () => {
     }
 
     try {
-        const res = await verifyPhoneSecurityCodeAPI({
+        const res = await verifySecurityCodeAPI({
             fEmail: email.value,
             fCode: code.value,
             fType: currentType.value

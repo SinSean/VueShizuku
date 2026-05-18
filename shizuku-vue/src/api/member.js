@@ -39,17 +39,17 @@ export const updateProfileAPI = (data) => {
 };
 
 // 會員更新手機號碼
-// 請求驗證碼
-export const sendPhoneVerificationCodeAPI = (data) => {
+// 請求安全驗證碼
+export const sendSecurityCodeAPI = (data) => {
     return request.post('/MemberApi/security/request-code', data);
 };
 
-// 驗證驗證碼
-export const verifyPhoneSecurityCodeAPI = (data) => {
+// 驗證安全驗證碼
+export const verifySecurityCodeAPI = (data) => {
     return request.post('/MemberApi/security/verify-code', data);
 };
 
-// 真正執行更新手機
+// 執行更新手機
 export const updatePhoneWithCodeAPI = (data) => {
     return request.post('/MemberApi/security/update-phone', data);
 };
