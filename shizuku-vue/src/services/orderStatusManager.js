@@ -9,6 +9,8 @@ export const ORDER_STATUS = {
   SHIPPING: 3, // 已出貨 (配送中)
   DELIVERED: 4, // 已送達 (完成)
   CANCELLED: 5, // 已取消
+  PENDING_REFUND: 6, // 待退款
+  REFUNDED: 7, // 已退款
 }
 
 // 2. 金流交易狀態常數 (對齊 C# 交易記錄 fStatus)
@@ -26,6 +28,8 @@ const statusMap = {
   [ORDER_STATUS.SHIPPING]: { text: '已出貨', color: '#6366f1', icon: 'pi pi-truck' },
   [ORDER_STATUS.DELIVERED]: { text: '已送達', color: '#10b981', icon: 'pi pi-check-circle' },
   [ORDER_STATUS.CANCELLED]: { text: '已取消', color: '#ef4444', icon: 'pi pi-times-circle' },
+  [ORDER_STATUS.PENDING_REFUND]: { text: '待退款', color: '#a855f7', icon: 'pi pi-spinner pi-spin' }, // 紫色旋轉圖示
+  [ORDER_STATUS.REFUNDED]: { text: '已退款', color: '#64748b', icon: 'pi pi-backward' },          // 灰色退回圖示
 }
 
 // 金流交易狀態 UI 對照表
@@ -44,8 +48,10 @@ const validTransitions = {
   [ORDER_STATUS.PENDING]: [ORDER_STATUS.PAID, ORDER_STATUS.CANCELLED],
   [ORDER_STATUS.PAID]: [ORDER_STATUS.SHIPPING, ORDER_STATUS.CANCELLED],
   [ORDER_STATUS.SHIPPING]: [ORDER_STATUS.DELIVERED],
-  [ORDER_STATUS.DELIVERED]: [], // 已送達為終點狀態
+  [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.PENDING_REFUND], // 已送達後可申請退款
   [ORDER_STATUS.CANCELLED]: [], // 已取消為終點狀態
+  [ORDER_STATUS.PENDING_REFUND]: [ORDER_STATUS.REFUNDED],   // 待退款可核准至已退款
+  [ORDER_STATUS.REFUNDED]: [],   // 已退款為終點狀態
 }
 
 export const orderStatusManager = {
