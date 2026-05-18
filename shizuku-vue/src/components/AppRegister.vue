@@ -19,7 +19,7 @@ const verifyCode = ref('');
 // 依據 DTO 結構定義響應式表單
 const form = reactive({
     fName: '張明祥',
-    fEmail: 'sealll4001@gmail.com',
+    fEmail: 'sealll4002@gmail.com',
     fPhone: '0978854654',
     fGender: 1,
     fBirthday: '2000-09-01',
