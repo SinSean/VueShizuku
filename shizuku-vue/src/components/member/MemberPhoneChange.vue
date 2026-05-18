@@ -1,12 +1,17 @@
 <script setup>
 import { ref } from 'vue';
+import {
+    sendPhoneVerificationCodeAPI,
+    verifyPhoneSecurityCodeAPI,
+    updatePhoneWithCodeAPI
+} from '@/api/member';
 
 // 流程狀態：1=輸入Email驗證, 2=輸入驗證碼, 3=輸入新手機號碼
 const step = ref(1);
 const currentType = ref(1); // 1 代表修改手機
 
 // 表單資料
-const email = ref('');
+const email = ref('sealll4001@gmail.com');
 const code = ref('');
 const newPhone = ref('');
 const errorMessage = ref('');
@@ -19,6 +24,7 @@ let timer = null;
 const startTimer = () => {
     isCounting.value = true;
     countdown.value = 60;
+    if (timer) clearInterval(timer);
     timer = setInterval(() => {
         if (countdown.value > 1) {
             countdown.value--;
@@ -29,7 +35,7 @@ const startTimer = () => {
     }, 1000);
 };
 
-// 步驟 1：點選「下一個」-> 發送 Email 驗證碼
+// 步驟 1：點選「下一個」 -> 打第一隻 API 發送 Email 驗證碼
 const handleSendEmail = async () => {
     errorMessage.value = '';
     if (!email.value) {
@@ -38,26 +44,24 @@ const handleSendEmail = async () => {
     }
 
     try {
-        // const res = await axios.post('/api/member/security/request-code', { 
-        //   fEmail: email.value, 
-        //   fType: currentType.value 
-        // });
-        // if (res.data.success) {
-        //   step.value = 2;
-        //   startTimer();
-        // } else {
-        //   errorMessage.value = res.data.message;
-        // }
+        // 對應 SecurityRequestCodeDto
+        const res = await sendPhoneVerificationCodeAPI({
+            fEmail: email.value,
+            fType: currentType.value
+        });
 
-        // 模擬後端成功
-        step.value = 2;
-        startTimer();
+        if (res.data && res.data.success) {
+            step.value = 2;
+            startTimer();
+        } else {
+            errorMessage.value = res.data?.message || '發送失敗';
+        }
     } catch (error) {
-        errorMessage.value = '系統錯誤，請稍後再試';
+        errorMessage.value = error.response?.data?.message || '系統錯誤，請稍後再試';
     }
 };
 
-// 步驟 2：點選「下一步」-> 驗證驗證碼
+// 步驟 2：點選「下一步」 -> 打第二隻 API 驗證驗證碼
 const handleVerifyCode = async () => {
     errorMessage.value = '';
     if (!code.value) {
@@ -66,45 +70,50 @@ const handleVerifyCode = async () => {
     }
 
     try {
-        // const res = await axios.post('/api/member/security/verify-code', { 
-        //   fEmail: email.value, 
-        //   fCode: code.value,
-        //   fType: currentType.value
-        // });
-        // if (res.data.success) {
-        //   step.value = 3;
-        //   if(timer) clearInterval(timer);
-        // } else {
-        //   errorMessage.value = res.data.message;
-        // }
+        // 對應 SecurityVerifyCodeDto
+        const res = await verifyPhoneSecurityCodeAPI({
+            fEmail: email.value,
+            fCode: code.value,
+            fType: currentType.value
+        });
 
-        // 模擬後端成功
-        step.value = 3;
+        if (res.data && res.data.success) {
+            step.value = 3; // 後端驗證成功，才進入步驟 3
+        } else {
+            errorMessage.value = res.data?.message || '驗證碼錯誤';
+        }
     } catch (error) {
-        errorMessage.value = '驗證失敗';
+        errorMessage.value = error.response?.data?.message || '驗證失敗，請確認驗證碼';
     }
 };
 
-// 步驟 3：點選「確認變更」-> 提交新手機並修改
-const handleUpdatePhone = async () => {
+// 步驟 3：點選「儲存變更」 -> 打第三隻 API 變更手機
+const handleUpdatePhone = async (event) => {
     errorMessage.value = '';
     if (!newPhone.value) {
         errorMessage.value = '請輸入新手機號碼';
+        event.preventDefault(); // 阻擋 router-link 跳轉
         return;
     }
 
     try {
-        // const res = await axios.post('/api/member/security/update-phone', { 
-        //   fNewPhone: newPhone.value, 
-        //   fVerifiedCode: code.value 
-        // });
-        // if (res.data.success) {
-        //   alert('手機號碼修改成功！');
-        // } else {
-        //   errorMessage.value = res.data.message;
-        // }
+        // 對應 SecurityUpdatePhoneDto
+        const res = await updatePhoneWithCodeAPI({
+            fNewPhone: newPhone.value,
+            fVerifiedCode: code.value // 精準對應後端 DTO 屬性名稱
+        });
+
+        if (res.data && res.data.success) {
+            alert('手機號碼修改成功！');
+            if (timer) clearInterval(timer);
+            // 成功：不阻斷，讓 router-link 正常跳轉回會員中心
+        } else {
+            errorMessage.value = res.data?.message || '變更失敗';
+            event.preventDefault(); // 失敗：阻擋跳轉
+        }
     } catch (error) {
-        errorMessage.value = '變更失敗';
+        errorMessage.value = error.response?.data?.message || '變更失敗，請稍後再試';
+        event.preventDefault(); // 異常：阻擋跳轉
     }
 };
 
@@ -123,6 +132,7 @@ const goBack = () => {
             <span class="text-2xl text-blue-600 font-bold">&larr;</span>
         </div>
 
+        <!-- 步驟 1：輸入 Email -->
         <div v-if="step === 1">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">重新設定手機</h3>
             <div class="mb-6">
@@ -136,6 +146,7 @@ const goBack = () => {
             </button>
         </div>
 
+        <!-- 步驟 2：輸入驗證碼 -->
         <div v-if="step === 2">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">輸入驗證碼</h3>
             <p class="text-sm text-gray-400 mb-1">您的驗證碼已透過電子郵件傳送至</p>
@@ -158,6 +169,7 @@ const goBack = () => {
             </button>
         </div>
 
+        <!-- 步驟 3：輸入新手機號碼 -->
         <div v-if="step === 3">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">建立新手機號碼</h3>
             <div class="mb-6">
@@ -174,3 +186,5 @@ const goBack = () => {
         <p v-if="errorMessage" class="text-red-500 text-xs text-center mt-4">{{ errorMessage }}</p>
     </div>
 </template>
+
+<style scoped></style>

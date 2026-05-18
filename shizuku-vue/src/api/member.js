@@ -37,3 +37,19 @@ export const updateAddressesAPI = (memberId, data) => {
 export const updateProfileAPI = (data) => {
     return request.put('/MemberApi/UpdateProfile', data);
 };
+
+// 會員更新手機號碼
+// 請求驗證碼
+export const sendPhoneVerificationCodeAPI = (data) => {
+    return request.post('/MemberApi/security/request-code', data);
+};
+
+// 驗證驗證碼
+export const verifyPhoneSecurityCodeAPI = (data) => {
+    return request.post('/MemberApi/security/verify-code', data);
+};
+
+// 真正執行更新手機
+export const updatePhoneWithCodeAPI = (data) => {
+    return request.post('/MemberApi/security/update-phone', data);
+};
