@@ -11,6 +11,7 @@ import { useAdminNotification } from '@/composables/useAdminNotification'
 import AllPaymentsWidget from '@/components/admin/payments/AllPaymentsWidget.vue'
 import AnomalyPaymentWidget from '@/components/admin/payments/AnomalyPaymentWidget.vue'
 import RevenueDataWidget from '@/components/admin/payments/RevenueDataWidget.vue'
+import RefundManagementWidget from '@/components/admin/payments/RefundManagementWidget.vue'
 
 // 目前被點擊打開的 Widget
 const activeWidget = ref(null)
@@ -49,7 +50,7 @@ const widgets = [
     desc: '集中處理退款申請、線上退刷審核與退款原因數據分析。',
     icon: 'pi pi-undo',
     gridSpan: 'col-span-1',
-    component: null,
+    component: RefundManagementWidget,
   },
 ]
 

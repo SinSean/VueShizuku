@@ -15,7 +15,7 @@ import OrderProgressStepper from '@/components/orderDetails/OrderProgressStepper
 import OrderActions from '@/components/orderDetails/OrderActions.vue'
 
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
-import { getOrderDetailAPI } from '@/api/order'
+import { getOrderDetailAPI, requestRefundAPI } from '@/api/order'
 import { useAuthStore } from '@/stores/auth'
 
 // 引入職責分離組合式函數
@@ -45,7 +45,8 @@ const {
   handleCountdownEnd,
 } = useOrderDetailActions(orderId)
 
-onMounted(async () => {
+// 讀取訂單詳細資訊
+const fetchOrderDetail = async () => {
   try {
     const res = await getOrderDetailAPI(orderId, authStore.user?.fId)
 
@@ -60,6 +61,8 @@ onMounted(async () => {
         已送達: ORDER_STATUS.DELIVERED,
         已完成: ORDER_STATUS.DELIVERED,
         已取消: ORDER_STATUS.CANCELLED,
+        待退款: ORDER_STATUS.PENDING_REFUND,
+        已退款: ORDER_STATUS.REFUNDED,
       }
 
       const mappedData = {
@@ -92,10 +95,33 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+onMounted(async () => {
+  await fetchOrderDetail()
 })
 
 const goBack = () => {
   router.push({ name: 'MemberOrders' })
+}
+
+// ========== 申請退款 ==========
+const handleRefundRequest = async () => {
+  const reason = prompt('請簡述退款原因（例如：買錯了、不想買了、欲更換付款方式等）：')
+  if (!reason) return // 使用者按取消
+
+  try {
+    const res = await requestRefundAPI(orderId, reason)
+    if (res && res.success) {
+      toast.add({ severity: 'success', summary: '申請成功', detail: res.message, life: 5000 })
+      // 重新加載最新的訂單詳細，如果是秒退款，會直接是已退款狀態！
+      await fetchOrderDetail()
+    } else {
+      toast.add({ severity: 'error', summary: '申請失敗', detail: res?.message || '退款申請發生錯誤', life: 5000 })
+    }
+  } catch (err) {
+    toast.add({ severity: 'error', summary: '系統錯誤', detail: '無法連線伺服器，請稍後再試。', life: 4000 })
+  }
 }
 </script>
 
@@ -179,7 +205,7 @@ const goBack = () => {
 
       <!-- 6. 操作按鈕 (最底部壓陣) -->
       <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm mt-2">
-        <OrderActions :order="orderData" @repay="handleRepay" @cancel="handleCancel" />
+        <OrderActions :order="orderData" @repay="handleRepay" @cancel="handleCancel" @requestRefund="handleRefundRequest" />
       </div>
     </div>
 

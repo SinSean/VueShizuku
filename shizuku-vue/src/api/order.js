@@ -36,3 +36,9 @@ export const cancelOrderApi = async (orderNo) => {
   const response = await request.patch(`/orderApi/${orderNo}/cancel`)
   return response.data
 }
+
+// 前台會員申請退款
+export const requestRefundAPI = async (orderNo, reason) => {
+  const response = await request.post(`/orderApi/${orderNo}/refund`, { reason })
+  return response.data
+}

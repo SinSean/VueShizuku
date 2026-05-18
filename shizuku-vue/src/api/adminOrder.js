@@ -68,3 +68,21 @@ export const triggerOrderScanAPI = async () => {
   const response = await request.post('/AdminOrderApi/trigger-order-scan')
   return response.data
 }
+
+// 取得待退款訂單列表
+export const getPendingRefundsAPI = async () => {
+  const response = await request.get('/AdminOrderApi/refunds')
+  return response.data
+}
+
+// 核准退款
+export const approveRefundAPI = async (orderNo) => {
+  const response = await request.post(`/AdminOrderApi/${orderNo}/approve-refund`)
+  return response.data
+}
+
+// 駁回退款申請
+export const rejectRefundAPI = async (orderNo, reason) => {
+  const response = await request.post(`/AdminOrderApi/${orderNo}/reject-refund`, { reason })
+  return response.data
+}

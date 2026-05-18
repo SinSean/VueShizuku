@@ -12,7 +12,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['repay', 'cancel'])
+const emit = defineEmits(['repay', 'cancel', 'requestRefund'])
 
 const menu = ref()
 const items = ref([
@@ -42,6 +42,22 @@ const items = ref([
 // 利用狀態機進行完全無魔術字判定
 const isPendingPayment = computed(() => {
   return props.order.status === ORDER_STATUS.PENDING || props.order.statusText === '未付款'
+})
+
+const isDelivered = computed(() => {
+  return props.order.status === ORDER_STATUS.DELIVERED
+})
+
+const isPaid = computed(() => {
+  return props.order.status === ORDER_STATUS.PAID || props.order.statusText === '已付款'
+})
+
+const isPendingRefund = computed(() => {
+  return props.order.status === ORDER_STATUS.PENDING_REFUND
+})
+
+const isRefunded = computed(() => {
+  return props.order.status === ORDER_STATUS.REFUNDED
 })
 
 const toggleMenu = (event) => {
@@ -85,9 +101,46 @@ const toggleMenu = (event) => {
         />
       </template>
 
-      <!-- 2. 其他已付款、出貨中或取消狀態，顯示再次購買按鈕 -->
+      <!-- 2. 已付款但尚未出貨：自助秒退款，直接執行退刷 -->
+      <template v-else-if="isPaid">
+        <Button
+          label="取消訂單並退款"
+          icon="pi pi-times-circle"
+          severity="danger"
+          class="rounded-xl px-6 font-bold"
+          @click="emit('requestRefund')"
+        />
+      </template>
+
+      <!-- 3. 已送達：常規客服審核退款 -->
+      <template v-else-if="isDelivered">
+        <Button
+          label="申請退款"
+          icon="pi pi-undo"
+          severity="warning"
+          class="rounded-xl px-6 font-bold"
+          @click="emit('requestRefund')"
+        />
+      </template>
+
+      <!-- 4. 待退款狀態提示 -->
+      <template v-else-if="isPendingRefund">
+        <div class="flex items-center gap-2 bg-purple-50 px-5 py-3 rounded-xl border border-purple-200">
+          <i class="pi pi-spinner pi-spin text-purple-500"></i>
+          <span class="text-sm font-bold text-purple-700">退款審核處理中，請耐心等候</span>
+        </div>
+      </template>
+
+      <!-- 5. 已退款狀態提示 -->
+      <template v-else-if="isRefunded">
+        <div class="flex items-center gap-2 bg-gray-100 px-5 py-3 rounded-xl border border-gray-200">
+          <i class="pi pi-check-circle text-gray-500"></i>
+          <span class="text-sm font-bold text-gray-600">此訂單已完成退款</span>
+        </div>
+      </template>
+
+      <!-- 6. 其他已付款、出貨中或取消狀態，顯示再次購買按鈕 -->
       <template v-else>
-        <!-- 暫時維持裝飾用按鈕，但加上 disabled 或 title 提示避免誤導，等待未來規格開發 -->
         <Button
           label="再次購買"
           icon="pi pi-shopping-cart"
@@ -101,3 +154,4 @@ const toggleMenu = (event) => {
     </div>
   </div>
 </template>
+
