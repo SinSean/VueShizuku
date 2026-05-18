@@ -21,7 +21,7 @@ const form = ref({
   fName: '',
   fCategoryId: null,
   fDescription: '',
-  fStatus: 1,
+  fStatus: 3,
 })
 
 // ── 規格列表 ──
@@ -371,6 +371,7 @@ async function save() {
             >
               <option :value="1">上架中</option>
               <option :value="2">下架</option>
+              <option :value="2">尚未刊登</option>
             </select>
           </div>
         </div>

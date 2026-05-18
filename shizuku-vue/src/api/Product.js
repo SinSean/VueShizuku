@@ -49,4 +49,7 @@ export const productApi = {
 
   getStockRecords: () => axios.get(`{{base}}/stock-records`),
   addStockRecord: (dto) => axios.post(`{{base}}/stock-records`, dto),
+  getPurchaseOrders: () => axios.get(`${base}/purchase-orders`),
+  getPurchaseOrder: (id) => axios.get(`${base}/purchase-orders/${id}`),
+  createPurchaseOrder: (dto) => axios.post(`${base}/purchase-orders`, dto),
 }

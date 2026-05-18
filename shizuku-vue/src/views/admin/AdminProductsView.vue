@@ -17,7 +17,7 @@ const keyword = ref('')
 // 選擇的分類
 const selectedCategoryId = ref(null)
 
-// 目前 Tab（null=全部, 1=上架, 2=下架）
+// 目前 Tab（null=全部, 1=上架, 2=下架,3=尚未刊登）
 const activeTab = ref(null)
 
 // 勾選的商品 ID
@@ -156,6 +156,7 @@ const filteredProducts = computed(() => {
   if (activeTab.value === null) return products.value
   if (activeTab.value === 1) return products.value.filter((p) => p.fStatus === 1)
   if (activeTab.value === 2) return products.value.filter((p) => p.fStatus === 2)
+  if (activeTab.value === 3) return products.value.filter((p) => p.fStatus === 3)
   if (activeTab.value === 0) return products.value.filter((p) => p.fStatus === 0)
   // 加上售完的篩選
   if (activeTab.value === 'sold')
@@ -170,6 +171,7 @@ const tabCounts = computed(() => ({
   all: products.value.length,
   active: products.value.filter((p) => p.fStatus === 1).length,
   offline: products.value.filter((p) => p.fStatus === 2).length,
+  unlisted: products.value.filter((p) => p.fStatus === 3).length,
   sold: products.value.filter(
     (p) => p.variants?.length > 0 && p.variants.every((v) => v.fStock === 0),
   ).length,
@@ -307,6 +309,7 @@ onMounted(async () => {
           { label: '全部', value: null, count: tabCounts.all },
           { label: '上架中', value: 1, count: tabCounts.active },
           { label: '下架', value: 2, count: tabCounts.offline },
+          { label: '尚未刊登', value: 3, count: tabCounts.unlisted },
           { label: '售完', value: 'sold', count: tabCounts.sold },
         ]"
         :key="tab.label"
@@ -489,15 +492,24 @@ onMounted(async () => {
               <td class="px-3 py-3">
                 <span
                   :class="[
-                    'text-xs px-2 py-1 rounded-full font-medium',
                     product.fStatus === 1
                       ? 'bg-green-50 text-green-700'
                       : product.fStatus === 2
                         ? 'bg-gray-100 text-gray-500'
-                        : 'bg-red-50 text-red-600',
+                        : product.fStatus === 3
+                          ? 'bg-blue-50 text-blue-500' // ← 加這行
+                          : 'bg-red-50 text-red-600',
                   ]"
                 >
-                  {{ product.fStatus === 1 ? '上架中' : product.fStatus === 2 ? '下架' : '刪除' }}
+                  {{
+                    product.fStatus === 1
+                      ? '上架中'
+                      : product.fStatus === 2
+                        ? '下架'
+                        : product.fStatus === 3
+                          ? '尚未刊登'
+                          : '刪除'
+                  }}
                 </span>
               </td>
 
