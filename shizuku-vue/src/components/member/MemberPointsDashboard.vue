@@ -1,9 +1,15 @@
 <script setup>
 import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore()
+
+const totalPoints = ref('50');
+const expiringSoon = ref(0);
+
+totalPoints.value = authStore.userPoints.toLocaleString();
 
 // 模擬資料
-const totalPoints = ref(1250);
-const expiringSoon = ref(150);
 const pointsHistory = ref([
     { id: 1, type: 'order', title: '完成訂單 #12345', amount: +50, date: '2026-04-28' },
     { id: 2, type: 'use', title: '兌換折價券', amount: -100, date: '2026-04-20' },
@@ -17,8 +23,7 @@ const pointsHistory = ref([
         <div class="grid md:grid-cols-2 gap-6 mb-8">
             <div class="bg-gradient-to-br from-blue-500 to-emerald-400 rounded-2xl p-6 text-white shadow-lg">
                 <p class="text-amber-100 mb-1">可用點數</p>
-                <h3 class="text-4xl font-black mb-4">{{ totalPoints.toLocaleString() }} <span
-                        class="text-xl font-normal">pts</span></h3>
+                <h3 class="text-4xl font-black mb-4">{{ totalPoints }} <span class="text-xl font-normal">pts</span></h3>
                 <div class="flex justify-between items-end">
                     <p class="text-sm opacity-90">即將到期：{{ expiringSoon }} pts</p>
                     <router-link to="/points/mall"
