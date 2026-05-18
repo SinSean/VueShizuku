@@ -10,8 +10,7 @@ request.interceptors.request.use(
     (config) => {
         const userStr = localStorage.getItem('memberUser');
         if (userStr) {
-            const userData = JSON.parse(userStr);
-            const token = userData.token;
+            const token = localStorage.getItem('memberToken');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
