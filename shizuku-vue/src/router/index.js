@@ -126,9 +126,9 @@ const router = createRouter({
               component: () => import('@/components/member/MemberVouchers.vue'),
             },
             {
-              path: 'memberphone',
-              name: 'memberphone',
-              component: () => import('@/components/member/MemberPhoneChange.vue'),
+              path: '/security',
+              name: 'security',
+              component: () => import('@/components/member/MemberProfileSecurity.vue'),
             },
             {
               path: 'MemberOrders',

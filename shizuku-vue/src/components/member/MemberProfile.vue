@@ -142,7 +142,7 @@ const formatBirthday = (dateStr) => {
                                 <p class="text-slate-700 font-medium">{{ maskPhone(profile.fPhone) }}</p>
                             </div>
                             <!-- 這裡你可以選擇連結到變更頁面，或者點擊後讓 input 出現 -->
-                            <router-link :to="{ name: 'memberphone' }"
+                            <router-link :to="{ name: 'security' }"
                                 class="text-blue-600 font-medium hover:underline text-sm">[變更]</router-link>
                         </div>
 
