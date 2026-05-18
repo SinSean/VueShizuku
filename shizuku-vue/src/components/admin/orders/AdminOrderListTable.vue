@@ -1,19 +1,49 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
-import { ORDER_STATUS } from '@/services/orderStatusManager'
+import { ORDER_STATUS, orderStatusManager } from '@/services/orderStatusManager'
 
 const props = defineProps({
   orders: {
     type: Array,
-    required: true
+    required: true,
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['view-detail'])
+
+// 取得狀態對應的 Tailwind Badge 樣式
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case ORDER_STATUS.PENDING:
+      return 'bg-yellow-100 text-yellow-800'
+    case ORDER_STATUS.PAID:
+      return 'bg-blue-100 text-blue-800'
+    case ORDER_STATUS.SHIPPING:
+      return 'bg-indigo-100 text-indigo-800'
+    case ORDER_STATUS.DELIVERED:
+      return 'bg-green-100 text-green-800'
+    case ORDER_STATUS.CANCELLED:
+      return 'bg-red-100 text-red-800'
+    case ORDER_STATUS.PENDING_REFUND:
+      return 'bg-purple-100 text-purple-800'
+    case ORDER_STATUS.REFUNDED:
+      return 'bg-gray-100 text-gray-800'
+    default:
+      return 'bg-gray-100 text-gray-600'
+  }
+}
+
+const getStatusLabel = (order) => {
+  if (order.statusText && order.statusText !== '未知狀態') {
+    return order.statusText
+  }
+  const info = orderStatusManager.getStatusInfo(order.status)
+  return info ? info.text : '未知狀態'
+}
 
 // 日期格式化小工具
 const formatDate = (dateString) => {
@@ -23,7 +53,7 @@ const formatDate = (dateString) => {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 </script>
@@ -65,15 +95,9 @@ const formatDate = (dateString) => {
           <td class="py-3 px-4 text-center">
             <span
               class="px-2.5 py-1 rounded-full text-xs font-semibold"
-              :class="{
-                'bg-yellow-100 text-yellow-800': order.status === ORDER_STATUS.PENDING,
-                'bg-blue-100 text-blue-800': order.status === ORDER_STATUS.PAID,
-                'bg-indigo-100 text-indigo-800': order.status === ORDER_STATUS.SHIPPING,
-                'bg-green-100 text-green-800': order.status === ORDER_STATUS.DELIVERED,
-                'bg-red-100 text-red-800': order.status === ORDER_STATUS.CANCELLED,
-              }"
+              :class="getStatusBadgeClass(order.status)"
             >
-              {{ order.statusText }}
+              {{ getStatusLabel(order) }}
             </span>
           </td>
           <td class="py-3 px-4 text-center">
@@ -91,5 +115,4 @@ const formatDate = (dateString) => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

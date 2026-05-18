@@ -2,6 +2,7 @@
 import FloatLabel from 'primevue/floatlabel'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import { PAYMENT_METHOD } from '@/services/orderStatusManager'
 
 const props = defineProps({
   form: {
@@ -122,9 +123,13 @@ const updateField = (field, value) => {
         <!-- 貨到付款運費提示 -->
         <Transition name="fade">
           <div
-            v-if="props.form.paymentMethodId === 3"
+            v-if="props.form.paymentMethodId === PAYMENT_METHOD.COD"
             class="mt-4 p-4 rounded-lg text-sm flex items-start gap-3 border"
-            :class="props.form.cartTotal >= 1500 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'"
+            :class="
+              props.form.cartTotal >= 1500
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-amber-50 border-amber-200 text-amber-800'
+            "
           >
             <i class="pi pi-info-circle mt-0.5 flex-shrink-0"></i>
             <span>
@@ -178,7 +183,9 @@ const updateField = (field, value) => {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 .fade-enter-from,
 .fade-leave-to {

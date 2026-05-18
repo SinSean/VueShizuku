@@ -9,6 +9,7 @@ import { usePaymentWindow } from '@/composables/usePaymentWindow'
 import PaymentResultOverlay from '@/components/PaymentResultOverlay.vue'
 import CheckoutSummary from '@/components/checkout/CheckoutSummary.vue'
 import CheckoutForm from '@/components/checkout/CheckoutForm.vue'
+import { PAYMENT_METHOD } from '@/services/orderStatusManager'
 
 const authStore = useAuthStore()
 const { openPaymentWindow } = usePaymentWindow()
@@ -35,16 +36,31 @@ const form = ref({
   receiverPhone: '',
   receiverAddress: '',
   note: '',
-  paymentMethodId: 1,
+  paymentMethodId: PAYMENT_METHOD.ECPAY,
   get cartTotal() {
     return cartStore.totalPrice
   },
 })
 
 const paymentOptions = ref([
-  { id: 1, name: '信用卡 / 金融卡', icon: 'pi-credit-card', desc: '支援 Visa, Master, JCB' },
-  { id: 2, name: 'LINE Pay', icon: 'pi-comment', desc: '可使用 LINE POINTS 折抵' },
-  { id: 3, name: '貨到付款', icon: 'pi-box', desc: '全館滿 $1,500 免運，未滿加收 $60 運費' },
+  {
+    id: PAYMENT_METHOD.ECPAY,
+    name: '信用卡',
+    icon: 'pi-credit-card',
+    desc: '支援 Visa, Master, JCB',
+  },
+  {
+    id: PAYMENT_METHOD.LINEPAY,
+    name: 'LINE Pay',
+    icon: 'pi-comment',
+    desc: '可使用 LINE POINTS 折抵',
+  },
+  {
+    id: PAYMENT_METHOD.COD,
+    name: '貨到付款',
+    icon: 'pi-box',
+    desc: '全館滿 $1,500 免運，未滿加收 $60 運費',
+  },
 ])
 
 // ========== 運費計算邏輯 (完全對齊後端 OrderService.cs) ==========
@@ -53,7 +69,7 @@ const COD_SHIPPING_FEE = 60
 
 const shippingFee = computed(() => {
   // 只有「貨到付款」才可能產生運費
-  if (form.value.paymentMethodId !== 3) return 0
+  if (form.value.paymentMethodId !== PAYMENT_METHOD.COD) return 0
   // 貨到付款：滿 1500 免運，未滿加收 60 元
   return cartStore.totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : COD_SHIPPING_FEE
 })
@@ -226,7 +242,9 @@ onMounted(() => {
         >
           Shizuku.
         </h1>
-        <p class="text-xs text-gray-400 mt-2 font-medium tracking-widest uppercase">安全加密結帳中心</p>
+        <p class="text-xs text-gray-400 mt-2 font-medium tracking-widest uppercase">
+          安全加密結帳中心
+        </p>
       </header>
 
       <!-- 主體結帳盒 (玻璃材質感修飾) -->

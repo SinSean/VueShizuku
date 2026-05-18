@@ -15,18 +15,35 @@ const statusTextToCode = {
   出貨中: ORDER_STATUS.SHIPPING,
   已送達: ORDER_STATUS.DELIVERED,
   已取消: ORDER_STATUS.CANCELLED,
+  待退款: ORDER_STATUS.PENDING_REFUND,
+  已退款: ORDER_STATUS.REFUNDED,
 }
 
 const currentStatus = computed(() => {
   return props.order.status || statusTextToCode[props.order.statusText] || ORDER_STATUS.PENDING
 })
 const timelineEvents = computed(() => {
-  return orderStatusManager.getTimelineSteps(Number(currentStatus.value))
+  // 如果是取消或退款狀態，將 timeline 計算的基準訂在已付款或未付款，防止正向進度條「全亮」
+  let evalStatus = Number(currentStatus.value)
+  if (
+    evalStatus === ORDER_STATUS.CANCELLED ||
+    evalStatus === ORDER_STATUS.PENDING_REFUND ||
+    evalStatus === ORDER_STATUS.REFUNDED
+  ) {
+    evalStatus = ORDER_STATUS.PENDING
+  }
+  return orderStatusManager.getTimelineSteps(evalStatus)
 })
 
 const activeStepIndex = computed(() => {
-  // 如果訂單已取消，進度條不顯示任何進度 (或維持在第一步)
-  if (currentStatus.value === ORDER_STATUS.CANCELLED) return -1
+  // 如果訂單已取消、待退款或已退款，進度條不顯示任何正向進度
+  if (
+    currentStatus.value === ORDER_STATUS.CANCELLED ||
+    currentStatus.value === ORDER_STATUS.PENDING_REFUND ||
+    currentStatus.value === ORDER_STATUS.REFUNDED
+  ) {
+    return -1
+  }
 
   // 找出最後一個已完成 (completed) 的步驟索引
   const lastCompletedIndex = [...timelineEvents.value].reverse().findIndex((e) => e.completed)
@@ -43,6 +60,55 @@ const activeStepIndex = computed(() => {
     >
       <i class="pi pi-map text-emerald-500"></i> 訂單處理進度
     </h2>
+
+    <!-- 退款或取消狀態尊榮橫幅 -->
+    <div
+      v-if="
+        currentStatus === ORDER_STATUS.PENDING_REFUND ||
+        currentStatus === ORDER_STATUS.REFUNDED ||
+        currentStatus === ORDER_STATUS.CANCELLED
+      "
+      class="mb-8 p-4 rounded-xl border flex items-start gap-3 transition-all duration-300"
+      :class="[
+        currentStatus === ORDER_STATUS.PENDING_REFUND
+          ? 'bg-purple-50 border-purple-200 text-purple-800'
+          : currentStatus === ORDER_STATUS.REFUNDED
+            ? 'bg-gray-50 border-gray-200 text-gray-700'
+            : 'bg-red-50 border-red-200 text-red-800',
+      ]"
+    >
+      <div class="flex-shrink-0 mt-0.5">
+        <i
+          :class="[
+            currentStatus === ORDER_STATUS.PENDING_REFUND
+              ? 'pi pi-spin pi-spinner text-purple-500 text-lg'
+              : currentStatus === ORDER_STATUS.REFUNDED
+                ? 'pi pi-undo text-gray-500 text-lg'
+                : 'pi pi-times-circle text-red-500 text-lg',
+          ]"
+        ></i>
+      </div>
+      <div>
+        <h4 class="font-bold text-sm mb-1">
+          {{
+            currentStatus === ORDER_STATUS.PENDING_REFUND
+              ? '退款申請處理中'
+              : currentStatus === ORDER_STATUS.REFUNDED
+                ? '訂單退款已完成'
+                : '訂單已取消'
+          }}
+        </h4>
+        <p class="text-xs opacity-90 leading-relaxed">
+          {{
+            currentStatus === ORDER_STATUS.PENDING_REFUND
+              ? '本筆訂單已發起退款流程，金流服務商正在進行刷退作業。規格庫存已預先完成回補，請耐心等候刷退成功。'
+              : currentStatus === ORDER_STATUS.REFUNDED
+                ? '本筆訂單金流已成功由後台系統發起線上刷退，款項將退回您的原支付卡片或帳戶，交易已正式終止。'
+                : '本筆訂單交易已終止，系統已安全釋放保留的庫存與優惠券。'
+          }}
+        </p>
+      </div>
+    </div>
 
     <div class="w-full p-2">
       <div class="relative flex justify-between w-full">

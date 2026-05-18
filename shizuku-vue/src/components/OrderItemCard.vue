@@ -6,7 +6,6 @@ import { ORDER_STATUS } from '@/services/orderStatusManager'
 // 呼叫司機待命
 const router = useRouter()
 
-// 接收經理 (列表頁) 傳進來的一筆訂單資料
 const props = defineProps({
   order: {
     type: Object,
@@ -23,11 +22,15 @@ const statusTextToCode = {
   已送達: ORDER_STATUS.DELIVERED,
   已完成: ORDER_STATUS.DELIVERED,
   已取消: ORDER_STATUS.CANCELLED,
+  待退款: ORDER_STATUS.PENDING_REFUND,
+  已退款: ORDER_STATUS.REFUNDED,
 }
 
 // 取得數值化訂單狀態
 const currentStatusCode = computed(() => {
-  return statusTextToCode[props.order.status] || ORDER_STATUS.PENDING
+  const statusValue = props.order.status
+  if (typeof statusValue === 'number') return statusValue
+  return statusTextToCode[statusValue] || ORDER_STATUS.PENDING
 })
 
 // 計算出精確的付款狀態與對應的 UI 樣式
@@ -38,6 +41,12 @@ const paymentStatus = computed(() => {
   }
   if (code === ORDER_STATUS.CANCELLED) {
     return { text: '已取消', severity: 'secondary' } // 灰色
+  }
+  if (code === ORDER_STATUS.PENDING_REFUND) {
+    return { text: '退款中', severity: 'warn' } // 橘黃色退款中
+  }
+  if (code === ORDER_STATUS.REFUNDED) {
+    return { text: '已退款', severity: 'secondary' } // 灰色已退款
   }
   return { text: '已付款', severity: 'success' } // 綠色已付款
 })
@@ -59,6 +68,12 @@ const shippingStatus = computed(() => {
   }
   if (code === ORDER_STATUS.CANCELLED) {
     return { text: '訂單已終止', severity: 'secondary' }
+  }
+  if (code === ORDER_STATUS.PENDING_REFUND) {
+    return { text: '退款申請審核中', severity: 'warn' }
+  }
+  if (code === ORDER_STATUS.REFUNDED) {
+    return { text: '交易已終止退款', severity: 'secondary' }
   }
   return { text: '處理中', severity: 'secondary' }
 })
@@ -82,9 +97,12 @@ const goToDetail = () => {
       :class="[
         currentStatusCode === ORDER_STATUS.PENDING
           ? 'bg-amber-400'
-          : currentStatusCode === ORDER_STATUS.CANCELLED
-            ? 'bg-gray-300'
-            : 'bg-emerald-500',
+          : currentStatusCode === ORDER_STATUS.PENDING_REFUND
+            ? 'bg-purple-400'
+            : currentStatusCode === ORDER_STATUS.CANCELLED ||
+                currentStatusCode === ORDER_STATUS.REFUNDED
+              ? 'bg-gray-300'
+              : 'bg-emerald-500',
       ]"
     ></div>
 
@@ -95,9 +113,12 @@ const goToDetail = () => {
         :class="[
           currentStatusCode === ORDER_STATUS.PENDING
             ? 'bg-amber-50 text-amber-600'
-            : currentStatusCode === ORDER_STATUS.CANCELLED
-              ? 'bg-gray-50 text-gray-400'
-              : 'bg-emerald-50 text-emerald-600',
+            : currentStatusCode === ORDER_STATUS.PENDING_REFUND
+              ? 'bg-purple-50 text-purple-600'
+              : currentStatusCode === ORDER_STATUS.CANCELLED ||
+                  currentStatusCode === ORDER_STATUS.REFUNDED
+                ? 'bg-gray-50 text-gray-400'
+                : 'bg-emerald-50 text-emerald-600',
         ]"
       >
         <i class="pi pi-receipt text-xl"></i>
@@ -131,9 +152,11 @@ const goToDetail = () => {
             :class="[
               paymentStatus.severity === 'danger'
                 ? 'bg-red-50 text-red-600 border-red-200'
-                : paymentStatus.severity === 'secondary'
-                  ? 'bg-gray-50 text-gray-500 border-gray-200'
-                  : 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                : paymentStatus.severity === 'warn'
+                  ? 'bg-amber-50 text-amber-600 border-amber-200'
+                  : paymentStatus.severity === 'secondary'
+                    ? 'bg-gray-50 text-gray-500 border-gray-200'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200',
             ]"
           >
             <i class="pi pi-wallet text-[10px] mr-1"></i>

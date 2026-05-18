@@ -1,4 +1,6 @@
 <script setup>
+import { PAYMENT_METHOD } from '@/services/orderStatusManager'
+
 const props = defineProps({
   order: {
     type: Object,
@@ -68,7 +70,10 @@ const props = defineProps({
         </div>
         <!-- 貨到付款提醒 -->
         <p
-          v-if="props.order.paymentMethod === '貨到付款'"
+          v-if="
+            props.order.paymentMethodId === PAYMENT_METHOD.COD ||
+            props.order.paymentMethod === '貨到付款'
+          "
           class="mt-4 text-right text-[10px] text-amber-600 font-bold tracking-tight"
         >
           * 此金額將於商品送達時以現金支付

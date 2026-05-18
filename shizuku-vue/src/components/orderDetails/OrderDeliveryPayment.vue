@@ -17,6 +17,8 @@ const statusTextToCode = {
   出貨中: ORDER_STATUS.SHIPPING,
   已送達: ORDER_STATUS.DELIVERED,
   已取消: ORDER_STATUS.CANCELLED,
+  待退款: ORDER_STATUS.PENDING_REFUND,
+  已退款: ORDER_STATUS.REFUNDED,
 }
 
 const currentStatus = computed(() => {
@@ -42,6 +44,12 @@ const shippingStatus = computed(() => {
   }
   if (status === ORDER_STATUS.DELIVERED) {
     return { text: '已送達', severity: 'success', icon: 'pi pi-check-circle' }
+  }
+  if (status === ORDER_STATUS.PENDING_REFUND) {
+    return { text: '物流已截留 (退款審核中)', severity: 'warn', icon: 'pi pi-exclamation-triangle' }
+  }
+  if (status === ORDER_STATUS.REFUNDED) {
+    return { text: '物流已取消 (交易終止)', severity: 'secondary', icon: 'pi pi-times-circle' }
   }
   return {
     text: '未知狀態',
