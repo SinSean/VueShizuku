@@ -1,10 +1,15 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // 補上引入路由
 import {
     sendPhoneVerificationCodeAPI,
     verifyPhoneSecurityCodeAPI,
     updatePhoneWithCodeAPI
 } from '@/api/member';
+import { useAuthStore } from '@/stores/auth';
+
+const router = useRouter(); // 補上宣告路由實例
+const authStore = useAuthStore();
 
 // 流程狀態：1=輸入Email驗證, 2=輸入驗證碼, 3=輸入新手機號碼
 const step = ref(1);
@@ -44,7 +49,6 @@ const handleSendEmail = async () => {
     }
 
     try {
-        // 對應 SecurityRequestCodeDto
         const res = await sendPhoneVerificationCodeAPI({
             fEmail: email.value,
             fType: currentType.value
@@ -70,7 +74,6 @@ const handleVerifyCode = async () => {
     }
 
     try {
-        // 對應 SecurityVerifyCodeDto
         const res = await verifyPhoneSecurityCodeAPI({
             fEmail: email.value,
             fCode: code.value,
@@ -78,7 +81,7 @@ const handleVerifyCode = async () => {
         });
 
         if (res.data && res.data.success) {
-            step.value = 3; // 後端驗證成功，才進入步驟 3
+            step.value = 3;
         } else {
             errorMessage.value = res.data?.message || '驗證碼錯誤';
         }
@@ -88,32 +91,37 @@ const handleVerifyCode = async () => {
 };
 
 // 步驟 3：點選「儲存變更」 -> 打第三隻 API 變更手機
-const handleUpdatePhone = async (event) => {
+const handleUpdatePhone = async () => {
     errorMessage.value = '';
     if (!newPhone.value) {
         errorMessage.value = '請輸入新手機號碼';
-        event.preventDefault(); // 阻擋 router-link 跳轉
         return;
     }
 
     try {
-        // 對應 SecurityUpdatePhoneDto
         const res = await updatePhoneWithCodeAPI({
             fNewPhone: newPhone.value,
-            fVerifiedCode: code.value // 精準對應後端 DTO 屬性名稱
+            fVerifiedCode: code.value
         });
 
         if (res.data && res.data.success) {
             alert('手機號碼修改成功！');
             if (timer) clearInterval(timer);
-            // 成功：不阻斷，讓 router-link 正常跳轉回會員中心
+
+            // 確實更新全域狀態
+            if (authStore.user) {
+                authStore.user.fPhone = newPhone.value;
+                localStorage.setItem('memberUser', JSON.stringify(authStore.user));
+            }
+
+            // 資料全部就緒後，才執行切換頁面
+            router.push({ name: 'MemberProfile' });
+
         } else {
             errorMessage.value = res.data?.message || '變更失敗';
-            event.preventDefault(); // 失敗：阻擋跳轉
         }
     } catch (error) {
         errorMessage.value = error.response?.data?.message || '變更失敗，請稍後再試';
-        event.preventDefault(); // 異常：阻擋跳轉
     }
 };
 
@@ -176,11 +184,11 @@ const goBack = () => {
                 <input type="tel" v-model="newPhone" placeholder="請輸入新手機號碼"
                     class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border" />
             </div>
-            <router-link :to="{ name: 'MemberProfile' }"
-                class="block w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center"
+            <button type="button"
+                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center"
                 @click="handleUpdatePhone">
                 儲存變更
-            </router-link>
+            </button>
         </div>
 
         <p v-if="errorMessage" class="text-red-500 text-xs text-center mt-4">{{ errorMessage }}</p>
