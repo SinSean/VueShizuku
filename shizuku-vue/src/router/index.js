@@ -126,6 +126,11 @@ const router = createRouter({
               component: () => import('@/components/member/MemberVouchers.vue'),
             },
             {
+              path: 'memberphone',
+              name: 'memberphone',
+              component: () => import('@/components/member/MemberPhoneChange.vue'),
+            },
+            {
               path: 'MemberOrders',
               name: 'MemberOrders',
               component: () => import('@/components/member/MemberOrders.vue'),
