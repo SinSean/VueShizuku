@@ -2,7 +2,6 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { getMemberOrdersAPI } from '@/api/order'
 import OrderItemCard from '@/components/OrderItemCard.vue'
@@ -88,8 +87,5 @@ const hasMore = computed(() => {
         僅顯示近半年的訂單紀錄，若需查詢更早之前的訂單請聯絡客服。
       </p>
     </div>
-    
-    <!-- PrimeVue Toast 懸浮即時通知 -->
-    <Toast />
   </div>
 </template>

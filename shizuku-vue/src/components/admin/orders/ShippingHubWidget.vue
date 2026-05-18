@@ -5,7 +5,6 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 
 const toast = useToast()
@@ -73,8 +72,6 @@ onMounted(loadOrders)
 
 <template>
   <div class="shipping-hub">
-    <Toast />
-
     <!-- 自訂頁籤導覽 -->
     <div class="flex gap-4 mb-6 border-b border-gray-200">
       <button @click="activeStatus = 2" :class="['tab-btn', activeStatus === 2 ? 'active' : '']">

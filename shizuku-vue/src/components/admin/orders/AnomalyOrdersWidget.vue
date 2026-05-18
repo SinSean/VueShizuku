@@ -5,7 +5,6 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import Message from 'primevue/message'
 import Tooltip from 'primevue/tooltip'
@@ -93,8 +92,6 @@ onMounted(loadData)
 
 <template>
   <div class="anomaly-widget">
-    <Toast />
-    
     <!-- 頂部統計卡片 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div 

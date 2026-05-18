@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { ORDER_STATUS } from '@/services/orderStatusManager'
 
@@ -217,9 +216,6 @@ const handleRefundRequest = async () => {
       @update:visible="showResultModal = $event"
       @countdown-end="handleCountdownEnd"
     />
-
-    <!-- PrimeVue Toast 懸浮即時通知 -->
-    <Toast />
   </div>
 </template>
 

@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { getAllOrdersForAdminAPI } from '@/api/adminOrder'
 import AdminOrderListTable from './AdminOrderListTable.vue'
@@ -143,9 +142,6 @@ onMounted(() => {
       :currentStatus="selectedOrderCurrentStatus"
       @updated="fetchOrders"
     />
-
-    <!-- PrimeVue Toast 懸浮即時通知 -->
-    <Toast />
   </div>
 </template>
 

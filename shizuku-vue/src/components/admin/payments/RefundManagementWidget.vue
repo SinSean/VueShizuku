@@ -4,7 +4,6 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { getPendingRefundsAPI, approveRefundAPI, rejectRefundAPI } from '@/api/adminOrder'
 
@@ -67,8 +66,6 @@ onMounted(() => loadRefunds())
 
 <template>
   <div class="h-full flex flex-col gap-6 p-6 bg-gray-50">
-    <Toast />
-
     <!-- 頂部統計區 -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">

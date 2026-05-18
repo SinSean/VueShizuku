@@ -102,9 +102,6 @@ const triggerScan = async () => {
   <div
     class="min-h-screen relative overflow-hidden flex flex-col bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100"
   >
-    <!-- 金流控制中心專屬 Toast（右上角） -->
-    <Toast position="top-right" />
-
     <!-- 內容容器 -->
     <div class="relative z-10 p-6 md:p-8 flex-1">
       <div class="flex items-center justify-between mb-10 max-w-7xl mx-auto">
