@@ -23,8 +23,8 @@ const form = reactive({
     fPhone: '0978854654',
     fGender: 1,
     fBirthday: '2000-09-01',
-    fPassword: 'Password123!',
-    confirmPassword: 'Password123!'
+    fPassword: 'Password123!1',
+    confirmPassword: 'Password123!1'
 });
 
 const handleRegister = async () => {
