@@ -10,8 +10,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     const isLogin = computed(() => user.value !== null);
     const userName = computed(() => user.value ? user.value.fName : '訪客');
-
     const userLevel = computed(() => user.value ? user.value.fLevel : null);
+    const userPoints = computed(() => user.value ? user.value.fPoints : null);
 
     async function login(loginResultData) {
         if (!loginResultData) return false;
@@ -25,7 +25,6 @@ export const useAuthStore = defineStore('auth', () => {
         if (userToken) {
             localStorage.setItem('memberToken', userToken);
         }
-        userData.fLevel = 1;
         return true;
     }
 
@@ -58,6 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
         token,
         userName,
         userLevel,
+        userPoints,
         isLogin,
         login,
         logout,
