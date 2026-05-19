@@ -54,6 +54,7 @@ function toggleVariant(item) {
       fQuantity: 1,
       fCostPrice: null,
       fProductName: item.product.fProductName,
+      fProduct: item.product.fProduct, // ← 加這行
       fColor: item.variant.fColor,
       fSize: item.variant.fSize,
       fStock: item.variant.fStock,
@@ -70,6 +71,7 @@ function toggleAll(checked) {
           fQuantity: 1,
           fCostPrice: null,
           fProductName: item.product.fProductName,
+          fProduct: item.product.fProduct,
           fColor: item.variant.fColor,
           fSize: item.variant.fSize,
           fStock: item.variant.fStock,
@@ -206,9 +208,11 @@ onMounted(async () => {
     </div>
 
     <!-- 左右分欄 -->
-    <div class="grid grid-cols-2 gap-4 flex-1 overflow-hidden">
+    <div class="grid grid-cols-12 gap-4 flex-1 overflow-hidden">
       <!-- 左側：商品挑選 -->
-      <div class="bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden">
+      <div
+        class="col-span-4 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
+      >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <span class="text-sm font-medium">商品挑選</span>
           <span class="text-xs text-gray-400">點擊列加入右側</span>
@@ -289,13 +293,16 @@ onMounted(async () => {
       </div>
 
       <!-- 右側：已選商品 -->
-      <div class="bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden">
+      <div
+        class="col-span-8 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
+      >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <span class="text-sm font-medium">已選商品</span>
           <span class="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-xs font-medium">
             {{ cartCount }} 筆
           </span>
         </div>
+
         <div class="overflow-y-auto flex-1">
           <div
             v-if="cartCount === 0"
@@ -303,58 +310,97 @@ onMounted(async () => {
           >
             請從左側勾選商品
           </div>
-          <div
-            v-for="item in cartList"
-            :key="item.fVariantId"
-            class="px-4 py-3 border-b border-gray-50 last:border-0"
-          >
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex-1">
-                <p class="font-medium text-gray-700 text-sm">{{ item.fProductName }}</p>
-                <p class="text-gray-400 text-xs mt-0.5">
-                  {{ item.fColor }} / {{ item.fSize }}
-                  <span class="ml-2 text-gray-300">目前庫存：{{ item.fStock }} 件</span>
-                </p>
-                <div class="flex items-center gap-2 mt-2 flex-wrap">
-                  <span class="text-xs text-gray-400">數量</span>
+          <table v-else class="w-full text-xs">
+            <thead class="sticky top-0">
+              <tr class="bg-gray-50">
+                <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                  品名
+                </th>
+                <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                  品號
+                </th>
+                <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                  顏色/尺寸
+                </th>
+                <th
+                  class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-14"
+                >
+                  數量
+                </th>
+                <th
+                  class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20"
+                >
+                  成本(NT$)
+                </th>
+                <th
+                  class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20"
+                >
+                  小計
+                </th>
+                <th class="px-3 py-2 border-b border-gray-100 w-6"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in cartList"
+                :key="item.fVariantId"
+                class="border-b border-gray-50 last:border-0 hover:bg-gray-50"
+              >
+                <td class="px-3 py-2.5">
+                  <p class="font-medium text-gray-700">{{ item.fProductName }}</p>
+                  <p class="text-gray-300 text-xs mt-0.5">目前庫存：{{ item.fStock }} 件</p>
+                </td>
+                <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">
+                  {{ item.fProduct }}
+                </td>
+                <td class="px-3 py-2.5 text-gray-500">{{ item.fColor }} / {{ item.fSize }}</td>
+                <td class="px-3 py-2.5">
                   <input
                     v-model="cartItems[item.fVariantId].fQuantity"
                     type="number"
                     min="1"
-                    class="w-16 px-2 py-1.5 border border-gray-200 rounded-lg text-center text-xs focus:outline-none focus:border-indigo-400"
+                    class="w-14 px-2 py-1 border border-gray-200 rounded text-center focus:outline-none focus:border-indigo-400"
                   />
-                  <span class="text-xs text-gray-400">成本（NT$）</span>
+                </td>
+                <td class="px-3 py-2.5">
                   <input
                     v-model="cartItems[item.fVariantId].fCostPrice"
                     type="number"
                     min="0"
                     placeholder="選填"
-                    class="w-24 px-2 py-1.5 border border-gray-200 rounded-lg text-right text-xs focus:outline-none focus:border-indigo-400"
+                    class="w-20 px-2 py-1 border border-gray-200 rounded text-right focus:outline-none focus:border-indigo-400"
                   />
-                  <span class="text-xs font-medium text-indigo-600">
-                    = NT${{ subTotal(cartItems[item.fVariantId]).toLocaleString() }}
-                  </span>
-                </div>
-              </div>
-              <button
-                @click="removeFromCart(item.fVariantId)"
-                class="text-gray-300 hover:text-red-400 transition-colors shrink-0 mt-0.5"
-                aria-label="移除"
-              >
-                <i class="pi pi-times" style="font-size: 12px"></i>
-              </button>
-            </div>
-          </div>
+                </td>
+                <td class="px-3 py-2.5 font-medium text-indigo-600 whitespace-nowrap">
+                  NT${{ subTotal(cartItems[item.fVariantId]).toLocaleString() }}
+                </td>
+                <td class="px-3 py-2.5 text-center">
+                  <button
+                    @click="removeFromCart(item.fVariantId)"
+                    class="text-gray-300 hover:text-red-400 transition-colors"
+                    aria-label="移除"
+                  >
+                    <i class="pi pi-times" style="font-size: 11px"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- 右側底部合計 -->
+        <!-- 底部合計 -->
         <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 shrink-0">
           <div class="flex justify-between items-center text-xs text-gray-500 mb-3">
+            <div class="flex gap-4">
+              <span
+                >已選：<strong class="text-gray-700">{{ cartCount }} 筆</strong></span
+              >
+              <span
+                >總數量：<strong class="text-gray-700">{{ cartTotalQty }} 件</strong></span
+              >
+            </div>
             <span
-              >總數量：<strong class="text-gray-700">{{ cartTotalQty }} 件</strong></span
-            >
-            <span
-              >合計金額：<strong class="text-indigo-600 text-base"
+              >合計：<strong class="text-indigo-600 text-base"
                 >NT${{ cartTotalAmount.toLocaleString() }}</strong
               ></span
             >

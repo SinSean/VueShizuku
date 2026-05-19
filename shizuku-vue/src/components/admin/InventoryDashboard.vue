@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Chart from 'chart.js/auto'
+import { orderApi } from '@/api/order' //熱銷商品api
 
+const salesStats = ref([])
 const props = defineProps({
   inventory: { type: Array, default: () => [] },
 })
@@ -122,31 +124,41 @@ watch(
   { deep: true },
 )
 
+async function loadSalesStats() {
+  try {
+    const res = await orderApi.getSalesStats()
+    salesStats.value = res.data.data ?? []
+  } catch (err) {
+    console.error('銷量統計載入失敗', err)
+  }
+}
+
 onMounted(() => {
   buildCharts()
+  loadSalesStats()
 })
 </script>
 
 <template>
   <div class="space-y-4">
     <!-- 統計卡片 -->
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl border border-gray-100 p-4">
+    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+      <div class="bg-gray-50 rounded-xl p-4">
         <p class="text-xs text-gray-400 mb-1">總庫存量</p>
         <p class="text-2xl font-medium">{{ totalStock.toLocaleString() }}</p>
         <p class="text-xs text-gray-300 mt-1">件商品庫存</p>
       </div>
-      <div class="bg-white rounded-xl border border-gray-100 p-4">
+      <div class="bg-gray-50 rounded-xl p-4">
         <p class="text-xs text-gray-400 mb-1">低庫存警示</p>
         <p class="text-2xl font-medium text-amber-500">{{ lowStockCount }}</p>
         <p class="text-xs text-gray-300 mt-1">筆規格不足 5 件</p>
       </div>
-      <div class="bg-white rounded-xl border border-gray-100 p-4">
+      <div class="bg-gray-50 rounded-xl p-4">
         <p class="text-xs text-gray-400 mb-1">售完規格</p>
         <p class="text-2xl font-medium text-red-400">{{ outOfStockCount }}</p>
         <p class="text-xs text-gray-300 mt-1">筆規格已售完</p>
       </div>
-      <div class="bg-white rounded-xl border border-gray-100 p-4">
+      <div class="bg-gray-50 rounded-xl p-4">
         <p class="text-xs text-gray-400 mb-1">平均毛利率</p>
         <p class="text-2xl font-medium text-green-500">{{ avgProfit }}%</p>
         <p class="text-xs text-gray-300 mt-1">全商品平均</p>
@@ -158,88 +170,137 @@ onMounted(() => {
       <div class="bg-white rounded-xl border border-gray-100 p-5">
         <h3 class="text-sm font-medium mb-4">庫存狀態分布</h3>
         <div class="flex items-center gap-6">
-          <div style="height: 160px; width: 160px; position: relative">
+          <div style="height: 120px; width: 120px; position: relative">
             <canvas ref="donutChartRef"></canvas>
           </div>
-          <div class="space-y-2 text-sm">
+          <div class="space-y-2">
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded-full bg-green-600"></div>
-              <span class="text-gray-500">正常庫存</span>
+              <span class="text-xs text-gray-500">正常庫存</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded-full bg-amber-600"></div>
-              <span class="text-gray-500">低庫存</span>
+              <span class="text-xs text-gray-500">低庫存</span>
             </div>
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded-full bg-red-500"></div>
-              <span class="text-gray-500">售完</span>
+              <span class="text-xs text-gray-500">售完</span>
             </div>
           </div>
         </div>
       </div>
       <div class="bg-white rounded-xl border border-gray-100 p-5">
         <h3 class="text-sm font-medium mb-4">各分類庫存量</h3>
-        <div style="height: 160px; position: relative">
+        <div style="height: 120px; position: relative">
           <canvas ref="barChartRef"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- 低庫存警示 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5">
-      <h3 class="text-sm font-medium mb-4 pb-3 border-b border-gray-100">低庫存警示</h3>
-      <div v-if="lowStockList.length === 0" class="text-center text-gray-300 py-6 text-sm">
-        目前無低庫存商品
+    <!-- 熱銷排行 + 低庫存警示 並排 -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <!-- 熱銷商品排行 -->
+      <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <h3 class="text-sm font-medium mb-3 pb-3 border-b border-gray-100">熱銷商品排行</h3>
+        <div v-if="salesStats.length === 0" class="text-center text-gray-300 py-6 text-sm">
+          尚無銷售資料
+        </div>
+        <div v-else class="space-y-0">
+          <div
+            v-for="(item, index) in salesStats"
+            :key="item.variantId"
+            class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
+          >
+            <span
+              :class="[
+                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0',
+                index === 0
+                  ? 'bg-amber-50 text-amber-600'
+                  : index === 1
+                    ? 'bg-gray-100 text-gray-500'
+                    : index === 2
+                      ? 'bg-orange-50 text-orange-500'
+                      : 'text-gray-400 text-xs',
+              ]"
+            >
+              {{ index + 1 }}
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-gray-700 truncate">{{ item.productName }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ item.color }} / {{ item.size }}</p>
+            </div>
+            <div class="w-20 shrink-0">
+              <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-indigo-400 rounded-full"
+                  :style="{
+                    width: (item.totalQuantitySold / salesStats[0].totalQuantitySold) * 100 + '%',
+                  }"
+                ></div>
+              </div>
+            </div>
+            <span class="text-xs font-medium text-gray-700 shrink-0 w-12 text-right">
+              {{ item.totalQuantitySold }} 件
+            </span>
+            <span class="text-xs text-gray-400 shrink-0 w-8 text-right">
+              {{
+                Math.round(
+                  (item.totalQuantitySold /
+                    salesStats.reduce((a, v) => a + v.totalQuantitySold, 0)) *
+                    100,
+                )
+              }}%
+            </span>
+          </div>
+        </div>
       </div>
-      <table v-else class="w-full text-xs">
-        <thead>
-          <tr class="bg-gray-50">
-            <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
-              商品
-            </th>
-            <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
-              規格
-            </th>
-            <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
-              庫存
-            </th>
-            <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
-              狀態
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
+
+      <!-- 低庫存警示 -->
+      <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <h3 class="text-sm font-medium mb-3 pb-3 border-b border-gray-100">低庫存警示</h3>
+        <div v-if="lowStockList.length === 0" class="text-center text-gray-300 py-6 text-sm">
+          目前無低庫存商品
+        </div>
+        <div v-else class="space-y-0">
+          <div
             v-for="item in lowStockList"
             :key="item.fVariantId"
-            class="border-b border-gray-50 last:border-0"
+            class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
           >
-            <td class="px-3 py-3">
-              <div class="flex items-center gap-2">
-                <img
-                  :src="item.fImage ? baseUrl + item.fImage : defaultImg"
-                  class="w-8 h-8 object-cover rounded-lg border border-gray-100"
-                />
-                <span class="font-medium text-gray-700">{{ item.fProductName }}</span>
+            <img
+              :src="item.fImage ? baseUrl + item.fImage : defaultImg"
+              class="w-8 h-8 object-cover rounded-lg border border-gray-100 shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-gray-700 truncate">{{ item.fProductName }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ item.fColor }} / {{ item.fSize }}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  class="h-full rounded-full"
+                  :class="item.fStock === 0 ? 'bg-red-400' : 'bg-amber-400'"
+                  :style="{ width: Math.min((item.fStock / 5) * 100, 100) + '%' }"
+                ></div>
               </div>
-            </td>
-            <td class="px-3 py-3 text-gray-500">{{ item.fColor }} / {{ item.fSize }}</td>
-            <td
-              class="px-3 py-3"
-              :class="item.fStock === 0 ? 'text-red-400 font-medium' : 'text-amber-500 font-medium'"
-            >
-              {{ item.fStock }} 件
-            </td>
-            <td class="px-3 py-3">
               <span
-                :class="['px-2 py-0.5 rounded-full text-xs', stockStatusClass(item.fStockStatus)]"
+                class="text-xs font-medium w-8 text-right"
+                :class="item.fStock === 0 ? 'text-red-400' : 'text-amber-500'"
               >
-                {{ item.fStockStatus }}
+                {{ item.fStock }} 件
               </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+            <span
+              :class="[
+                'px-2 py-0.5 rounded-full text-xs shrink-0',
+                stockStatusClass(item.fStockStatus),
+              ]"
+            >
+              {{ item.fStockStatus }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
