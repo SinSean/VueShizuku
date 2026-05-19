@@ -36,10 +36,10 @@ const currentView = ref('menu');
         
         <div @click="currentView = 'chatbot'" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
           <div class="flex items-center gap-2 mb-4">
-            <span class="bg-red-600 text-white text-sm font-bold px-2 py-1 rounded-sm">IQ</span>
-            <h3 class="text-xl font-bold tracking-widest text-gray-900 group-hover:text-red-600 transition-colors">智能客服</h3>
+            <span class="bg-blue-600 text-white text-sm font-bold px-2 py-1 rounded-sm">FAQ</span>
+            <h3 class="text-xl font-bold tracking-widest text-gray-900 group-hover:text-blue-600 transition-colors">快速問答機器人</h3>
           </div>
-          <p class="text-xs text-gray-500 text-center">智能客服提供 24 小時線上查詢服務。</p>
+          <p class="text-xs text-gray-500 text-center">輸入關鍵字，24 小時為您快速解答常見問題。</p>
         </div>
 
         <div @click="currentView = 'livechat'" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
@@ -51,7 +51,7 @@ const currentView = ref('menu');
         </div>
 
         <div @click="currentView = 'feedback'" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
-          <div class="flex items-center gap-2 mb-4 text-gray-800 group-hover:text-gray-500 transition-colors">
+          <div class="flex items-center gap-2 mb-4 text-gray-800 group-hover:text-blue-600 transition-colors">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
             <h3 class="text-xl font-bold tracking-widest">表單回覆</h3>
           </div>

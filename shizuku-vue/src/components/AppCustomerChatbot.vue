@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const messages = ref([
   { 
-    sender: '智能客服', 
+    sender: '自助問答小幫手', 
     text: '您好！我是 SHIZUKU 智能小幫手。請問有什麼我可以幫忙的嗎？您可以直接點擊下方按鈕快速發問。' 
   }
 ]);
@@ -31,7 +31,7 @@ const sendMessage = async (text) => {
     });
     
     // 3. 配合組長規定的 ApiResponse 格式，必須多加一層 .data 才能拆開包裝拿到裡面的 reply
-messages.value.push({ sender: '智能客服', text: response.data.data.reply });
+    messages.value.push({ sender: '智能客服', text: response.data.data.reply });
   } catch (error) {
     console.error("API 呼叫失敗", error);
     messages.value.push({ sender: '智能客服', text: '不好意思，系統連線異常，請稍後再試。' });
@@ -50,39 +50,40 @@ const scrollToBottom = async () => {
 
 <template>
   <div class="bg-white border border-gray-300 shadow-sm flex flex-col h-[500px] animate-fade-in">
-    <div class="bg-red-600 text-white p-4 font-bold tracking-widest text-center">
-      智能客服系統
+    
+    <div class="bg-blue-600 text-white p-4 font-bold tracking-widest text-center text-lg shrink-0 shadow-sm">
+      SHIZUKU 自助問答小幫手
     </div>
     
     <div class="flex-grow p-6 overflow-y-auto space-y-4 bg-gray-50" ref="messagesContainer">
       <div v-for="(msg, index) in messages" :key="index" 
            :class="['flex flex-col', msg.sender === '我' ? 'items-end' : 'items-start']">
         <span class="text-xs text-gray-400 mb-1">{{ msg.sender }}</span>
-        <div :class="['px-4 py-2 rounded-lg max-w-[80%] text-sm', 
-                    msg.sender === '我' ? 'bg-black text-white' : 'bg-white border border-gray-200 text-gray-800']">
+        <div :class="['px-5 py-2.5 rounded-2xl max-w-[80%] text-base shadow-sm', 
+                    msg.sender === '我' ? 'bg-gray-800 text-white' : 'bg-white border border-gray-200 text-gray-800']">
           {{ msg.text }}
         </div>
       </div>
     </div>
 
-  <div class="px-4 py-2 bg-white border-t border-gray-100 flex gap-4 overflow-x-auto whitespace-nowrap">
-      <span class="text-xs text-gray-400 flex items-center">常見問題：</span>
+    <div class="px-4 py-3 bg-white border-t border-gray-100 flex gap-3 overflow-x-auto whitespace-nowrap items-center shadow-inner shrink-0">
+      <span class="text-sm font-bold text-gray-500">常見問題：</span>
       <button 
         v-for="keyword in quickKeywords" 
         :key="keyword"
         @click="sendMessage(keyword)"
-        class="text-sm text-gray-600 hover:text-black hover:bg-gray-100 px-3 py-1 rounded transition-all duration-200"
+        class="text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 px-4 py-2 rounded-full shadow-sm transition-all duration-200 shrink-0"
       >
         {{ keyword }}
       </button>
     </div>
 
-    <div class="p-4 border-t border-gray-200 bg-white">
+    <div class="p-4 border-t border-gray-200 bg-white shrink-0">
       <div class="flex gap-2">
         <input v-model="inputMessage" @keyup.enter="sendMessage()" 
-               type="text" class="flex-grow border border-gray-300 px-4 py-2 focus:outline-none focus:border-black"
+               type="text" class="flex-grow border border-gray-300 px-4 py-2.5 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-base"
                placeholder="或手動輸入您的問題..." />
-        <button @click="sendMessage()" class="bg-black text-white px-6 py-2 hover:bg-gray-800 transition-colors">
+        <button @click="sendMessage()" class="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm shrink-0">
           發送
         </button>
       </div>
