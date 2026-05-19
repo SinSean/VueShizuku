@@ -9,8 +9,19 @@ const product = ref(null)
 const variants = ref([])
 const relatedProduct = ref([])
 const isLoading = ref(true)
-
-// ✨ 多張示意圖
+const currentPrice = computed(() => {
+  if (!selectedColor.value || !selectedSize.value) {
+    return product.value?.fMinPrice ?? product.value?.fPrice
+  }
+  const variant = variants.value.find(
+    (v) => v.fColor === selectedColor.value && v.fSize === selectedSize.value,
+  )
+  return variant?.fPrice ?? product.value?.fPrice
+})
+const baseUrl = 'https://localhost:7197'
+const defaultImg = 'https://placehold.co/800x800/d5e6f3/333/png?text=800*800'
+const productImages = ref([])
+// 多張示意圖
 const placeholderImages = [
   'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
   'https://placehold.co/800x800/d5e6f3/333/png?text=800*800',
@@ -24,15 +35,6 @@ const selectedColor = ref('')
 const selectedSize = ref('')
 const quantity = ref(1)
 const openSection = ref('description')
-
-//新增 composable useProductCart by w
-const { currentStock, handleAddToCart } = useProductCart(
-  product,
-  variants,
-  selectedColor,
-  selectedSize,
-  quantity,
-)
 
 const toggleSection = (section) => {
   openSection.value = openSection.value === section ? null : section
@@ -54,13 +56,12 @@ const availableSizes = computed(() => {
   return variants.value.filter((v) => v.fColor === selectedColor.value).map((v) => v.fSize)
 })
 
-//原有的註解掉 by w
-// const currentStock = computed(() => {
-//   const v = variants.value.find(
-//     (v) => v.fColor === selectedColor.value && v.fSize === selectedSize.value,
-//   )
-//   return v ? v.fStock : 0
-// })
+const currentStock = computed(() => {
+  const v = variants.value.find(
+    (v) => v.fColor === selectedColor.value && v.fSize === selectedSize.value,
+  )
+  return v ? v.fStock : 0
+})
 
 function selectColor(color) {
   selectedColor.value = color
@@ -76,24 +77,21 @@ onMounted(async () => {
     isLoading.value = true
     const id = route.params.id
 
-    // ✨ 先不抓相關商品
-    const [productRes, variantRes] = await Promise.all([
+    const [productRes, variantRes, imagesRes] = await Promise.all([
       productApi.getById(id),
       productApi.getVariants(id),
+      productApi.getImages(id),
     ])
 
     product.value = productRes.data.data
     variants.value = variantRes.data.data ?? []
+    productImages.value = (imagesRes.data.data ?? []).map((img) => baseUrl + img)
 
-    // ✨ 先設顏色，再設尺寸（順序很重要）
     if (availableColors.value.length > 0) {
       selectedColor.value = availableColors.value[0]
-
-      // ✨ 等 computed 重新計算後再設尺寸
       const firstSize = variants.value
         .filter((v) => v.fColor === selectedColor.value)
         .map((v) => v.fSize)[0]
-
       if (firstSize) selectedSize.value = firstSize
     }
   } catch (err) {
@@ -120,17 +118,19 @@ const relatedProducts = ref([
   <div v-else-if="product" class="pt-32 pb-20 bg-white">
     <div class="max-w-[1300px] mx-auto px-6">
       <div class="flex flex-col md:flex-row gap-16 items-start">
-        <!-- ✨ 左側多張圖片 -->
+        <!--  左側圖片 -->
         <div class="flex-1 space-y-2">
-          <div v-for="(img, index) in placeholderImages" :key="index">
-            <img
-              :src="product.fImage || img"
-              :alt="product.fName"
-              class="w-full h-auto object-cover"
-            />
-          </div>
+          <template v-if="productImages.length > 0">
+            <div v-for="(img, index) in productImages" :key="index">
+              <img :src="img" :alt="product.fName" class="w-full h-auto object-cover" />
+            </div>
+          </template>
+          <template v-else>
+            <div v-for="(img, index) in placeholderImages" :key="index">
+              <img :src="img" :alt="product.fName" class="w-full h-auto object-cover" />
+            </div>
+          </template>
         </div>
-
         <!-- 右側資訊 -->
         <div
           class="md:w-[360px] shrink-0 sticky top-32 max-h-[calc(100vh-96px)] overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
@@ -147,7 +147,7 @@ const relatedProducts = ref([
           <div class="text-left py-2 border-t border-gray-100">
             <p class="text-sm text-gray-400">NT.</p>
             <p class="text-3xl font-bold text-gray-900 mt-1">
-              {{ product.fPrice?.toLocaleString() }}
+              NT$ {{ currentPrice?.toLocaleString() }}
             </p>
           </div>
 
@@ -172,7 +172,7 @@ const relatedProducts = ref([
               </div>
             </div>
 
-            <!-- 尺寸選擇 -->
+            <!-- 尺寸選擇  -->
             <div class="flex items-start gap-3">
               <span class="w-10 shrink-0 pt-1 text-gray-500">尺寸</span>
               <div class="flex flex-wrap gap-2.5">
@@ -225,9 +225,8 @@ const relatedProducts = ref([
             </div>
 
             <button
-              @click="handleAddToCart"
-              :disabled="!selectedColor || !selectedSize || currentStock === 0"
               class="w-full bg-black text-white h-11 text-sm font-bold tracking-[0.3em] uppercase hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              :disabled="!selectedColor || !selectedSize || currentStock === 0"
             >
               {{ currentStock === 0 ? '已售完' : '加入購物車' }}
             </button>
@@ -235,50 +234,6 @@ const relatedProducts = ref([
 
           <!-- 手風琴 -->
           <div class="pt-6 border-t border-gray-100">
-            <!-- 尺寸表 -->
-            <div class="border-b border-gray-100">
-              <div
-                @click="toggleSection('size')"
-                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm"
-              >
-                <span class="font-medium">尺寸表</span>
-                <span class="text-lg">{{ openSection === 'size' ? '−' : '+' }}</span>
-              </div>
-              <div v-show="openSection === 'size'" class="pb-4 text-xs text-gray-500">
-                <table class="w-full text-center border-collapse">
-                  <thead>
-                    <tr class="bg-gray-50">
-                      <th class="border border-gray-200 py-2 px-3">尺寸</th>
-                      <th class="border border-gray-200 py-2 px-3">胸寬</th>
-                      <th class="border border-gray-200 py-2 px-3">衣長</th>
-                      <th class="border border-gray-200 py-2 px-3">肩寬</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(row, i) in [
-                        { size: 'S', chest: 46, length: 62, shoulder: 37 },
-                        { size: 'M', chest: 48, length: 63, shoulder: 38 },
-                        { size: 'L', chest: 50, length: 64, shoulder: 39 },
-                        { size: 'XL', chest: 52, length: 65, shoulder: 40 },
-                        { size: 'F', chest: 50, length: 63, shoulder: 38 },
-                      ]"
-                      :key="row.size"
-                      :class="i % 2 === 1 ? 'bg-gray-50' : ''"
-                    >
-                      <td class="border border-gray-200 py-2 px-3">{{ row.size }}</td>
-                      <td class="border border-gray-200 py-2 px-3">{{ row.chest }}</td>
-                      <td class="border border-gray-200 py-2 px-3">{{ row.length }}</td>
-                      <td class="border border-gray-200 py-2 px-3">{{ row.shoulder }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <p class="text-[10px] text-gray-400 mt-3">
-                  ※ 由於生產過程不同，可能會有 1-2cm 的誤差。
-                </p>
-              </div>
-            </div>
-
             <!-- Model 資訊 -->
             <div class="border-b border-gray-100">
               <div
@@ -332,7 +287,7 @@ const relatedProducts = ref([
           >
             <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-3">
               <img
-                :src="item.fImage || 'https://placehold.co/300x400/f5f5f5/999?text=商品'"
+                :src="item.fImage ? baseUrl + item.fImage : defaultImg"
                 :alt="item.fName"
                 class="w-full h-full object-cover group-hover:opacity-80"
               />

@@ -25,10 +25,10 @@ async function updateCrumbById(categoryId) {
         const categories = res.data.data.categories ?? []
 
         // 找到對應的分類
-        const found = categories.find(c => c.id === Number(categoryId))
+        const found = categories.find(c => c.fId === Number(categoryId))
         if (found) {
             // ✨ 一般子分類：上身-T恤 → 父:上身 子:T恤
-            const parts = found.fullName.split('-')
+            const parts = found.fFullName.split('-')
             selectedParentName.value = parts[0] ?? null
             selectedCategoryName.value = parts[1] ?? parts[0]
         } else {

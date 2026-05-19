@@ -22,7 +22,16 @@ export const productApi = {
   uploadImage: (id, file) => {
     const formData = new FormData()
     formData.append('photo', file)
-    return axios.post(`${base}/${id}/image`, formData)
+    return axios.post(`${base}/${id}/image`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+  uploadImageExtra: (id, file) => {
+    const formData = new FormData()
+    formData.append('photo', file)
+    return axios.post(`${base}/${id}/image/extra`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
 
   // 更新商品
@@ -39,4 +48,14 @@ export const productApi = {
 
   //結帳時檢查庫存與價格
   checkItems: (variantIds) => axios.post(`${base}/check-items`, variantIds),
+
+  getStats: () => axios.get(`${base}/stats`),
+  getInventory: () => axios.get(`${base}/inventory`),
+  getImages: (id) => axios.get(`${base}/${id}/images`),
+
+  getStockRecords: () => axios.get(`{{base}}/stock-records`),
+  addStockRecord: (dto) => axios.post(`{{base}}/stock-records`, dto),
+  getPurchaseOrders: () => axios.get(`${base}/purchase-orders`),
+  getPurchaseOrder: (id) => axios.get(`${base}/purchase-orders/${id}`),
+  createPurchaseOrder: (dto) => axios.post(`${base}/purchase-orders`, dto),
 }

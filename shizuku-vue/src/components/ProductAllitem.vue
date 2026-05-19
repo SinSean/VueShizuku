@@ -11,6 +11,7 @@ const props = defineProps({
     default: null,
   },
 })
+const baseUrl = 'https://localhost:7197'
 
 const products = ref([])
 const isLoading = ref(true)
@@ -28,9 +29,11 @@ const sortedProducts = computed(() => {
 
 //  取得目前有效的分類 ID（網址優先，其次 props）
 function getActiveCategoryId() {
+  // props 優先（Sidebar 點擊），其次才是網址（Nav 點擊）
+  if (props.categoryId !== null && props.categoryId !== undefined) return props.categoryId
   const fromRoute = route.query.categoryId
   if (fromRoute) return Number(fromRoute)
-  return props.categoryId ?? null
+  return null
 }
 
 async function fetchProducts() {
@@ -98,7 +101,7 @@ onMounted(() => {
                 new
               </div>
               <img
-                :src="product.fImage || defaultImg"
+                :src="product.fImage ? baseUrl + product.fImage + '?t=' + Date.now() : defaultImg"
                 :alt="product.fName"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
@@ -108,11 +111,12 @@ onMounted(() => {
               {{ product.fName }}
             </h3>
 
-            <p class="text-sm text-gray-900 font-bold">NT$ {{ product.fPrice.toLocaleString() }}</p>
+            <p class="text-sm text-gray-900 font-bold">
+              NT$ {{ (product.fMinPrice ?? product.fPrice).toLocaleString() }}
+            </p>
           </RouterLink>
 
           <button
-            @click="$router.push('/product/' + product.fId)"
             class="mt-3 w-full border border-gray-200 py-1.5 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,8 +127,7 @@ onMounted(() => {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-            <!-- 原加入購物車更改為查看商品 by w -->
-            <span class="text-xs font-bold">查看商品</span>
+            <span class="text-xs font-bold">加入購物車</span>
           </button>
         </div>
       </div>
