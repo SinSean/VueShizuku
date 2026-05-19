@@ -47,13 +47,13 @@ const paymentOptions = ref([
     id: PAYMENT_METHOD.ECPAY,
     name: '信用卡',
     icon: 'pi-credit-card',
-    desc: '支援 Visa, Master, JCB',
+    desc: '支援 Visa, Master, JCB｜滿 $1,500 免運',
   },
   {
     id: PAYMENT_METHOD.LINEPAY,
     name: 'LINE Pay',
     icon: 'pi-comment',
-    desc: '可使用 LINE POINTS 折抵',
+    desc: '可使用 LINE POINTS 折抵｜滿 $1,500 免運',
   },
   {
     id: PAYMENT_METHOD.COD,
@@ -64,14 +64,12 @@ const paymentOptions = ref([
 ])
 
 // ========== 運費計算邏輯 (完全對齊後端 OrderService.cs) ==========
+// 所有付款方式統一適用：滿 $1,500 免運，未滿加收 $60 運費
 const FREE_SHIPPING_THRESHOLD = 1500
-const COD_SHIPPING_FEE = 60
+const SHIPPING_FEE = 60
 
 const shippingFee = computed(() => {
-  // 只有「貨到付款」才可能產生運費
-  if (form.value.paymentMethodId !== PAYMENT_METHOD.COD) return 0
-  // 貨到付款：滿 1500 免運，未滿加收 60 元
-  return cartStore.totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : COD_SHIPPING_FEE
+  return cartStore.totalPrice >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE
 })
 
 const finalTotal = computed(() => {
