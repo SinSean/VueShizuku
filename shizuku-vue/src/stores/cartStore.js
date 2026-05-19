@@ -44,6 +44,26 @@ export const useCartStore = defineStore('cart', () => {
     items.value = []
   }
 
+  // Actions：更換商品規格（換顏色/尺寸）
+  // 若目標規格 ID 已在購物車中，直接合併數量後移除原條目；否則直接更新
+  const updateItemVariant = (oldVariantId, newVariant) => {
+    const oldItem = items.value.find(item => item.id === oldVariantId)
+    if (!oldItem) return
+
+    const existingTarget = items.value.find(item => item.id === newVariant.id)
+    if (existingTarget) {
+      // 目標規格已存在 → 數量合併
+      existingTarget.quantity += oldItem.quantity
+      items.value = items.value.filter(item => item.id !== oldVariantId)
+    } else {
+      // 目標規格不存在 → 直接更新
+      oldItem.id    = newVariant.id
+      oldItem.color = newVariant.color
+      oldItem.size  = newVariant.size
+      oldItem.price = newVariant.price
+    }
+  }
+
   // 最後，把這些東西 return 出去，別的檔案才拿得到
   return { 
     items, 
@@ -51,6 +71,7 @@ export const useCartStore = defineStore('cart', () => {
     totalItems,
     addToCart, 
     removeFromCart, 
-    clearCart 
+    clearCart,
+    updateItemVariant,
   }
 })

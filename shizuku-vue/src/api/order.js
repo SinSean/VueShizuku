@@ -42,3 +42,10 @@ export const requestRefundAPI = async (orderNo, reason) => {
   const response = await request.post(`/orderApi/${orderNo}/refund`, { reason })
   return response.data
 }
+
+// 取得訂單的金流交易明細列表 (含通訊日誌)
+// 後端 PaymentAdminService 已有此資料，透過 orderNo 比對 orderId 取出
+export const getOrderTransactionsAPI = async (orderNo) => {
+  const response = await request.get(`/orderApi/${orderNo}/transactions`)
+  return response.data
+}

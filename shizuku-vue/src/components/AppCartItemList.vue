@@ -1,8 +1,10 @@
 <script setup>
 import InputNumber from 'primevue/inputnumber'
 import { useCartStore } from '@/stores/cartStore'
+import { useRouter } from 'vue-router'
 
 const cartStore = useCartStore()
+const router = useRouter()
 
 const props = defineProps({
   items: {
@@ -14,6 +16,16 @@ const props = defineProps({
     required: true,
   },
 })
+
+// 點擊商品圖或名稱 → 跳到商品詳情頁重新選規格（最直接的換規格方式）
+// 此時可透過 useProductCart composable 的 addToCart 加入購物車，
+// 購物車 store 會自動合併相同規格的數量
+const goToProduct = (item) => {
+  // item.productId 由 useProductCart 加入時記錄（若有）
+  if (item.productId) {
+    router.push({ name: 'product-detail', params: { id: item.productId } })
+  }
+}
 </script>
 
 <template>
@@ -37,7 +49,7 @@ const props = defineProps({
       >
         <!-- 左側商品圖文 -->
         <div class="flex items-start gap-6 w-full sm:w-auto">
-          <!-- 圖片容器 (帶極淺灰底色，讓去背圖更好看) -->
+          <!-- 圖片容器 -->
           <div
             class="w-24 h-32 bg-[#f8f8f8] rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center"
           >
@@ -49,7 +61,22 @@ const props = defineProps({
           </div>
           <div class="flex flex-col justify-center pt-2">
             <h3 class="text-base font-bold text-gray-900 tracking-wide">{{ item.name }}</h3>
-            <p class="text-gray-500 text-sm mt-1">{{ item.color }} / {{ item.size }}</p>
+
+            <!-- 規格顯示 + 換規格提示 -->
+            <div class="flex items-center gap-2 mt-1">
+              <p class="text-gray-500 text-sm">{{ item.color }} / {{ item.size }}</p>
+              <!-- 換規格按鈕：若有 productId 則導向商品頁重選 -->
+              <button
+                v-if="item.productId"
+                @click="goToProduct(item)"
+                class="text-[11px] text-blue-500 hover:text-blue-700 hover:underline transition-colors flex items-center gap-0.5"
+                title="返回商品頁更換顏色或尺寸"
+              >
+                <i class="pi pi-refresh text-[10px]"></i>
+                換規格
+              </button>
+            </div>
+
             <p class="text-gray-900 font-medium mt-3">
               NT$ {{ (item.price * item.quantity).toLocaleString() }}
             </p>

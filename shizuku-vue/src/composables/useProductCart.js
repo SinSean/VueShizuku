@@ -31,6 +31,7 @@ export function useProductCart(product, variants, selectedColor, selectedSize, q
 
     const itemToAdd = {
       id: currentVariant.value.fId,
+      productId: product.value.fId,     // 記錄商品頁 ID，供購物車「換規格」導航使用
       name: product.value.fName,
       price: currentVariant.value.fPrice ?? product.value.fPrice,
       image: product.value.fImage,
