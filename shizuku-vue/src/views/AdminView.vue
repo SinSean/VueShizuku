@@ -8,7 +8,7 @@ import AdminSidebar from '@/components/AdminSidebar.vue'
     <AdminSidebar />
 
     <!-- 右側內容區：子頁面在這裡顯示 -->
-    <main class="flex-1 bg-gray-50 p-8">
+    <main class="flex-1 bg-gray-50">
       <router-view />
     </main>
   </div>

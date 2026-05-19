@@ -1,24 +1,15 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
-  //. State (狀態)
-  const items = ref([
-    {
-      id: 1, // 這對應到剛剛 SQL 裡的 "黑色 M 號 T-Shirt"
-      name: '日系簡約純棉 T-Shirt (黑色 M)',
-      price: 590,
-      image: 'https://placehold.co/400x400/eeeeee/999999?text=T-Shirt',
-      quantity: 1,
-    },
-    {
-      id: 3, // 這對應到剛剛 SQL 裡的 "深藍 M 號牛仔褲"
-      name: '復古寬鬆牛仔褲 (深藍 M)',
-      price: 1280,
-      image: 'https://placehold.co/400x400/eeeeee/999999?text=Jeans',
-      quantity: 2,
-    }
-  ])
+  //初始化狀態,先看 localstorage 有沒有東西,沒有就給空陣列
+  const savedCart = localStorage.getItem('shizuku_cart')
+  const items = ref(savedCart ? JSON.parse(savedCart) : [])
+
+  //監聽items 變動
+  watch(items, (newItems) =>{
+    localStorage.setItem('shizuku_cart', JSON.stringify(newItems));
+  }, { deep: true })
 
   //  Getters (計算屬性)
   const totalPrice = computed(() => {
@@ -53,6 +44,26 @@ export const useCartStore = defineStore('cart', () => {
     items.value = []
   }
 
+  // Actions：更換商品規格（換顏色/尺寸）
+  // 若目標規格 ID 已在購物車中，直接合併數量後移除原條目；否則直接更新
+  const updateItemVariant = (oldVariantId, newVariant) => {
+    const oldItem = items.value.find(item => item.id === oldVariantId)
+    if (!oldItem) return
+
+    const existingTarget = items.value.find(item => item.id === newVariant.id)
+    if (existingTarget) {
+      // 目標規格已存在 → 數量合併
+      existingTarget.quantity += oldItem.quantity
+      items.value = items.value.filter(item => item.id !== oldVariantId)
+    } else {
+      // 目標規格不存在 → 直接更新
+      oldItem.id    = newVariant.id
+      oldItem.color = newVariant.color
+      oldItem.size  = newVariant.size
+      oldItem.price = newVariant.price
+    }
+  }
+
   // 最後，把這些東西 return 出去，別的檔案才拿得到
   return { 
     items, 
@@ -60,6 +71,7 @@ export const useCartStore = defineStore('cart', () => {
     totalItems,
     addToCart, 
     removeFromCart, 
-    clearCart 
+    clearCart,
+    updateItemVariant,
   }
 })

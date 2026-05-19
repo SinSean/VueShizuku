@@ -1,4 +1,4 @@
-import request from '@/api/index'
+import request from '@/api/myRequest'
 
 //  建立訂單
 export const createOrderAPI = async (data) => {
@@ -34,5 +34,18 @@ export const repayOrderAPI = async (orderNo, paymentMethodId) => {
 //取消訂單
 export const cancelOrderApi = async (orderNo) => {
   const response = await request.patch(`/orderApi/${orderNo}/cancel`)
+  return response.data
+}
+
+// 前台會員申請退款
+export const requestRefundAPI = async (orderNo, reason) => {
+  const response = await request.post(`/orderApi/${orderNo}/refund`, { reason })
+  return response.data
+}
+
+// 取得訂單的金流交易明細列表 (含通訊日誌)
+// 後端 PaymentAdminService 已有此資料，透過 orderNo 比對 orderId 取出
+export const getOrderTransactionsAPI = async (orderNo) => {
+  const response = await request.get(`/orderApi/${orderNo}/transactions`)
   return response.data
 }
