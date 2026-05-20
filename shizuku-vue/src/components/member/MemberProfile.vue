@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 import { updateProfileAPI } from '@/api/member';
 
 const authStore = useAuthStore();
+const API_BASE_URL = 'https://localhost:7197';
 
 const profile = ref({
     fId: 0,
@@ -15,6 +16,8 @@ const profile = ref({
 
 // 同步 Store 資料到本地表單
 watch(() => authStore.user, (newVal) => {
+    console.log("【偵錯】Pinia Store 目前的 user 物件內容：", newVal);
+    console.log("【偵錯】試著讀取圖片欄位：", newVal?.fImage, newVal?.FImage);
     if (newVal) {
         profile.value = {
             fId: newVal.fId || 0,
@@ -179,8 +182,11 @@ const formatBirthday = (dateStr) => {
             <div class="flex flex-col items-center border-l border-slate-100 pl-8">
                 <div
                     class="w-32 h-32 bg-slate-100 rounded-full mb-6 flex items-center justify-center border-2 border-dashed border-slate-300 overflow-hidden">
-                    <img v-if="authStore.user?.fImage" :src="authStore.user.fImage"
+
+                    <img v-if="authStore.user?.fImage"
+                        :src="authStore.user.fImage.startsWith('http') ? authStore.user.fImage : `${API_BASE_URL}/uploads/avatars/${authStore.user.fImage}`"
                         class="w-full h-full object-cover" />
+
                     <i v-else class="pi pi-user text-slate-400 text-5xl"></i>
                 </div>
                 <button type="button" class="text-blue-600 font-medium text-sm hover:underline">更換照片</button>
