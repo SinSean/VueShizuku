@@ -49,3 +49,9 @@ export const getOrderTransactionsAPI = async (orderNo) => {
   const response = await request.get(`/orderApi/${orderNo}/transactions`)
   return response.data
 }
+
+// 取得首頁熱銷商品排行
+export const getTopProductsAPI = async () => {
+  const response = await request.get('/orderApi/top-products')
+  return response.data
+}
