@@ -12,11 +12,10 @@ const props = defineProps({
   },
 })
 
-const baseUrl = 'https://localhost:7197'
+import { getImageUrl } from '@/utils/imageHelper'
 const products = ref([])
 const isLoading = ref(true)
 const keyword = ref('')
-const defaultImg = 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800'
 const sortOrder = ref('latest')
 
 const sortedProducts = computed(() => {
@@ -102,7 +101,7 @@ onMounted(() => {
                 new
               </div>
               <img
-                :src="product.fImage ? baseUrl + product.fImage + '?t=' + Date.now() : defaultImg"
+                :src="getImageUrl(product.fImage)"
                 :alt="product.fName"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

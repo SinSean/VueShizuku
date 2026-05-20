@@ -17,8 +17,7 @@ const relatedProducts = ref([
 ])
 const isLoading = ref(true)
 
-const baseUrl = 'https://localhost:7197'
-const defaultImg = 'https://placehold.co/800x800/d5e6f3/333/png?text=800*800'
+import { getImageUrl } from '@/utils/imageHelper'
 const productImages = ref([])
 
 const placeholderImages = [
@@ -91,7 +90,7 @@ onMounted(async () => {
 
     product.value = productRes.data.data
     variants.value = variantRes.data.data ?? []
-    productImages.value = (imagesRes.data.data ?? []).map((img) => baseUrl + img)
+    productImages.value = (imagesRes.data.data ?? []).map((img) => getImageUrl(img))
 
     // 自動預設選取第一個顏色與尺寸
     if (availableColors.value.length > 0) {
@@ -291,7 +290,7 @@ onMounted(async () => {
           <RouterLink v-for="item in relatedProducts" :key="item.fId" :to="'/product/' + item.fId"
             class="group cursor-pointer block">
             <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-3">
-              <img :src="item.fImage ? baseUrl + item.fImage : defaultImg" :alt="item.fName"
+              <img :src="getImageUrl(item.fImage)" :alt="item.fName"
                 class="w-full h-full object-cover group-hover:opacity-80" />
             </div>
             <div class="px-2 space-y-1">

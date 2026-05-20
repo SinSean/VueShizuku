@@ -17,6 +17,7 @@ const props = defineProps({
     required: true,
   },
 })
+import { getImageUrl } from '@/utils/imageHelper'
 </script>
 
 <template>
@@ -37,7 +38,7 @@ const props = defineProps({
           <div
             class="w-16 h-16 bg-[#f8f8f8] border border-gray-200 rounded-lg overflow-hidden flex items-center justify-center"
           >
-            <img :src="item.image" class="w-full h-full object-cover mix-blend-multiply" />
+            <img :src="getImageUrl(item.image)" class="w-full h-full object-cover mix-blend-multiply" />
           </div>
           <span
             class="absolute -top-2 -right-2 bg-gray-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm"

@@ -17,6 +17,8 @@ const props = defineProps({
   },
 })
 
+import { getImageUrl } from '@/utils/imageHelper'
+
 // 點擊商品圖或名稱 → 跳到商品詳情頁重新選規格（最直接的換規格方式）
 // 此時可透過 useProductCart composable 的 addToCart 加入購物車，
 // 購物車 store 會自動合併相同規格的數量
@@ -54,7 +56,7 @@ const goToProduct = (item) => {
             class="w-24 h-32 bg-[#f8f8f8] rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center"
           >
             <img
-              :src="item.image"
+              :src="getImageUrl(item.image)"
               alt="商品圖片"
               class="w-full h-full object-cover mix-blend-multiply"
             />
@@ -93,8 +95,8 @@ const goToProduct = (item) => {
             buttonLayout="horizontal"
             :min="1"
             :max="99"
-            class="w-28 shadow-sm border border-gray-200 rounded-md overflow-hidden"
-            inputClass="text-center w-10 !border-0 font-bold"
+            class="w-32 shadow-sm border border-gray-200 rounded-md overflow-hidden"
+            inputClass="text-center flex-1 min-w-0 !border-0 font-bold px-1"
             decrementButtonClass="!bg-white !text-gray-800 hover:!bg-gray-100 !border-0"
             incrementButtonClass="!bg-white !text-gray-800 hover:!bg-gray-100 !border-0"
           />
