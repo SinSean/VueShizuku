@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 
+const API_BASE_URL = 'https://localhost:7197';
+
 const isAccountOpen = ref(true);
 
 const toggleSection = (section) => {
@@ -38,8 +40,13 @@ const menuItems = [
 <template>
     <aside class="w-64 bg-slate-50 border-r border-slate-200 h-full p-4">
         <div class="flex items-center gap-3 mb-8 px-2">
-            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
-                <i class="pi pi-user text-2xl"></i>
+            <div
+                class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shadow-sm overflow-hidden border border-slate-200">
+                <img v-if="authStore.user?.fImage"
+                    :src="authStore.user.fImage.startsWith('http') ? authStore.user.fImage : `${API_BASE_URL}/uploads/avatars/${authStore.user.fImage}`"
+                    class="w-full h-full object-cover" />
+
+                <i v-else class="pi pi-user text-2xl"></i>
             </div>
             <div>
                 <h3 class="font-bold text-slate-1000">{{ authStore.userName }}</h3>
