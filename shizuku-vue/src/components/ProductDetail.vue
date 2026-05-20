@@ -4,17 +4,18 @@ import { ref, onMounted, computed } from 'vue'
 import { productApi } from '@/api/Product.js'
 import { useProductCart } from '@/composables/useProductCart'
 
+const relatedProducts = ref([])
 const route = useRoute()
 const product = ref(null)
 const variants = ref([])
-const relatedProducts = ref([
-  { fId: 1, fName: '日系透膚輕薄針織衫', fPrice: 1280, fImage: null },
-  { fId: 2, fName: '法式復古碎花無袖洋裝', fPrice: 1880, fImage: null },
-  { fId: 3, fName: '簡約純棉V領休閒上衣', fPrice: 890, fImage: null },
-  { fId: 4, fName: '挺版牛津襯衫 天藍色', fPrice: 1580, fImage: null },
-  { fId: 5, fName: '寬版連帽上衣 墨綠色', fPrice: 1880, fImage: null },
-  { fId: 6, fName: '丹寧牛仔外套 水洗藍', fPrice: 890, fImage: null },
-])
+// const relatedProducts = ref([
+//   { fId: 1, fName: '日系透膚輕薄針織衫', fPrice: 1280, fImage: null },
+//   { fId: 2, fName: '法式復古碎花無袖洋裝', fPrice: 1880, fImage: null },
+//   { fId: 3, fName: '簡約純棉V領休閒上衣', fPrice: 890, fImage: null },
+//   { fId: 4, fName: '挺版牛津襯衫 天藍色', fPrice: 1580, fImage: null },
+//   { fId: 5, fName: '寬版連帽上衣 墨綠色', fPrice: 1880, fImage: null },
+//   { fId: 6, fName: '丹寧牛仔外套 水洗藍', fPrice: 890, fImage: null },
+// ])
 const isLoading = ref(true)
 
 const baseUrl = 'https://localhost:7197'
@@ -82,13 +83,15 @@ onMounted(async () => {
     isLoading.value = true
     const id = route.params.id
 
-    // 同步獲取商品資料、規格與圖片
-    const [productRes, variantRes, imagesRes] = await Promise.all([
+    // Promise.all同步獲取商品資料、規格與圖片
+    const [productRes, variantRes, imagesRes, relatedRes] = await Promise.all([
       productApi.getById(id),
       productApi.getVariants(id),
       productApi.getImages(id),
+      productApi.getRelated(id),
     ])
 
+    relatedProducts.value = relatedRes.data.data ?? []
     product.value = productRes.data.data
     variants.value = variantRes.data.data ?? []
     productImages.value = (imagesRes.data.data ?? []).map((img) => baseUrl + img)
@@ -132,7 +135,8 @@ onMounted(async () => {
 
         <!-- 右側資訊 -->
         <div
-          class="md:w-[360px] shrink-0 sticky top-32 max-h-[calc(100vh-96px)] overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          class="md:w-[360px] shrink-0 sticky top-32 max-h-[calc(100vh-96px)] overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        >
           <div class="space-y-1.5 text-left">
             <h1 class="text-xl font-normal text-gray-800 leading-snug">
               {{ product.fName }}
@@ -154,12 +158,17 @@ onMounted(async () => {
             <div class="flex items-start gap-3">
               <span class="w-10 shrink-0 pt-1 text-gray-500">顏色</span>
               <div class="flex flex-wrap gap-2.5">
-                <button v-for="color in availableColors" :key="color" @click="selectColor(color)" :class="[
-                  'px-3 h-7 border text-xs font-medium tracking-wider transition-colors',
-                  selectedColor === color
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-400',
-                ]">
+                <button
+                  v-for="color in availableColors"
+                  :key="color"
+                  @click="selectColor(color)"
+                  :class="[
+                    'px-3 h-7 border text-xs font-medium tracking-wider transition-colors',
+                    selectedColor === color
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-400',
+                  ]"
+                >
                   {{ color }}
                 </button>
               </div>
@@ -169,12 +178,17 @@ onMounted(async () => {
             <div class="flex items-start gap-3">
               <span class="w-10 shrink-0 pt-1 text-gray-500">尺寸</span>
               <div class="flex flex-wrap gap-2.5">
-                <button v-for="size in availableSizes" :key="size" @click="selectedSize = size" :class="[
-                  'w-12 h-7 border text-xs font-medium tracking-wider transition-colors',
-                  selectedSize === size
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-400',
-                ]">
+                <button
+                  v-for="size in availableSizes"
+                  :key="size"
+                  @click="selectedSize = size"
+                  :class="[
+                    'w-12 h-7 border text-xs font-medium tracking-wider transition-colors',
+                    selectedSize === size
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 text-gray-700 hover:border-gray-400',
+                  ]"
+                >
                   {{ size }}
                 </button>
               </div>
@@ -192,20 +206,31 @@ onMounted(async () => {
             <div class="flex items-center gap-3">
               <span class="w-12 text-gray-500 text-sm">數量</span>
               <div class="flex items-center border border-gray-200 h-10">
-                <button @click="quantity > 1 ? quantity-- : null" class="w-10 h-full text-gray-400 hover:text-black">
+                <button
+                  @click="quantity > 1 ? quantity-- : null"
+                  class="w-10 h-full text-gray-400 hover:text-black"
+                >
                   -
                 </button>
-                <input type="number" v-model="quantity"
-                  class="w-16 h-full text-center text-sm font-bold outline-none" />
-                <button @click="quantity < currentStock ? quantity++ : null"
-                  class="w-10 h-full text-gray-400 hover:text-black">
+                <input
+                  type="number"
+                  v-model="quantity"
+                  class="w-16 h-full text-center text-sm font-bold outline-none"
+                />
+                <button
+                  @click="quantity < currentStock ? quantity++ : null"
+                  class="w-10 h-full text-gray-400 hover:text-black"
+                >
                   +
                 </button>
               </div>
             </div>
 
-            <button @click="handleAddToCart" :disabled="!selectedColor || !selectedSize || currentStock === 0"
-              class="w-full bg-black text-white h-11 text-sm font-bold tracking-[0.3em] uppercase hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <button
+              @click="handleAddToCart"
+              :disabled="!selectedColor || !selectedSize || currentStock === 0"
+              class="w-full bg-black text-white h-11 text-sm font-bold tracking-[0.3em] uppercase hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               {{ currentStock === 0 ? '已售完' : '加入購物車' }}
             </button>
           </div>
@@ -214,8 +239,10 @@ onMounted(async () => {
           <div class="pt-6 border-t border-gray-100">
             <!-- 尺寸表 -->
             <div class="border-b border-gray-100">
-              <div @click="toggleSection('size')"
-                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm">
+              <div
+                @click="toggleSection('size')"
+                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm"
+              >
                 <span class="font-medium">尺寸表</span>
                 <span class="text-lg">{{ openSection === 'size' ? '−' : '+' }}</span>
               </div>
@@ -230,13 +257,17 @@ onMounted(async () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(row, i) in [
-                      { size: 'S', chest: 46, length: 62, shoulder: 37 },
-                      { size: 'M', chest: 48, length: 63, shoulder: 38 },
-                      { size: 'L', chest: 50, length: 64, shoulder: 39 },
-                      { size: 'XL', chest: 52, length: 65, shoulder: 40 },
-                      { size: 'F', chest: 50, length: 63, shoulder: 38 },
-                    ]" :key="row.size" :class="i % 2 === 1 ? 'bg-gray-50' : ''">
+                    <tr
+                      v-for="(row, i) in [
+                        { size: 'S', chest: 46, length: 62, shoulder: 37 },
+                        { size: 'M', chest: 48, length: 63, shoulder: 38 },
+                        { size: 'L', chest: 50, length: 64, shoulder: 39 },
+                        { size: 'XL', chest: 52, length: 65, shoulder: 40 },
+                        { size: 'F', chest: 50, length: 63, shoulder: 38 },
+                      ]"
+                      :key="row.size"
+                      :class="i % 2 === 1 ? 'bg-gray-50' : ''"
+                    >
                       <td class="border border-gray-200 py-2 px-3">{{ row.size }}</td>
                       <td class="border border-gray-200 py-2 px-3">{{ row.chest }}</td>
                       <td class="border border-gray-200 py-2 px-3">{{ row.length }}</td>
@@ -252,8 +283,10 @@ onMounted(async () => {
 
             <!-- Model 資訊 -->
             <div class="border-b border-gray-100">
-              <div @click="toggleSection('model')"
-                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm">
+              <div
+                @click="toggleSection('model')"
+                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm"
+              >
                 <span class="font-medium">Model 資訊</span>
                 <span class="text-lg">{{ openSection === 'model' ? '−' : '+' }}</span>
               </div>
@@ -269,12 +302,17 @@ onMounted(async () => {
 
             <!-- 商品說明 -->
             <div class="border-b border-gray-100">
-              <div @click="toggleSection('description')"
-                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm">
+              <div
+                @click="toggleSection('description')"
+                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm"
+              >
                 <span class="font-medium">商品說明</span>
                 <span class="text-lg">{{ openSection === 'description' ? '−' : '+' }}</span>
               </div>
-              <div v-show="openSection === 'description'" class="pb-4 text-xs text-gray-500 leading-relaxed">
+              <div
+                v-show="openSection === 'description'"
+                class="pb-4 text-xs text-gray-500 leading-relaxed"
+              >
                 <p>{{ product.fDescription ?? '暫無商品說明' }}</p>
               </div>
             </div>
@@ -285,21 +323,28 @@ onMounted(async () => {
       <!-- 相關商品 -->
       <div class="mt-32 border-t border-gray-100 pt-16 pb-32">
         <div class="text-center mb-12">
-          <h2 class="text-gray-500 tracking-[0.2em] text-sm font-light">\ 我想妳應該會喜歡 /</h2>
+          <h2 class="text-gray-500 tracking-[0.2em] text-m font-light">\ 我想妳應該會喜歡 /</h2>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-1 gap-y-10">
-          <RouterLink v-for="item in relatedProducts" :key="item.fId" :to="'/product/' + item.fId"
-            class="group cursor-pointer block">
+          <RouterLink
+            v-for="item in relatedProducts"
+            :key="item.fId"
+            :to="'/product/' + item.fId"
+            class="group cursor-pointer block"
+          >
             <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-3">
-              <img :src="item.fImage ? baseUrl + item.fImage : defaultImg" :alt="item.fName"
-                class="w-full h-full object-cover group-hover:opacity-80" />
+              <img
+                :src="item.fImage ? baseUrl + item.fImage : defaultImg"
+                :alt="item.fName"
+                class="w-full h-full object-cover group-hover:opacity-80"
+              />
             </div>
-            <div class="px-2 space-y-1">
-              <h3 class="text-[10px] text-gray-600 font-light line-clamp-2">
+            <div class="px-1 space-y-5 text-center">
+              <h3 class="text-xs text-gray-700 font-medium line-clamp-2 leading-relaxed">
                 {{ item.fName }}
               </h3>
-              <p class="text-[10px] text-gray-900 font-medium text-left">
-                NT.{{ item.fPrice?.toLocaleString() }}
+              <p class="text-xs text-gray-900 font-bold tracking-wide text-center">
+                NT.{{ (item.fMinPrice ?? item.fPrice)?.toLocaleString() }}
               </p>
             </div>
           </RouterLink>
