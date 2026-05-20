@@ -1,55 +1,51 @@
 <script setup>
-//  1. 多引入了一個 onMounted，用來在網頁開啟時觸發動作
 import { reactive, ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth'; // 引入組長寫的權限 Store
 
-// 表單資料綁定
+const authStore = useAuthStore();
+
+// 表單資料綁定 (已合併姓名，並加入 memberId)
 const formData = reactive({
-  lastName: '',
-  firstName: '',
+  memberId: 0,
+  name: '', 
   email: '',
-  categoryId: '', // 下拉選單預設為空
+  categoryId: '', 
   subject: '',
   description: ''
 });
 
-//  2. 這裡改成「空陣列」，不寫死了，等著接後端傳來的資料！
 const categories = ref([]);
-
 const isSubmitting = ref(false);
 
-//  3. 新增：專門去後端拿「分類資料」的函數
+// 取得分類下拉選單資料
 const fetchCategories = async () => {
   try {
-    //  記得確認這裡的 Port 號是你現在 C# 跑起來的真實 Port (例如 7123)
     const apiUrl = 'https://localhost:7197/api/CustomerApi/Categories';
     const response = await axios.get(apiUrl);
-    
-    //  【關鍵修改】：因為套用了組長的 ApiResponse，所以這裡要寫 .data.data 才能拿到真正的陣列！
     categories.value = response.data.data; 
-
   } catch (error) {
     console.error("取得分類失敗：", error);
   }
 };
 
-// 送出表單到後端 (跟你原本寫的一樣)
+// 送出表單
 const submitForm = async () => {
   isSubmitting.value = true;
   try {
-    //  記得確認 Port 號
     const apiUrl = 'https://localhost:7197/api/CustomerApi/Submit';
     const response = await axios.post(apiUrl, formData);
     
-    //  這裡其實不用大改，因為 response.data 裡面剛好也有組長寫的 success 和 message！
     if (response.data.success) {
-      alert(response.data.message); // 會跳出我們 C# 寫的 "客服單已成功送出！"
-      Object.keys(formData).forEach(key => formData[key] = ''); // 清空表單
+      alert(response.data.message); 
+      
+      // 送出成功後，只清空問題，保留客人的姓名與信箱
+      formData.categoryId = '';
+      formData.subject = '';
+      formData.description = '';
     }
   } catch (error) {
     console.error("API 呼叫失敗：", error);
-    
-    // 【進階處理】：如果 C# 的 BadRequest 有回傳 ApiResponse，我們也可以把組長寫的錯誤訊息印出來
     if (error.response && error.response.data && error.response.data.message) {
       alert("錯誤：" + error.response.data.message);
     } else {
@@ -59,9 +55,24 @@ const submitForm = async () => {
     isSubmitting.value = false;
   }
 };
-//  4. 新增：設定網頁一載入 (Mounted) 的時候，就立刻去執行 fetchCategories！
+
+// 網頁載入時觸發
 onMounted(() => {
   fetchCategories();
+
+  // 如果已經登入，自動把個資塞進表單
+  if (authStore.isLogin && authStore.user) {
+    const u = authStore.user;
+    
+    // 綁定會員 ID 給後端 (依據組長實際的資料庫欄位名稱，通常是 fId 或 fMemberId)
+    formData.memberId = u.fId || u.fMemberId || 0;
+    
+    // 自動帶入信箱
+    formData.email = u.fEmail || u.email || '';
+    
+    // 自動帶入姓名 (如果資料庫只有一個全名欄位 fName，就先預設塞給它)
+    formData.name = u.fName || u.name || ''; 
+  }
 });
 </script>
 
@@ -84,22 +95,13 @@ onMounted(() => {
 
     <form @submit.prevent="submitForm" class="space-y-6 bg-white p-6 md:p-10 border border-gray-200">
       
-      <!-- 姓名 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">姓名 <span class="text-red-500">※</span></label>
-        <div class="md:col-span-3 flex gap-4">
-          <div class="flex-1 flex items-center gap-2">
-            <span class="text-sm text-gray-600 whitespace-nowrap">姓</span>
-            <input type="text" v-model="formData.lastName" required class="w-full border border-gray-300 p-2 focus:outline-none focus:border-gray-500" />
-          </div>
-          <div class="flex-1 flex items-center gap-2">
-            <span class="text-sm text-gray-600 whitespace-nowrap">名</span>
-            <input type="text" v-model="formData.firstName" required class="w-full border border-gray-300 p-2 focus:outline-none focus:border-gray-500" />
-          </div>
+        <div class="md:col-span-3">
+          <input type="text" v-model="formData.name" required class="w-full max-w-md border border-gray-300 p-2 focus:outline-none focus:border-gray-500" placeholder="請輸入您的姓名" />
         </div>
       </div>
 
-      <!-- 信箱 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">電子郵件地址 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -107,7 +109,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- 問題分類 (現在裡面的資料是從後端來的囉！) -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">問題分類 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -118,7 +119,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- 主旨 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">案件主旨 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -126,7 +126,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- 描述 -->
       <div class="grid grid-cols-1 md:grid-cols-4 md:gap-4 items-start border-b border-gray-100 pb-6">
         <label class="font-bold text-gray-800 mb-2 md:mb-0">詳細描述 <span class="text-red-500">※</span></label>
         <div class="md:col-span-3">
@@ -134,7 +133,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- 送出按鈕 -->
       <div class="text-center pt-8">
         <button type="submit" :disabled="isSubmitting" class="bg-gray-900 text-white px-16 py-3 font-bold tracking-widest hover:bg-gray-700 transition-colors disabled:opacity-50">
           {{ isSubmitting ? '傳送中...' : '確認送出' }}
