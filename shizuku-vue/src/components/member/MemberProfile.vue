@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { updateProfileAPI } from '@/api/member';
+import { updateProfileAPI, updateAvatar } from '@/api/member';
 
 const authStore = useAuthStore();
 const API_BASE_URL = 'https://localhost:7197';
@@ -14,10 +14,10 @@ const profile = ref({
     fPhone: ''
 });
 
+const fileInputRef = ref(null);
+
 // 同步 Store 資料到本地表單
 watch(() => authStore.user, (newVal) => {
-    console.log("【偵錯】Pinia Store 目前的 user 物件內容：", newVal);
-    console.log("【偵錯】試著讀取圖片欄位：", newVal?.fImage, newVal?.FImage);
     if (newVal) {
         profile.value = {
             fId: newVal.fId || 0,
@@ -51,7 +51,6 @@ const saveProfile = async () => {
 
             // 修正鍵名為 memberUser，確保重新整理後資料還在
             localStorage.setItem('memberUser', JSON.stringify(authStore.user));
-
             alert('個人資料已儲存');
         } else {
             alert('儲存失敗：' + res.data.message);
@@ -59,6 +58,61 @@ const saveProfile = async () => {
     } catch (error) {
         console.error('儲存出錯:', error);
         alert('連線伺服器失敗');
+    }
+};
+
+// 觸發隱藏的檔案選擇框
+const triggerFileInput = () => {
+    fileInputRef.value.click();
+};
+
+// 處理圖片上傳邏輯
+const handleAvatarChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 限制圖片格式與大小 (選擇性加入，保障系統安全)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('只允許上傳 JPG、PNG 或 GIF 格式的圖片');
+        return;
+    }
+    if (file.size > 2 * 1024 * 1024) { // 限制 2MB
+        alert('圖片大小不能超過 2MB');
+        return;
+    }
+
+    // 使用 FormData 包裝檔案
+    const formData = new FormData();
+    // 注意：這裡的 'file' 字串必須對應你 C# 後端 Action 參數的變數名稱 (例如 IFormFile file)
+    formData.append('file', file);
+
+    try {
+        // 呼叫 API，傳入目前會員 ID 與 formData
+        const res = await updateAvatar(profile.value.fId, formData);
+
+        if (res.data.success) {
+            // 假設後端 ApiResponse<T> 的 Data 會回傳新上傳成功的圖片名稱 (字串)
+            const newImageName = res.data.data;
+
+            // 同步更新 Pinia Store
+            authStore.user = {
+                ...authStore.user,
+                fImage: newImageName
+            };
+
+            // 寫回 LocalStorage 保持持久化
+            localStorage.setItem('memberUser', JSON.stringify(authStore.user));
+            alert('大頭貼更換成功');
+        } else {
+            alert('上傳失敗：' + res.data.message);
+        }
+    } catch (error) {
+        console.error('上傳頭像出錯:', error);
+        alert('頭像上傳失敗，請檢查網路連線');
+    } finally {
+        // 清空 input 的值，確保使用者選同一張圖時仍能觸發 change 事件
+        event.target.value = '';
     }
 };
 
@@ -189,8 +243,12 @@ const formatBirthday = (dateStr) => {
 
                     <i v-else class="pi pi-user text-slate-400 text-5xl"></i>
                 </div>
-                <button type="button" class="text-blue-600 font-medium text-sm hover:underline">更換照片</button>
+                <button type="button" @click="triggerFileInput"
+                    class="text-blue-600 font-medium text-sm hover:underline">
+                    更換照片
+                </button>
             </div>
-        </form>
+        </form> <input type="file" ref="fileInputRef" @change="handleAvatarChange"
+            accept="image/jpeg, image/png, image/gif" class="hidden" />
     </main>
 </template>

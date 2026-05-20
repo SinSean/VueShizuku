@@ -58,3 +58,8 @@ export const updatePhoneWithCodeAPI = (data) => {
 export const updateBirthdayWithCodeAPI = (data) => {
     return request.post('/MemberApi/security/update-birthday', data);
 };
+
+// 更新會員頭像
+export const updateAvatar = (memberId, data) => {
+    return request.post(`/MemberApi/${memberId}/upload-avatar`, data);
+};
