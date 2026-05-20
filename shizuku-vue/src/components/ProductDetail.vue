@@ -280,6 +280,22 @@ onMounted(async () => {
                 </p>
               </div>
             </div>
+            <!-- 商品說明 -->
+            <div class="border-b border-gray-100">
+              <div
+                @click="toggleSection('description')"
+                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm"
+              >
+                <span class="font-medium">商品說明</span>
+                <span class="text-lg">{{ openSection === 'description' ? '−' : '+' }}</span>
+              </div>
+              <div
+                v-show="openSection === 'description'"
+                class="pb-4 text-xs text-gray-500 leading-relaxed"
+              >
+                <p>{{ product.fDescription ?? '暫無商品說明' }}</p>
+              </div>
+            </div>
 
             <!-- Model 資訊 -->
             <div class="border-b border-gray-100">
@@ -297,23 +313,6 @@ onMounted(async () => {
                 <p>腰圍：60 cm</p>
                 <p>臀圍：85 cm</p>
                 <p>穿著尺寸：M</p>
-              </div>
-            </div>
-
-            <!-- 商品說明 -->
-            <div class="border-b border-gray-100">
-              <div
-                @click="toggleSection('description')"
-                class="flex justify-between items-center cursor-pointer hover:text-black py-2 text-sm"
-              >
-                <span class="font-medium">商品說明</span>
-                <span class="text-lg">{{ openSection === 'description' ? '−' : '+' }}</span>
-              </div>
-              <div
-                v-show="openSection === 'description'"
-                class="pb-4 text-xs text-gray-500 leading-relaxed"
-              >
-                <p>{{ product.fDescription ?? '暫無商品說明' }}</p>
               </div>
             </div>
           </div>
