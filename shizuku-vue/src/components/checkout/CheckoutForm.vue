@@ -13,6 +13,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  cartTotal: {
+    type: Number,
+    required: true,
+  },
 })
 
 const emit = defineEmits(['update:form', 'submit', 'back'])
@@ -77,7 +81,7 @@ const updateField = (field, value) => {
               <p class="text-xs text-gray-500 mt-1">預計 2-3 個工作天送達</p>
             </div>
           </div>
-          <span class="font-bold text-black text-sm">免運費</span>
+          <span class="font-bold text-black text-sm">{{ props.cartTotal >= 1500 ? '免運費' : 'NT$ 60' }}</span>
         </div>
       </div>
 
@@ -126,14 +130,14 @@ const updateField = (field, value) => {
             v-if="props.form.paymentMethodId === PAYMENT_METHOD.COD"
             class="mt-4 p-4 rounded-lg text-sm flex items-start gap-3 border"
             :class="
-              props.form.cartTotal >= 1500
+              props.cartTotal >= 1500
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                 : 'bg-amber-50 border-amber-200 text-amber-800'
             "
           >
             <i class="pi pi-info-circle mt-0.5 flex-shrink-0"></i>
             <span>
-              <template v-if="props.form.cartTotal >= 1500">
+              <template v-if="props.cartTotal >= 1500">
                 本訂單已達免運門檻，貨到付款免收運費！
               </template>
               <template v-else>

@@ -37,9 +37,6 @@ const form = ref({
   receiverAddress: '',
   note: '',
   paymentMethodId: PAYMENT_METHOD.ECPAY,
-  get cartTotal() {
-    return cartStore.totalPrice
-  },
 })
 
 const paymentOptions = ref([
@@ -173,7 +170,10 @@ const submitOrder = async () => {
     console.info('下單回傳結果：', res)
 
     if (res.success && res.data) {
-      // 成功下單後，立即清空本機與 Pinia 購物車
+      // 1. 先暫存計算出來的結帳總金額（因為清空購物車會重置 cartStore 金額為 0）
+      const checkoutTotalAmount = finalTotal.value
+
+      // 2. 成功下單後，立即清空本機與 Pinia 購物車
       cartStore.clearCart()
 
       if (res.data.paymentUrl) {
@@ -195,9 +195,8 @@ const submitOrder = async () => {
         )
       } else {
         // 貨到付款：顯示無金流成功頁與運費提醒
-        const totalAmount = finalTotal.value
         resultStatus.value = 'success'
-        resultMessage.value = `訂單已順利成立！請於包裹送達時，準備好現金 NT$ ${totalAmount.toLocaleString()} 交付給配送人員。`
+        resultMessage.value = `訂單已順利成立！請於包裹送達時，準備好現金 NT$ ${checkoutTotalAmount.toLocaleString()} 交付給配送人員。`
         shouldRedirectToOrders.value = true
         showResultModal.value = true
       }
@@ -259,6 +258,7 @@ onMounted(() => {
         <CheckoutForm
           :form="form"
           :paymentOptions="paymentOptions"
+          :cartTotal="cartStore.totalPrice"
           @update:form="handleFormUpdate"
           @submit="submitOrder"
           @back="handleBack"
