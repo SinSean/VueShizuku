@@ -8,7 +8,7 @@ import { usePaymentWindow } from '@/composables/usePaymentWindow'
  * @param {string|number} orderId 訂單識別編號
  * @returns {Object} 包含所有狀態與方法
  */
-export function useOrderDetailActions(orderId) {
+export function useOrderDetailActions(orderId, onSuccess) {
   const toast = useToast()
   const { openPaymentWindow } = usePaymentWindow()
 
@@ -37,11 +37,13 @@ export function useOrderDetailActions(orderId) {
               resultStatus.value = 'success'
               resultMessage.value = '太棒了！您的訂單已付款成功。'
               showResultModal.value = true
+              if (onSuccess) onSuccess()
             },
             (errorMsg) => {
               resultStatus.value = 'fail'
               resultMessage.value = errorMsg || '付款失敗，請重試。'
               showResultModal.value = true
+              if (onSuccess) onSuccess()
             }
           )
         } else {
@@ -49,6 +51,7 @@ export function useOrderDetailActions(orderId) {
           resultStatus.value = 'success'
           resultMessage.value = '已將您的付款方式更改為「貨到付款」，訂單已準備出貨！'
           showResultModal.value = true
+          if (onSuccess) onSuccess()
         }
       } else {
         // ApiResponse.Success 為 false
@@ -79,9 +82,13 @@ export function useOrderDetailActions(orderId) {
           detail: '此筆訂單已被成功取消。',
           life: 2000
         })
-        setTimeout(() => {
-          window.location.reload()
-        }, 1500)
+        if (onSuccess) {
+          await onSuccess()
+        } else {
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
+        }
       } else {
         // ApiResponse.Success 為 false
         toast.add({
@@ -104,7 +111,11 @@ export function useOrderDetailActions(orderId) {
 
   const handleCountdownEnd = () => {
     showResultModal.value = false
-    window.location.reload()
+    if (onSuccess) {
+      onSuccess()
+    } else {
+      window.location.reload()
+    }
   }
 
   return {

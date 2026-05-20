@@ -34,16 +34,6 @@ const isLoading = ref(true)
 // 導入倒數計時組合式函數 (專注倒數管理職責)
 const { timeLeft, startCountdown } = useOrderCountdown(orderData)
 
-// 導入詳情流程操作組合式函數 (專注重新付款金流與取消訂單，完美對接 ApiResponse 規範)
-const {
-  showResultModal,
-  resultStatus,
-  resultMessage,
-  handleRepay,
-  handleCancel,
-  handleCountdownEnd,
-} = useOrderDetailActions(orderId)
-
 // 讀取訂單詳細資訊
 const fetchOrderDetail = async () => {
   try {
@@ -95,6 +85,16 @@ const fetchOrderDetail = async () => {
     isLoading.value = false
   }
 }
+
+// 導入詳情流程操作組合式函數 (專注重新付款金流與取消訂單，完美對接 ApiResponse 規範)
+const {
+  showResultModal,
+  resultStatus,
+  resultMessage,
+  handleRepay,
+  handleCancel,
+  handleCountdownEnd,
+} = useOrderDetailActions(orderId, fetchOrderDetail)
 
 onMounted(async () => {
   await fetchOrderDetail()
