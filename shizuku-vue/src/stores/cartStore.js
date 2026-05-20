@@ -47,20 +47,28 @@ export const useCartStore = defineStore('cart', () => {
   // Actions：更換商品規格（換顏色/尺寸）
   // 若目標規格 ID 已在購物車中，直接合併數量後移除原條目；否則直接更新
   const updateItemVariant = (oldVariantId, newVariant) => {
-    const oldItem = items.value.find(item => item.id === oldVariantId)
-    if (!oldItem) return
+    // 1. 如果規格完全沒有改變，直接返回，避免重複比對與自我過濾 Bug
+    if (oldVariantId === newVariant.id) return
 
+    const index = items.value.findIndex(item => item.id === oldVariantId)
+    if (index === -1) return
+
+    const oldItem = items.value[index]
     const existingTarget = items.value.find(item => item.id === newVariant.id)
+
     if (existingTarget) {
-      // 目標規格已存在 → 數量合併
+      // 2. 目標規格已存在於購物車中 → 數量合併，並移除原規格項目
       existingTarget.quantity += oldItem.quantity
       items.value = items.value.filter(item => item.id !== oldVariantId)
     } else {
-      // 目標規格不存在 → 直接更新
-      oldItem.id    = newVariant.id
-      oldItem.color = newVariant.color
-      oldItem.size  = newVariant.size
-      oldItem.price = newVariant.price
+      // 3. 目標規格不存在 ➡️ 產生全新物件並替換，防止原地修改 key (id) 造成 Vue 虛擬 DOM 渲染崩潰
+      items.value[index] = {
+        ...oldItem,
+        id: newVariant.id,
+        color: newVariant.color,
+        size: newVariant.size,
+        price: newVariant.price
+      }
     }
   }
 
