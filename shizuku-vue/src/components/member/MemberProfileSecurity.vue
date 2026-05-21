@@ -5,7 +5,8 @@ import {
     sendSecurityCodeAPI,
     verifySecurityCodeAPI,
     updatePhoneWithCodeAPI,
-    updateBirthdayWithCodeAPI
+    updateBirthdayWithCodeAPI,
+    updatePasswordWithCodeAPI
 } from '@/api/member';
 import { useAuthStore } from '@/stores/auth';
 
@@ -17,12 +18,14 @@ const authStore = useAuthStore();
 const step = ref(1);
 
 // 根據路由參數（例如 /security/update?type=birthday）動態判斷目前是改什麼
-// 1 = 修改手機, 2 = 修改生日
+// 1 = 修改手機, 2 = 修改生日, 3 = 修改密碼
 const currentType = ref(1);
 
 // 動態標題與輸入框提示字
-const titleText = computed(() => currentType.value === 1 ? '重新設定手機' : '重新設定生日');
-const step3TitleText = computed(() => currentType.value === 1 ? '建立新手機號碼' : '設定新出生日期');
+const titleMap = { 1: '重新設定手機', 2: '重新設定生日', 3: '重新設定密碼' };
+const step3TitleMap = { 1: '建立新手機號碼', 2: '設定新出生日期', 3: '建立新密碼' };
+const titleText = computed(() => titleMap[currentType.value] || '重新設定');
+const step3TitleText = computed(() => step3TitleMap[currentType.value] || '設定新資料');
 const inputPlaceholder = computed(() => currentType.value === 1 ? '請輸入新手機號碼' : '請選擇出生日期');
 
 // 表單資料
@@ -30,6 +33,24 @@ const email = ref('sealll4001@gmail.com');
 const code = ref('');
 const newPhone = ref('');
 const newBirthday = ref(''); // 新增生日綁定變數
+const newPassword = ref('');  // 新密碼
+const confirmPassword = ref('');  // 確認密碼
+const isPasswordVisible = ref(false);  // 密碼顯示/隱藏
+const isConfirmVisible = ref(false);
+
+// 密碼驗證規則
+const passwordRules = computed(() => [
+    { label: '8-16 個字元', valid: /^.{8,16}$/.test(newPassword.value) },
+    { label: '至少一個小寫字母', valid: /[a-z]/.test(newPassword.value) },
+    { label: '至少一個大寫字母', valid: /[A-Z]/.test(newPassword.value) },
+    { label: '僅能使用英文、數字或標點符號', valid: /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{}|;':",./<>?]+$/.test(newPassword.value) || newPassword.value === '' }
+]);
+
+const isPasswordFormValid = computed(() => {
+    return passwordRules.value.every(r => r.valid)
+        && newPassword.value.length > 0
+        && newPassword.value === confirmPassword.value;
+});
 const errorMessage = ref('');
 
 // 全局非同步請求載入狀態
@@ -49,10 +70,9 @@ onMounted(() => {
         case 'birthday':
             currentType.value = 2;
             break;
-        // 未來若要擴充其他類型，直接在這裡加 case 即可
-        // case 'password':
-        //     currentType.value = 3;
-        //     break;
+        case 'password':
+            currentType.value = 3;
+            break;
         default:
             // 預設防呆：如果網址沒帶 type 或亂打，預設回歸手機號碼修改 (1)
             currentType.value = 1;
@@ -200,6 +220,38 @@ const handleUpdateSubmit = async () => {
         } finally {
             isLoading.value = false;
         }
+    } else if (currentType.value === 3) {
+        // 處理密碼更動
+        if (!isPasswordFormValid.value) {
+            if (newPassword.value !== confirmPassword.value) {
+                errorMessage.value = '兩次輸入的密碼不一致';
+            } else {
+                errorMessage.value = '請確認密碼符合所有規則';
+            }
+            return;
+        }
+
+        isLoading.value = true;
+
+        try {
+            const res = await updatePasswordWithCodeAPI({
+                fNewPassword: newPassword.value,
+                fConfirmPassword: confirmPassword.value,
+                fVerifiedCode: code.value
+            });
+
+            if (res.data && res.data.success) {
+                alert('密碼修改成功！');
+                if (timer) clearInterval(timer);
+                router.push({ name: 'MemberProfile' });
+            } else {
+                errorMessage.value = res.data?.message || '變更失敗';
+            }
+        } catch (error) {
+            errorMessage.value = error.response?.data?.message || '密碼變更失敗，請稍後再試';
+        } finally {
+            isLoading.value = false;
+        }
     }
 };
 
@@ -266,16 +318,45 @@ const goBack = () => {
         <div v-if="step === 3">
             <h3 class="text-xl text-gray-800 font-semibold mt-2.5 mb-7.5">{{ step3TitleText }}</h3>
             <div class="mb-6">
-                <input v-if="currentType === 1" type="tel" v-model="newPhone" :placeholder="inputPlaceholder"
+                <input v-if="currentType === 1" type="tel" v-model="newPhone" placeholder="請輸入新手機號碼"
                     :disabled="isLoading"
                     class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
 
                 <input v-if="currentType === 2" type="date" v-model="newBirthday" :disabled="isLoading"
                     class="w-full h-12 px-4 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
+
+                <!-- 密碼修改 -->
+                <div v-if="currentType === 3" class="space-y-4">
+                    <div class="relative">
+                        <input :type="isPasswordVisible ? 'text' : 'password'" v-model="newPassword"
+                            placeholder="請輸入新密碼" :disabled="isLoading"
+                            class="w-full h-12 px-4 pr-10 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
+                        <i @click="isPasswordVisible = !isPasswordVisible"
+                            :class="['pi cursor-pointer absolute right-3 top-3.5 text-gray-400', isPasswordVisible ? 'pi-eye-slash' : 'pi-eye']"></i>
+                    </div>
+                    <div class="relative">
+                        <input :type="isConfirmVisible ? 'text' : 'password'" v-model="confirmPassword"
+                            placeholder="再次確認新密碼" :disabled="isLoading"
+                            class="w-full h-12 px-4 pr-10 border border-gray-300 rounded focus:border-blue-600 focus:outline-none text-base box-border disabled:bg-gray-50 disabled:text-gray-400" />
+                        <i @click="isConfirmVisible = !isConfirmVisible"
+                            :class="['pi cursor-pointer absolute right-3 top-3.5 text-gray-400', isConfirmVisible ? 'pi-eye-slash' : 'pi-eye']"></i>
+                    </div>
+                    <!-- 密碼不一致提示 -->
+                    <p v-if="confirmPassword && newPassword !== confirmPassword"
+                        class="text-red-500 text-xs">兩次輸入的密碼不一致</p>
+                    <!-- 密碼規則提示 -->
+                    <ul class="text-sm space-y-1">
+                        <li v-for="rule in passwordRules" :key="rule.label"
+                            :class="['flex items-center gap-2 transition-colors', rule.valid ? 'text-green-600' : 'text-gray-400']">
+                            <i :class="['pi', rule.valid ? 'pi-check-circle' : 'pi-circle']"></i>
+                            {{ rule.label }}
+                        </li>
+                    </ul>
+                </div>
             </div>
             <button type="button"
                 class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded text-base font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center disabled:bg-blue-300 disabled:cursor-not-allowed"
-                :disabled="isLoading" @click="handleUpdateSubmit">
+                :disabled="isLoading || (currentType === 3 && !isPasswordFormValid)" @click="handleUpdateSubmit">
                 <span v-if="isLoading">儲存中...</span>
                 <span v-else>儲存變更</span>
             </button>

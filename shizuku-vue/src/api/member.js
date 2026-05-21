@@ -59,6 +59,11 @@ export const updateBirthdayWithCodeAPI = (data) => {
     return request.post('/MemberApi/security/update-birthday', data);
 };
 
+// 執行更新密碼
+export const updatePasswordWithCodeAPI = (data) => {
+    return request.post('/MemberApi/security/update-password', data);
+};
+
 // 更新會員頭像
 export const updateAvatar = (memberId, data) => {
     return request.post(`/MemberApi/${memberId}/upload-avatar`, data);

@@ -218,7 +218,7 @@ const formatBirthday = (dateStr) => {
                                 <p class="text-xs text-slate-400 font-semibold uppercase">帳戶密碼</p>
                                 <p class="text-slate-700 font-medium">********</p>
                             </div>
-                            <router-link to="/member/change-password"
+                            <router-link :to="{ name: 'security', query: { type: 'password' } }"
                                 class="text-blue-600 font-medium hover:underline text-sm">[修改密碼]</router-link>
                         </div>
                     </div>
