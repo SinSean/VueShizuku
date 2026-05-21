@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth'; // 引入組長寫的權限 Store
 
 const authStore = useAuthStore();
 
-// 表單資料綁定 (已合併姓名，並加入 memberId)
+// 表單資料綁定
 const formData = reactive({
   memberId: 0,
   name: '', 
@@ -60,18 +60,25 @@ const submitForm = async () => {
 onMounted(() => {
   fetchCategories();
 
-  // 如果已經登入，自動把個資塞進表單
-  if (authStore.isLogin && authStore.user) {
+  const userData = localStorage.getItem('memberUser');
+  if (userData) {
+    const user = JSON.parse(userData);
+    
+    //  終極修正：只抓「流水號」的欄位，並且強制轉換為數字 (避開 M001)
+    const exactId = user.fId || user.FId || user.id || user.Id || 0;
+    formData.memberId = parseInt(exactId) || 0;
+    
+    formData.email = user.fEmail || user.FEmail || user.email || '';
+    formData.name = user.fName || user.FName || user.name || ''; 
+  } 
+  else if (authStore.isLogin && authStore.user) {
+    // 備用方案
     const u = authStore.user;
+    const exactId = u.fId || u.FId || u.id || u.Id || 0;
+    formData.memberId = parseInt(exactId) || 0;
     
-    // 綁定會員 ID 給後端 (依據組長實際的資料庫欄位名稱，通常是 fId 或 fMemberId)
-    formData.memberId = u.fId || u.fMemberId || 0;
-    
-    // 自動帶入信箱
-    formData.email = u.fEmail || u.email || '';
-    
-    // 自動帶入姓名 (如果資料庫只有一個全名欄位 fName，就先預設塞給它)
-    formData.name = u.fName || u.name || ''; 
+    formData.email = u.fEmail || u.FEmail || u.email || '';
+    formData.name = u.fName || u.FName || u.name || '';
   }
 });
 </script>

@@ -142,6 +142,11 @@ const router = createRouter({
               name: 'MemberEmpty',
               component: () => import('@/components/member/MemberEmpty.vue'),
             },
+            {
+              path: 'tickets', 
+              name: 'MemberTickets', // 這個名字要跟側邊欄對應
+              component: () => import('@/components/member/MemberTickets.vue'), // 指向我們剛建的檔案
+            },
           ],
         },
         { path: '/point-store', name: 'point-store', component: () => import('@/components/member/MemberStore.vue'), },
