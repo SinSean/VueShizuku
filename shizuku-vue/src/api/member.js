@@ -73,3 +73,16 @@ export const updateAvatar = (memberId, data) => {
 export const googleLoginAPI = (data) => {
     return request.post('/MemberApi/google-login', data);
 };
+
+// 忘記密碼流程 API
+export const forgotPasswordRequestCodeAPI = (data) => {
+    return request.post('/MemberApi/forgot-password/request-code', data);
+};
+
+export const forgotPasswordVerifyCodeAPI = (data) => {
+    return request.post('/MemberApi/forgot-password/verify-code', data);
+};
+
+export const forgotPasswordResetAPI = (data) => {
+    return request.post('/MemberApi/forgot-password/reset', data);
+};
