@@ -235,6 +235,7 @@ const handleUpdateSubmit = async () => {
 
         try {
             const res = await updatePasswordWithCodeAPI({
+                fEmail: email.value,
                 fNewPassword: newPassword.value,
                 fConfirmPassword: confirmPassword.value,
                 fVerifiedCode: code.value
@@ -342,8 +343,8 @@ const goBack = () => {
                             :class="['pi cursor-pointer absolute right-3 top-3.5 text-gray-400', isConfirmVisible ? 'pi-eye-slash' : 'pi-eye']"></i>
                     </div>
                     <!-- 密碼不一致提示 -->
-                    <p v-if="confirmPassword && newPassword !== confirmPassword"
-                        class="text-red-500 text-xs">兩次輸入的密碼不一致</p>
+                    <p v-if="confirmPassword && newPassword !== confirmPassword" class="text-red-500 text-xs">兩次輸入的密碼不一致
+                    </p>
                     <!-- 密碼規則提示 -->
                     <ul class="text-sm space-y-1">
                         <li v-for="rule in passwordRules" :key="rule.label"
