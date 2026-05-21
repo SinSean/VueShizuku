@@ -15,8 +15,11 @@ const filteredInventory = computed(() => {
   let result = props.inventory
 
   if (keyword.value) {
+    const kw = keyword.value.toLowerCase()
     result = result.filter(
-      (p) => p.fProductName?.includes(keyword.value) || p.fProduct?.includes(keyword.value),
+      (p) =>
+        p.fProductName?.toLowerCase().includes(kw) || // ← 轉小寫比較
+        p.fProduct?.toLowerCase().includes(kw),
     )
   }
 
@@ -71,6 +74,7 @@ function toggleExpand(id) {
 function stockStatusClass(status) {
   if (status === '售完') return 'bg-red-50 text-red-500'
   if (status === '低庫存') return 'bg-amber-50 text-amber-500'
+  if (status === '未設規格') return 'bg-gray-100 text-gray-400'
   return 'bg-green-50 text-green-600'
 }
 
@@ -111,6 +115,7 @@ function profitRate(costPrice, price) {
           <option value="正常">正常</option>
           <option value="低庫存">低庫存</option>
           <option value="售完">售完</option>
+          <option value="未設規格">未設規格</option>
         </select>
       </div>
     </div>
@@ -151,6 +156,7 @@ function profitRate(costPrice, price) {
                 style="font-size: 11px"
               ></i>
             </td>
+
             <td class="px-3 py-3">
               <div class="flex items-center gap-3">
                 <img
@@ -168,7 +174,12 @@ function profitRate(costPrice, price) {
               NT${{ product.fVariants?.[0]?.fPrice?.toLocaleString() }}
             </td>
             <td class="px-3 py-3">
-              <span class="text-gray-400 text-sm"> {{ product.fVariants?.length }} 個規格 </span>
+              <span
+                v-if="!product.fVariants?.length"
+                class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-400"
+              >
+                未設規格
+              </span>
             </td>
           </tr>
 

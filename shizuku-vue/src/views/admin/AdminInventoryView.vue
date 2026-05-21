@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { productApi } from '@/api/Product.js'
 import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import InventoryDashboard from '@/components/admin/InventoryDashboard.vue'
 import InventoryList from '@/components/admin/InventoryList.vue'
 import PurchaseOrderList from '@/components/admin/PurchaseOrderList.vue'
@@ -11,6 +12,7 @@ const purchaseOrders = ref([])
 const isLoading = ref(true)
 const activeTab = ref('dashboard')
 const router = useRouter()
+const route = useRoute()
 
 async function loadData() {
   try {
@@ -28,7 +30,13 @@ async function loadData() {
   }
 }
 
-onMounted(loadData)
+onMounted(async () => {
+  //  如果有 tab 參數就切換到對應 Tab
+  if (route.query.tab) {
+    activeTab.value = route.query.tab
+  }
+  await loadData()
+})
 </script>
 
 <template>

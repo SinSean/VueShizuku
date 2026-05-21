@@ -23,12 +23,13 @@ const cartItems = ref({})
 
 const searchResults = computed(() => {
   const results = []
+  const kw = purchaseSearch.value.toLowerCase() // ← 轉小寫
+
   inventory.value.forEach((p) => {
+    console.log('fProduct:', p.fProduct)
     ;(p.fVariants ?? []).forEach((v) => {
       const match =
-        !purchaseSearch.value ||
-        p.fProductName?.includes(purchaseSearch.value) ||
-        p.fProduct?.includes(purchaseSearch.value)
+        !kw || p.fProductName?.toLowerCase().includes(kw) || p.fProduct?.toLowerCase().includes(kw) // ← 加貨號搜尋
       if (match) results.push({ product: p, variant: v })
     })
   })
@@ -141,7 +142,7 @@ async function submit() {
       fNote: purchaseForm.value.fNote,
       fDetails: details,
     })
-    router.push({ name: 'admin-inventory' })
+    router.push({ name: 'admin-inventory', query: { tab: 'records' } })
   } catch (err) {
     console.error('進貨失敗', err)
     alert('進貨失敗，請再試一次')
@@ -163,7 +164,7 @@ onMounted(async () => {
     <!-- 標題列 -->
     <div class="flex items-center gap-3 mb-4 shrink-0">
       <button
-        @click="router.push({ name: 'admin-inventory' })"
+        @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
         class="text-gray-400 hover:text-gray-600"
       >
         <i class="pi pi-arrow-left"></i>
@@ -211,7 +212,7 @@ onMounted(async () => {
     <div class="grid grid-cols-12 gap-4 flex-1 overflow-hidden">
       <!-- 左側：商品挑選 -->
       <div
-        class="col-span-4 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
+        class="col-span-5 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
       >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <span class="text-sm font-medium">商品挑選</span>
@@ -227,7 +228,7 @@ onMounted(async () => {
         </div>
         <div class="overflow-y-auto flex-1">
           <table class="w-full text-xs">
-            <thead class="sticky top-0">
+            <thead>
               <tr class="bg-gray-50">
                 <th class="px-3 py-2 border-b border-gray-100 w-8">
                   <input
@@ -240,6 +241,9 @@ onMounted(async () => {
                 <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                   商品規格
                 </th>
+                <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                  貨號
+                </th>
                 <th
                   class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-16"
                 >
@@ -248,9 +252,6 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="isLoading">
-                <td colspan="3" class="text-center py-8 text-gray-300">載入中...</td>
-              </tr>
               <tr
                 v-for="item in searchResults"
                 :key="item.variant.fVariantId"
@@ -274,6 +275,9 @@ onMounted(async () => {
                     {{ item.variant.fColor }} / {{ item.variant.fSize }}
                   </p>
                 </td>
+                <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">
+                  {{ item.product.fProduct }}
+                </td>
                 <td
                   class="px-3 py-2.5 font-medium"
                   :class="
@@ -294,7 +298,7 @@ onMounted(async () => {
 
       <!-- 右側：已選商品 -->
       <div
-        class="col-span-8 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
+        class="col-span-7 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
       >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
           <span class="text-sm font-medium">已選商品</span>
@@ -407,7 +411,7 @@ onMounted(async () => {
           </div>
           <div class="flex gap-2">
             <button
-              @click="router.push({ name: 'admin-inventory' })"
+              @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
               class="flex-1 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
             >
               取消

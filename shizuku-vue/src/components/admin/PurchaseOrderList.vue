@@ -106,13 +106,6 @@ async function viewOrder(id) {
           <span class="font-medium font-mono text-indigo-600">{{ currentOrder?.fOrderNo }}</span>
           <span class="ml-3 text-xs text-gray-400">{{ currentOrder?.fSupplier }}</span>
         </div>
-        <button
-          @click="router.push({ name: 'admin-inventory-create' })"
-          class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-        >
-          <i class="pi pi-plus" style="font-size: 11px"></i>
-          新增進貨單
-        </button>
       </div>
       <div
         class="px-6 py-3 bg-gray-50 border-b border-gray-100 grid grid-cols-3 gap-4 text-xs text-gray-500"
