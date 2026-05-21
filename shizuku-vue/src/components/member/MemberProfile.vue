@@ -188,8 +188,6 @@ const formatBirthday = (dateStr) => {
                                 <p class="text-xs text-slate-400 font-semibold uppercase">電子郵件</p>
                                 <p class="text-slate-700 font-medium">{{ maskEmail(authStore.user?.fEmail) }}</p>
                             </div>
-                            <router-link to="/verify/email"
-                                class="text-blue-600 font-medium hover:underline text-sm">[變更]</router-link>
                         </div>
 
                         <!-- 手機號碼 -->
