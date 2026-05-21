@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import { loginAPI, getCaptchaAPI } from '@/api/member';
+import { ref, onMounted } from 'vue'; // 擴充引入 onMounted
+import { loginAPI, getCaptchaAPI,googleLoginAPI } from '@/api/member';// 新增引入 googleLoginAPI
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+
 const authStore = useAuthStore();
 
 const email = ref('sealll4001@gmail.com');
@@ -86,6 +87,80 @@ const handleLogin = async () => {
         isLoading.value = false;
     }
 };
+
+const GOOGLE_CLIENT_ID = "20964198870-j15hs8a6k5sm0eii2j4n5fleukl8ql6p.apps.googleusercontent.com";
+// 初始化 Google SDK 並渲染按鈕
+const initializeGoogleSignIn = () => {
+    if (window.google) {
+        window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCallback, // 指定驗證成功後的 Callback
+            auto_select: false,             // 不自動登入，讓用戶點選
+            cancel_on_tap_outside: true,
+        });
+        // 渲染 Google 官方設計的精美按鈕，將其掛載到 ID 為 'google-btn' 的容器中
+        window.google.accounts.id.renderButton(
+            document.getElementById('google-btn'),
+            {
+                theme: 'outline',       // 按鈕風格：外框線條版
+                size: 'large',          // 尺寸：大型
+                width: '380',           // 寬度設定 (符合您的卡片寬度)
+                text: 'signin_with',    // 顯示「使用 Google 帳戶登入」
+                shape: 'rectangular',   // 形狀：矩形
+            }
+        );
+    }
+};
+// 處理 Google 驗證成功回傳的 Credential (ID Token)
+const handleGoogleCallback = async (response) => {
+    if (isLoading.value) return;
+    isLoading.value = true;
+    try {
+        const idToken = response.credential; // 取得 Google 簽發的 ID Token (JWT)
+        // 傳送給您的後台 API 進行驗證與原生 JWT 換取
+        const resObj = await googleLoginAPI({ idToken });
+        const res = resObj.data;
+        if (res.success) {
+            // 完美對接您現有的 Pinia Store 登入機制與地址預載流程！
+            await authStore.login(res.data);
+            try {
+                await authStore.fetchUserAddress();
+            } catch (e) {
+                console.warn("預載地址失敗，但不影響登入流程");
+            }
+            alert('Google 登入成功');
+            router.push({ name: 'home' });
+        } else {
+            alert(res.message || 'Google 登入失敗');
+        }
+    } catch (error) {
+        console.error("Google 登入出錯:", error);
+        
+        // 攔截後端回傳的異常訊息 (例如：帳號停用、金鑰過期)
+        const errorMsg = error.response?.data?.message || 'Google 登入驗證失敗，請聯絡客服人員';
+        alert(errorMsg);
+    } finally {
+        isLoading.value = false;
+    }
+};
+// 組件掛載時，動態載入 Google Identity Services SDK
+onMounted(() => {
+    // 檢查是否已載入過 SDK，避免重複載入
+    if (!document.getElementById('google-gsi-client')) {
+        const script = document.createElement('script');
+        script.id = 'google-gsi-client';
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeGoogleSignIn; // 載入完畢後進行初始化
+        document.head.appendChild(script);
+    } else {
+        // 若已載入過，直接進行初始化渲染
+        initializeGoogleSignIn();
+    }
+});
+
+
 </script>
 
 
@@ -152,7 +227,15 @@ const handleLogin = async () => {
                     {{ isLoading ? '處理中...' : '登入帳號' }}
                 </button>
             </form>
-
+            <div class="my-6 flex items-center justify-between">
+                <span class="border-b border-slate-200/60 w-1/5"></span>
+                <span class="text-xs text-slate-400 uppercase tracking-wider font-medium">或使用其他帳號登入</span>
+                <span class="border-b border-slate-200/60 w-1/5"></span>
+            </div>
+            
+            <div class="flex justify-center w-full">
+                <div id="google-btn" class="w-full flex justify-center"></div>
+            </div>
             <div class="mt-8 text-center text-sm text-slate-600">
                 還不是會員？
                 <RouterLink :to="{ name: 'Register' }" class="font-bold text-emerald-700 hover:underline">

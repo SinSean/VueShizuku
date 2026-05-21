@@ -63,3 +63,8 @@ export const updateBirthdayWithCodeAPI = (data) => {
 export const updateAvatar = (memberId, data) => {
     return request.post(`/MemberApi/${memberId}/upload-avatar`, data);
 };
+
+// Google 第三方登入 API
+export const googleLoginAPI = (data) => {
+    return request.post('/MemberApi/google-login', data);
+};
