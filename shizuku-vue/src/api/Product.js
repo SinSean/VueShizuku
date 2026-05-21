@@ -4,7 +4,8 @@ const base = 'https://localhost:7197/api/product'
 
 export const productApi = {
   // 查詢列表 新增分類篩選
-  getList: (keyword, categoryId) => axios.get(base, { params: { keyword, categoryId } }),
+  getList: (keyword, categoryId, isAdmin = false) =>
+    axios.get(base, { params: { keyword, categoryId, isAdmin } }),
 
   // 查單筆
   getById: (id) => axios.get(`${base}/${id}`),

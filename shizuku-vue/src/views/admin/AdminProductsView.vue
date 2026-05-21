@@ -142,7 +142,7 @@ async function saveStockModal() {
 async function fetchProducts() {
   isLoading.value = true
   try {
-    const res = await productApi.getList(keyword.value, selectedCategoryId.value)
+    const res = await productApi.getList(keyword.value, selectedCategoryId.value, true)
     products.value = res.data.data ?? []
   } catch (err) {
     console.error('載入失敗', err)
