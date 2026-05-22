@@ -1,17 +1,19 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getAdminBlacklist } from '@/api/adminMember' // 引入黑名單 API
+import { getAdminBlacklist, unbanAdminMember } from '@/api/adminMember' // 引入黑名單與解除黑名單 API
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import Button from 'primevue/button' // 引入 PrimeVue Button 元件
 import { FilterMatchMode } from '@primevue/core/api'
 
 // 狀態管理
 const blacklist = ref([])
 const loading = ref(true)
+const processingIds = ref(new Set()) // 用於追蹤正在處理解除封鎖的會員 ID，防止重複點擊
 const globalFilterValue = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 })
@@ -29,6 +31,28 @@ const fetchBlacklist = async () => {
         console.error('讀取黑名單清單失敗:', error)
     } finally {
         loading.value = false
+    }
+}
+
+// 執行解除黑名單
+const handleUnban = async (id) => {
+    if (!confirm('確定要將此會員移出黑名單嗎？')) return
+
+    try {
+        processingIds.value.add(id) // 這裡改存入純數字的 fId
+        const response = await unbanAdminMember(id)
+
+        if (response.data && response.data.success) {
+            // 解除成功後，重新整理清單
+            await fetchBlacklist()
+        } else {
+            alert(response.data?.message || '解除黑名單失敗')
+        }
+    } catch (error) {
+        console.error('解除黑名單發生錯誤:', error)
+        alert('系統發生錯誤，請稍後再試')
+    } finally {
+        processingIds.value.delete(id) // 移除 fId 狀態
     }
 }
 
@@ -108,10 +132,19 @@ onMounted(() => {
                 </Column>
 
                 <!-- 限制狀態標籤 -->
-                <Column field="fStatus" header="限制類型">
+                <Column field="fStatus" header="帳號狀態">
                     <template #body="slotProps">
                         <Tag severity="danger" :value="getStatusName(slotProps.data.fStatus)"
                             class="!text-xs !px-2.5 !py-1 !rounded-full" />
+                    </template>
+                </Column>
+
+                <!-- 操作欄位 -->
+                <Column header="操作" class="text-center">
+                    <template #body="slotProps">
+                        <Button label="解除封鎖" icon="pi pi-user-plus"
+                            class="p-button-sm p-button-success p-button-outlined !text-xs !py-1.5 !px-3 !rounded-lg"
+                            :loading="processingIds.has(slotProps.data.fId)" @click="handleUnban(slotProps.data.fId)" />
                     </template>
                 </Column>
             </DataTable>

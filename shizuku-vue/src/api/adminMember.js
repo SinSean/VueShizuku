@@ -10,3 +10,8 @@ export const getAdminMemberList = () => {
 export const getAdminBlacklist = () => {
   return request.get('/MemberApi/MemberList/blacklist');
 };
+
+// 解除黑名單
+export const unbanAdminMember = (id) => {
+  return request.put(`/MemberApi/MemberList/unban/${id}`);
+};
