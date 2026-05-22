@@ -69,8 +69,6 @@ export function useOrderDetailActions(orderId, onSuccess) {
 
   // 處理取消訂單請求 (符合 ApiResponse 規範)
   const handleCancel = async () => {
-    if (!confirm('確定要取消這筆訂單嗎？')) return
-
     try {
       const res = await cancelOrderApi(orderId)
 

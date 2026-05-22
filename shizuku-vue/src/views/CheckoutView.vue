@@ -215,8 +215,8 @@ const submitOrder = async () => {
   }
 }
 
-// 掛載時的登入守衛防禦
-onMounted(() => {
+// 掛載時的登入守衛防禦與地址載入
+onMounted(async () => {
   if (!authStore.isLogin) {
     resultStatus.value = 'warn'
     resultMessage.value = '偵測到尚未登入，即將為您導向登入頁面...'
@@ -224,6 +224,20 @@ onMounted(() => {
     setTimeout(() => {
       router.push({ name: 'Login' })
     }, 2000)
+    return
+  }
+
+  // 載入會員地址簿並自動帶入預設地址
+  try {
+    await authStore.fetchUserAddress()
+    const defaultAddr = authStore.addressList.find((addr) => addr.fIsDefault)
+    if (defaultAddr) {
+      form.value.receiverName = defaultAddr.fReceiverName
+      form.value.receiverPhone = defaultAddr.fReceiverPhone
+      form.value.receiverAddress = `${defaultAddr.fCity}${defaultAddr.fArea}${defaultAddr.fAddressDetail}`
+    }
+  } catch (error) {
+    console.error('載入會員預設地址失敗：', error)
   }
 })
 </script>
@@ -259,6 +273,7 @@ onMounted(() => {
           :form="form"
           :paymentOptions="paymentOptions"
           :cartTotal="cartStore.totalPrice"
+          :addressList="authStore.addressList"
           @update:form="handleFormUpdate"
           @submit="submitOrder"
           @back="handleBack"

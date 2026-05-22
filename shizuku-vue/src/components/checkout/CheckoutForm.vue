@@ -17,6 +17,10 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  addressList: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update:form', 'submit', 'back'])
@@ -24,6 +28,17 @@ const emit = defineEmits(['update:form', 'submit', 'back'])
 // 用來更新父元件的 form 資料（深層屬性）
 const updateField = (field, value) => {
   emit('update:form', { ...props.form, [field]: value })
+}
+
+// 快速選擇常用地址
+const selectSavedAddress = (addr) => {
+  const fullAddress = `${addr.fCity}${addr.fArea}${addr.fAddressDetail}`
+  emit('update:form', {
+    ...props.form,
+    receiverName: addr.fReceiverName,
+    receiverPhone: addr.fReceiverPhone,
+    receiverAddress: fullAddress,
+  })
 }
 </script>
 
@@ -35,6 +50,41 @@ const updateField = (field, value) => {
     </h2>
 
     <div class="flex flex-col gap-6">
+      <!-- 常用收件資訊快速填入 -->
+      <div v-if="props.addressList && props.addressList.length > 0" class="mb-2">
+        <h3
+          class="text-xs font-bold text-gray-400 mb-3 tracking-wider flex items-center gap-1.5 uppercase"
+        >
+          <i class="pi pi-address-book"></i>常用地址
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div
+            v-for="(addr, idx) in props.addressList"
+            :key="idx"
+            @click="selectSavedAddress(addr)"
+            class="border border-gray-200 hover:border-black rounded-xl p-4 cursor-pointer transition-all bg-gray-50/30 hover:bg-gray-50 flex flex-col gap-1.5 relative overflow-hidden group"
+          >
+            <div class="flex items-center gap-2">
+              <span
+                class="font-bold text-sm text-black group-hover:text-blue-600 transition-colors"
+                >{{ addr.fReceiverName }}</span
+              >
+              <span class="text-xs text-gray-300">|</span>
+              <span class="text-xs text-gray-600 font-mono">{{ addr.fReceiverPhone }}</span>
+              <span
+                v-if="addr.fIsDefault"
+                class="bg-black text-white text-[9px] px-1.5 py-0.5 rounded font-black scale-90 origin-left"
+              >
+                預設
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 truncate">
+              {{ addr.fCity }}{{ addr.fArea }}{{ addr.fAddressDetail }}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- 收件人姓名 -->
       <FloatLabel>
         <InputText
@@ -81,7 +131,9 @@ const updateField = (field, value) => {
               <p class="text-xs text-gray-500 mt-1">預計 2-3 個工作天送達</p>
             </div>
           </div>
-          <span class="font-bold text-black text-sm">{{ props.cartTotal >= 1500 ? '免運費' : 'NT$ 60' }}</span>
+          <span class="font-bold text-black text-sm">{{
+            props.cartTotal >= 1500 ? '免運費' : 'NT$ 60'
+          }}</span>
         </div>
       </div>
 

@@ -5,14 +5,14 @@ import { getImageUrl } from '@/utils/imageHelper'
 
 // 預設靜態商品資料 (作為 API 讀取中、無數據或讀取失敗時的備用資料)
 const fallbackProducts = [
-  { productId: 1, productName: '日系透膚輕薄針織衫', price: 1280, imageUrl: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800' },
-  { productId: 2, productName: '高腰顯瘦垂墜寬褲', price: 1580, imageUrl: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800' },
-  { productId: 3, productName: '法式復古碎花無袖洋裝', price: 1880, imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=800' },
-  { productId: 4, productName: '簡約純棉V領休閒上衣', price: 890, imageUrl: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=800' },
-  { productId: 5, productName: '落肩純棉短T (淺米色)', price: 1280, imageUrl: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop' },
-  { productId: 6, productName: '挺版牛津襯衫 (天藍色)', price: 1580, imageUrl: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop' },
-  { productId: 7, productName: '寬版連帽上衣 (墨綠色)', price: 1880, imageUrl: 'https://images.unsplash.com/photo-1521577352947-9bb58764b69a?q=80&w=600&auto=format&fit=crop' },
-  { productId: 8, productName: '丹寧牛仔外套 (水洗藍)', price: 890, imageUrl: 'https://images.unsplash.com/photo-1543076447-215ad9ba6923?q=80&w=600&auto=format&fit=crop' },
+  { productId: 1, productName: '日系透膚輕薄針織衫', price: 1280, imageUrl: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800', isHot: true, isNew: false },
+  { productId: 2, productName: '高腰顯瘦垂墜寬褲', price: 1580, imageUrl: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800', isHot: false, isNew: true },
+  { productId: 3, productName: '法式復古碎花無袖洋裝', price: 1880, imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=800', isHot: true, isNew: false },
+  { productId: 4, productName: '簡約純棉V領休閒上衣', price: 890, imageUrl: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=800', isHot: false, isNew: true },
+  { productId: 5, productName: '落肩純棉短T (淺米色)', price: 1280, imageUrl: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop', isHot: false, isNew: false },
+  { productId: 6, productName: '挺版牛津襯衫 (天藍色)', price: 1580, imageUrl: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop', isHot: false, isNew: false },
+  { productId: 7, productName: '寬版連帽上衣 (墨綠色)', price: 1880, imageUrl: 'https://images.unsplash.com/photo-1521577352947-9bb58764b69a?q=80&w=600&auto=format&fit=crop', isHot: false, isNew: false },
+  { productId: 8, productName: '丹寧牛仔外套 (水洗藍)', price: 890, imageUrl: 'https://images.unsplash.com/photo-1543076447-215ad9ba6923?q=80&w=600&auto=format&fit=crop', isHot: false, isNew: false },
 ]
 
 const products = ref([])
@@ -65,6 +65,21 @@ onMounted(() => {
         class="group cursor-pointer block"
       >
         <div class="relative overflow-hidden mb-4 bg-gray-50 aspect-[3/4]">
+          <!-- 標記 (Badges) - 雅緻毛玻璃細框設計 -->
+          <div class="absolute top-3.5 left-3.5 z-10 flex flex-col gap-1.5 pointer-events-none">
+            <span
+              v-if="item.isHot"
+              class="px-2.5 py-0.5 text-[8px] tracking-[0.25em] font-semibold text-rose-700 bg-white/75 backdrop-blur-md border border-rose-200/50 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] select-none uppercase"
+            >
+              HOT
+            </span>
+            <span
+              v-if="item.isNew"
+              class="px-2.5 py-0.5 text-[8px] tracking-[0.25em] font-semibold text-stone-700 bg-white/75 backdrop-blur-md border border-stone-200/50 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] select-none uppercase"
+            >
+              NEW
+            </span>
+          </div>
           <img
             :src="getImageUrl(item.imageUrl)"
             :alt="item.productName"
