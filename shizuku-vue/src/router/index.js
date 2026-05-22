@@ -203,7 +203,13 @@ const router = createRouter({
           path: 'members',
           name: 'admin-members',
           meta: { requiresAdmin: true },
-          component: () => import('@/views/admin/AdminMembersView.vue'),
+          component: () => import('@/views/admin/member/AdminMembersView.vue'),
+        },
+        {
+          path: 'members/block',
+          name: 'admin-members-block',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/member/AdminMembersBlockView.vue'),
         },
         {
           path: 'products',

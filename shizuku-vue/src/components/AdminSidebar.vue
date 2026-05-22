@@ -15,7 +15,7 @@ const menuItems = ref([
     open: false,
     children: [
       { label: '會員列表', icon: 'pi pi-list', to: { name: 'admin-members' } },
-      // 你可以在這裡自由增加會員管理的子項目，完全不影響商品
+      { label: '黑名單列表', icon: 'pi pi-list', to: { name: 'admin-members-block' } },
     ]
   },
   {
