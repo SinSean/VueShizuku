@@ -279,7 +279,7 @@ router.beforeEach((to) => {
 })
 
 // 前台檢測
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
 
   // 1. 定義哪些頁面是「只有會員才能進去」的
@@ -292,14 +292,13 @@ router.beforeEach(async (to, from, next) => {
   if (isMemberPage && !authStore.isLogin) {
     // 如果要去會員頁但沒登入 -> 踢回登入頁
     alert('請先登入會員')
-    next({ name: 'Login' })
+    await router.push({ name: 'Login' })
   } else if (isAuthPage && authStore.isLogin) {
     // 如果已經登入了還想去登入頁 -> 踢回首頁
-    next({ name: 'home' })
-  } else {
-    // 其他情況正常放行
-    next()
+    await router.push({ name: 'home' })
   }
+
+  // 這裡完全不需要寫任何 return 與 next()，沒進 if 的情況 Vue 3 就會預設直接放行
 })
 
 export default router
