@@ -50,7 +50,7 @@ onMounted(async () => {
             v-for="tab in [
               { label: '總覽儀表板', value: 'dashboard' },
               { label: '庫存列表', value: 'inventory' },
-              { label: '進貨管理', value: 'records' },
+              { label: '庫存異動單管理', value: 'records' },
             ]"
             :key="tab.value"
             @click="activeTab = tab.value"
@@ -73,7 +73,7 @@ onMounted(async () => {
         class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
       >
         <i class="pi pi-plus" style="font-size: 11px"></i>
-        新增進貨單
+        新增異動單
       </button>
     </div>
 

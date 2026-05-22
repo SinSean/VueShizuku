@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { productApi } from '@/api/Product.js'
 
@@ -14,17 +14,57 @@ const emit = defineEmits(['refresh'])
 const showDetailModal = ref(false)
 const currentOrder = ref(null)
 
+// 分頁
+const currentPage = ref(1)
+const pageSize = 15
+
+const totalPages = computed(() => Math.ceil(props.purchaseOrders.length / pageSize))
+
+const pagedOrders = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return props.purchaseOrders.slice(start, start + pageSize)
+})
+
+function goToPage(page) {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
+
+// 異動類型不需要廠商/付款方式的清單
+const noSupplierTypes = ['報廢', '銷售退回', '手動盤點', '進貨退出']
+
 async function viewOrder(id) {
   const res = await productApi.getPurchaseOrder(id)
   currentOrder.value = res.data.data
   showDetailModal.value = true
+}
+
+function getTypeClass(type) {
+  switch (type) {
+    case '進貨':
+    case '銷售退回':
+      return 'bg-green-50 text-green-700 border border-green-100'
+    case '進貨退出':
+    case '報廢':
+      return 'bg-red-50 text-red-700 border border-red-100'
+    case '手動盤點':
+      return 'bg-slate-50 text-slate-600 border border-slate-100'
+    default:
+      return 'bg-gray-50 text-gray-600 border border-gray-100'
+  }
+}
+
+function getQuantityPrefix(type, quantity) {
+  if (['進貨', '銷售退回'].includes(type)) return '+'
+  if (type === '手動盤點') return quantity >= 0 ? '+' : ''
+  return '-'
 }
 </script>
 
 <template>
   <div class="bg-white rounded-xl border border-gray-100 p-5">
     <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-      <h3 class="text-sm font-medium">進貨單列表</h3>
+      <h3 class="text-sm font-medium">庫存異動紀錄</h3>
       <div class="flex gap-2">
         <button
           @click="router.push({ name: 'admin-products-create' })"
@@ -40,7 +80,7 @@ async function viewOrder(id) {
       <thead>
         <tr class="bg-gray-50">
           <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
-            進貨單號
+            異動單號
           </th>
           <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
             廠商
@@ -58,17 +98,20 @@ async function viewOrder(id) {
             總金額
           </th>
           <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+            異動類型
+          </th>
+          <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
             付款方式
           </th>
           <th class="px-3 py-2 border-b border-gray-100" style="width: 60px"></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-if="purchaseOrders.length === 0">
-          <td colspan="8" class="text-center text-gray-300 py-8">尚無進貨紀錄</td>
+        <tr v-if="pagedOrders.length === 0">
+          <td colspan="9" class="text-center text-gray-300 py-8">尚無異動紀錄</td>
         </tr>
         <tr
-          v-for="order in purchaseOrders"
+          v-for="order in pagedOrders"
           :key="order.fId"
           class="border-b border-gray-50 last:border-0 hover:bg-gray-50"
         >
@@ -80,7 +123,17 @@ async function viewOrder(id) {
           <td class="px-3 py-3">{{ order.fItemCount }} 筆</td>
           <td class="px-3 py-3">{{ order.fTotalQuantity }} 件</td>
           <td class="px-3 py-3 font-medium">NT${{ order.fTotalAmount.toLocaleString() }}</td>
-          <td class="px-3 py-3 text-gray-400">{{ order.fPaymentMethod || '—' }}</td>
+          <td class="px-3 py-3">
+            <span
+              class="px-2 py-0.5 rounded-full text-xs font-medium"
+              :class="getTypeClass(order.fType)"
+            >
+              {{ order.fType }}
+            </span>
+          </td>
+          <td class="px-3 py-3 text-gray-400">
+            {{ noSupplierTypes.includes(order.fType) ? '—' : order.fPaymentMethod || '—' }}
+          </td>
           <td class="px-3 py-3">
             <button
               @click="viewOrder(order.fId)"
@@ -92,46 +145,144 @@ async function viewOrder(id) {
         </tr>
       </tbody>
     </table>
+
+    <!-- 分頁控制 -->
+    <div
+      v-if="totalPages > 1"
+      class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100"
+    >
+      <span class="text-xs text-gray-400">
+        共 {{ purchaseOrders.length }} 筆，第 {{ currentPage }} / {{ totalPages }} 頁
+      </span>
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="px-2 py-1 text-xs rounded border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <i class="pi pi-chevron-left" style="font-size: 10px"></i>
+        </button>
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          @click="goToPage(page)"
+          class="px-2.5 py-1 text-xs rounded border transition-colors"
+          :class="
+            page === currentPage
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+          "
+        >
+          {{ page }}
+        </button>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="px-2 py-1 text-xs rounded border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <i class="pi pi-chevron-right" style="font-size: 10px"></i>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- 進貨單詳細 Modal -->
+  <!-- 詳細 Modal -->
   <div
     v-if="showDetailModal"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
     @click.self="showDetailModal = false"
   >
-    <div class="bg-white rounded-xl w-full mx-4 max-w-2xl">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <div>
-          <span class="font-medium font-mono text-indigo-600">{{ currentOrder?.fOrderNo }}</span>
-          <span class="ml-3 text-xs text-gray-400">{{ currentOrder?.fSupplier }}</span>
+    <div
+      class="bg-white rounded-xl w-full mx-4 flex flex-col"
+      style="max-width: 900px; max-height: 90vh"
+    >
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="font-medium font-mono text-indigo-600 text-base">
+            {{ currentOrder?.fOrderNo }}
+          </span>
+          <span
+            class="px-2 py-0.5 rounded-full text-xs font-medium"
+            :class="getTypeClass(currentOrder?.fType)"
+          >
+            {{ currentOrder?.fType }}
+          </span>
+          <span class="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+            {{ currentOrder?.fStatus }}
+          </span>
         </div>
+        <button @click="showDetailModal = false" class="text-gray-400 hover:text-gray-600">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
+
+      <!-- 進貨單資訊 -->
       <div
-        class="px-6 py-3 bg-gray-50 border-b border-gray-100 grid grid-cols-3 gap-4 text-xs text-gray-500"
+        class="grid grid-cols-4 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 shrink-0 text-xs"
       >
+        <!-- 廠商、付款方式：報廢/銷售退回/手動盤點/進貨退出 時隱藏 -->
+        <template v-if="!noSupplierTypes.includes(currentOrder?.fType)">
+          <div>
+            <p class="text-gray-400 mb-0.5">廠商</p>
+            <p class="font-medium text-gray-700">{{ currentOrder?.fSupplier || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-400 mb-0.5">付款方式</p>
+            <p class="font-medium text-gray-700">{{ currentOrder?.fPaymentMethod || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-400 mb-0.5">課稅別</p>
+            <p class="font-medium text-gray-700">{{ currentOrder?.fTaxType || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-400 mb-0.5">發票號碼</p>
+            <p class="font-medium text-gray-700">{{ currentOrder?.fInvoiceNo || '—' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-400 mb-0.5">發票日期</p>
+            <p class="font-medium text-gray-700">
+              {{
+                currentOrder?.fInvoiceDate
+                  ? new Date(currentOrder.fInvoiceDate).toLocaleDateString('zh-TW')
+                  : '—'
+              }}
+            </p>
+          </div>
+        </template>
         <div>
-          日期：{{
-            currentOrder ? new Date(currentOrder.fCreatedAt).toLocaleDateString('zh-TW') : ''
-          }}
+          <p class="text-gray-400 mb-0.5">建立日期</p>
+          <p class="font-medium text-gray-700">
+            {{ currentOrder ? new Date(currentOrder.fCreatedAt).toLocaleDateString('zh-TW') : '' }}
+          </p>
         </div>
-        <div>付款方式：{{ currentOrder?.fPaymentMethod || '—' }}</div>
-        <div>備註：{{ currentOrder?.fNote || '—' }}</div>
+        <div class="col-span-2">
+          <p class="text-gray-400 mb-0.5">備註</p>
+          <p class="font-medium text-gray-700">{{ currentOrder?.fNote || '—' }}</p>
+        </div>
       </div>
-      <div class="px-6 py-4 max-h-80 overflow-y-auto">
+
+      <!-- 明細表格 -->
+      <div class="overflow-y-auto flex-1 px-6 py-4">
         <table class="w-full text-xs">
           <thead>
             <tr class="bg-gray-50">
               <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                 商品規格
               </th>
-              <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
-                進貨數量
+              <th
+                class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20"
+              >
+                異動數量
               </th>
-              <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+              <th
+                class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-24"
+              >
                 成本價
               </th>
-              <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+              <th
+                class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-24"
+              >
                 小計
               </th>
             </tr>
@@ -147,8 +298,18 @@ async function viewOrder(id) {
                 <p class="text-gray-400 mt-0.5">{{ detail.fColor }} / {{ detail.fSize }}</p>
               </td>
               <td class="px-3 py-3">
-                <span class="px-2 py-1 bg-green-50 text-green-600 rounded-full font-medium">
-                  +{{ detail.fQuantity }}
+                <span
+                  class="px-2 py-1 rounded-full font-medium"
+                  :class="
+                    ['進貨', '銷售退回'].includes(currentOrder?.fType)
+                      ? 'bg-green-50 text-green-700'
+                      : currentOrder?.fType === '手動盤點'
+                        ? 'bg-slate-50 text-slate-600'
+                        : 'bg-red-50 text-red-700'
+                  "
+                >
+                  {{ getQuantityPrefix(currentOrder?.fType, detail.fQuantity)
+                  }}{{ detail.fQuantity }}
                 </span>
               </td>
               <td class="px-3 py-3 text-gray-400">
@@ -161,19 +322,34 @@ async function viewOrder(id) {
           </tbody>
         </table>
       </div>
-      <div
-        class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-between text-xs text-gray-500"
-      >
-        <span
-          >總數量：<strong class="text-gray-700"
-            >{{ currentOrder?.fTotalQuantity }} 件</strong
-          ></span
-        >
-        <span
-          >合計金額：<strong class="text-indigo-600 text-sm"
-            >NT${{ currentOrder?.fTotalAmount.toLocaleString() }}</strong
-          ></span
-        >
+
+      <!-- 底部合計 -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 shrink-0">
+        <div class="flex justify-between items-end">
+          <div class="text-xs text-gray-500 space-y-1">
+            <div>
+              總數量：<strong class="text-gray-700">{{ currentOrder?.fTotalQuantity }} 件</strong>
+            </div>
+          </div>
+          <div class="text-right space-y-1 text-xs text-gray-500">
+            <div class="flex justify-between gap-16">
+              <span>未稅金額</span>
+              <span class="text-gray-700"
+                >NT${{ currentOrder?.fUntaxedAmount?.toLocaleString() }}</span
+              >
+            </div>
+            <div class="flex justify-between gap-16">
+              <span>稅額（{{ currentOrder?.fTaxType === '應稅' ? '5%' : '免稅' }}）</span>
+              <span class="text-gray-700">NT${{ currentOrder?.fTaxAmount?.toLocaleString() }}</span>
+            </div>
+            <div class="flex justify-between gap-16 border-t border-gray-200 pt-1">
+              <span class="font-medium text-gray-700">含稅總計</span>
+              <strong class="text-indigo-600 text-sm"
+                >NT${{ currentOrder?.fTotalAmount?.toLocaleString() }}</strong
+              >
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
