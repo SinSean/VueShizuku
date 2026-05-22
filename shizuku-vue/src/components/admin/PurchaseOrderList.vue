@@ -65,15 +65,7 @@ function getQuantityPrefix(type, quantity) {
   <div class="bg-white rounded-xl border border-gray-100 p-5">
     <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
       <h3 class="text-sm font-medium">庫存異動紀錄</h3>
-      <div class="flex gap-2">
-        <button
-          @click="router.push({ name: 'admin-products-create' })"
-          class="flex items-center gap-1.5 px-3 py-2 border border-indigo-200 text-indigo-600 rounded-lg text-sm hover:bg-indigo-50 transition-colors"
-        >
-          <i class="pi pi-plus" style="font-size: 11px"></i>
-          新增商品
-        </button>
-      </div>
+      <div class="flex gap-2"></div>
     </div>
 
     <table class="w-full text-xs">

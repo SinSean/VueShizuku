@@ -395,6 +395,19 @@ onMounted(async () => {
                     {{ item.variant.fStock }}
                   </td>
                 </tr>
+                <!-- 搜尋結果為空時顯示 -->
+                <tr v-if="searchResults.length === 0">
+                  <td colspan="4" class="px-4 py-8 text-center">
+                    <p class="text-gray-400 text-sm mb-3">查無符合商品</p>
+                    <p class="text-gray-300 text-xs mb-4">請先至商品管理建立商品後再進行庫存異動</p>
+                    <button
+                      @click="router.push({ name: 'admin-products-create' })"
+                      class="px-4 py-2 text-sm border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
+                    >
+                      前往新增商品
+                    </button>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
