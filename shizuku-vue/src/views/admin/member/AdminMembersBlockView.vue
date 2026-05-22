@@ -8,9 +8,12 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Button from 'primevue/button' // 引入 PrimeVue Button 元件
+import Toast from 'primevue/toast' // 引入 Toast 元件
+import { useToast } from 'primevue/usetoast' // 引入使用組合式函式
 import { FilterMatchMode } from '@primevue/core/api'
 
 // 狀態管理
+const toast = useToast() // 初始化 Toast 實例
 const blacklist = ref([])
 const loading = ref(true)
 const processingIds = ref(new Set()) // 用於追蹤正在處理解除封鎖的會員 ID，防止重複點擊
@@ -43,14 +46,32 @@ const handleUnban = async (id) => {
         const response = await unbanAdminMember(id)
 
         if (response.data && response.data.success) {
+            // 成功提示：畫面上滑出漂亮的成功通知
+            toast.add({
+                severity: 'success',
+                summary: '執行成功',
+                detail: response.data.message || '該會員已成功移出黑名單',
+                life: 3000
+            })
             // 解除成功後，重新整理清單
             await fetchBlacklist()
         } else {
-            alert(response.data?.message || '解除黑名單失敗')
+            // 失敗提示
+            toast.add({
+                severity: 'error',
+                summary: '執行失敗',
+                detail: response.data?.message || '解除黑名單失敗',
+                life: 4000
+            })
         }
     } catch (error) {
         console.error('解除黑名單發生錯誤:', error)
-        alert('系統發生錯誤，請稍後再試')
+        toast.add({
+            severity: 'error',
+            summary: '系統錯誤',
+            detail: '系統發生錯誤，請稍後再試',
+            life: 4000
+        })
     } finally {
         processingIds.value.delete(id) // 移除 fId 狀態
     }
@@ -71,6 +92,9 @@ onMounted(() => {
 </script>
 
 <template>
+    <!-- 必須在 Template 根節點內放置 Toast 元件來當作渲染的掛載點 -->
+    <Toast />
+
     <div class="p-6 max-w-7xl mx-auto">
         <!-- 頁頭標題區塊 -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -131,7 +155,7 @@ onMounted(() => {
                     </template>
                 </Column>
 
-                <!-- 限制狀態標籤 -->
+                <!-- 限制狀態標籤（已加回原本的紅色 Tag 樣式） -->
                 <Column field="fStatus" header="帳號狀態">
                     <template #body="slotProps">
                         <Tag severity="danger" :value="getStatusName(slotProps.data.fStatus)"
