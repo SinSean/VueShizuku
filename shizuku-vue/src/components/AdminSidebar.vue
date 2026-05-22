@@ -15,7 +15,7 @@ const menuItems = ref([
     open: false,
     children: [
       { label: '會員列表', icon: 'pi pi-list', to: { name: 'admin-members' } },
-      { label: '黑名單列表', icon: 'pi pi-list', to: { name: 'admin-members-block' } },
+      { label: '黑名單列表', icon: 'pi pi-ban', to: { name: 'admin-members-block' } },
     ]
   },
   {
