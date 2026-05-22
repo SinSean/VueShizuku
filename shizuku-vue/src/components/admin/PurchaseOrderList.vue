@@ -31,8 +31,7 @@ function goToPage(page) {
 }
 
 // 異動類型不需要廠商/付款方式的清單
-const noSupplierTypes = ['報廢', '銷售退回', '手動盤點', '進貨退出']
-
+const noSupplierTypes = ['報廢', '銷售退回', '調整進', '調整出', '進貨退出']
 async function viewOrder(id) {
   const res = await productApi.getPurchaseOrder(id)
   currentOrder.value = res.data.data
@@ -42,21 +41,24 @@ async function viewOrder(id) {
 function getTypeClass(type) {
   switch (type) {
     case '進貨':
-    case '銷售退回':
       return 'bg-green-50 text-green-700 border border-green-100'
+    case '銷售退回':
+      return 'bg-green-50 text-green-600 border border-green-100' // ← 加
+    case '調整進':
+      return 'bg-green-50 text-green-600 border border-green-100'
+    case '調整出':
+      return 'bg-red-50 text-red-600 border border-red-100' // ← 改顏色區分
     case '進貨退出':
+      return 'bg-red-50 text-red-600 border border-red-100'
     case '報廢':
       return 'bg-red-50 text-red-700 border border-red-100'
-    case '手動盤點':
-      return 'bg-slate-50 text-slate-600 border border-slate-100'
     default:
-      return 'bg-gray-50 text-gray-600 border border-gray-100'
+      return 'bg-gray-100 text-gray-500'
   }
 }
 
-function getQuantityPrefix(type, quantity) {
-  if (['進貨', '銷售退回'].includes(type)) return '+'
-  if (type === '手動盤點') return quantity >= 0 ? '+' : ''
+function getQuantityPrefix(type) {
+  if (['進貨', '銷售退回', '調整進'].includes(type)) return '+'
   return '-'
 }
 </script>
@@ -287,20 +289,19 @@ function getQuantityPrefix(type, quantity) {
             >
               <td class="px-3 py-3">
                 <p class="font-medium text-gray-700">{{ detail.fProductName }}</p>
+                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ detail.fSkuCode }}</p>
                 <p class="text-gray-400 mt-0.5">{{ detail.fColor }} / {{ detail.fSize }}</p>
               </td>
               <td class="px-3 py-3">
                 <span
-                  class="px-2 py-1 rounded-full font-medium"
-                  :class="
-                    ['進貨', '銷售退回'].includes(currentOrder?.fType)
-                      ? 'bg-green-50 text-green-700'
-                      : currentOrder?.fType === '手動盤點'
-                        ? 'bg-slate-50 text-slate-600'
-                        : 'bg-red-50 text-red-700'
-                  "
+                  :class="[
+                    'px-2 py-1 rounded-full font-medium text-xs',
+                    ['進貨', '銷售退回', '調整進'].includes(currentOrder?.fType)
+                      ? 'bg-green-50 text-green-600'
+                      : 'bg-red-50 text-red-500',
+                  ]"
                 >
-                  {{ getQuantityPrefix(currentOrder?.fType, detail.fQuantity)
+                  {{ ['進貨', '銷售退回', '調整進'].includes(currentOrder?.fType) ? '+' : '-'
                   }}{{ detail.fQuantity }}
                 </span>
               </td>
@@ -318,28 +319,40 @@ function getQuantityPrefix(type, quantity) {
       <!-- 底部合計 -->
       <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 shrink-0">
         <div class="flex justify-between items-end">
-          <div class="text-xs text-gray-500 space-y-1">
-            <div>
+          <!-- 左側：只有進貨類型才顯示總數量 -->
+          <div class="text-xs text-gray-500">
+            <template v-if="!noSupplierTypes.includes(currentOrder?.fType)">
               總數量：<strong class="text-gray-700">{{ currentOrder?.fTotalQuantity }} 件</strong>
-            </div>
+            </template>
           </div>
+
+          <!-- 右側 -->
           <div class="text-right space-y-1 text-xs text-gray-500">
-            <div class="flex justify-between gap-16">
-              <span>未稅金額</span>
-              <span class="text-gray-700"
-                >NT${{ currentOrder?.fUntaxedAmount?.toLocaleString() }}</span
-              >
-            </div>
-            <div class="flex justify-between gap-16">
-              <span>稅額（{{ currentOrder?.fTaxType === '應稅' ? '5%' : '免稅' }}）</span>
-              <span class="text-gray-700">NT${{ currentOrder?.fTaxAmount?.toLocaleString() }}</span>
-            </div>
-            <div class="flex justify-between gap-16 border-t border-gray-200 pt-1">
-              <span class="font-medium text-gray-700">含稅總計</span>
-              <strong class="text-indigo-600 text-sm"
-                >NT${{ currentOrder?.fTotalAmount?.toLocaleString() }}</strong
-              >
-            </div>
+            <template v-if="!noSupplierTypes.includes(currentOrder?.fType)">
+              <div class="flex justify-between gap-16">
+                <span>未稅金額</span>
+                <span class="text-gray-700"
+                  >NT${{ currentOrder?.fUntaxedAmount?.toLocaleString() }}</span
+                >
+              </div>
+              <div class="flex justify-between gap-16">
+                <span>稅額（{{ currentOrder?.fTaxType === '應稅' ? '5%' : '免稅' }}）</span>
+                <span class="text-gray-700"
+                  >NT${{ currentOrder?.fTaxAmount?.toLocaleString() }}</span
+                >
+              </div>
+              <div class="flex justify-between gap-16 border-t border-gray-200 pt-1">
+                <span class="font-medium text-gray-700">含稅總計</span>
+                <strong class="text-indigo-600 text-sm"
+                  >NT${{ currentOrder?.fTotalAmount?.toLocaleString() }}</strong
+                >
+              </div>
+            </template>
+
+            <!-- 調整進/調整出/報廢：只在右下角顯示總數量 -->
+            <template v-else>
+              總數量：<strong class="text-gray-700">{{ currentOrder?.fTotalQuantity }} 件</strong>
+            </template>
           </div>
         </div>
       </div>

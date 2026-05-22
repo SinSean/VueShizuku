@@ -28,7 +28,7 @@ const suppliers = ref([
 ])
 
 const paymentMethods = ['月結30天', '月結60天', '月結90天', '貨到付款', '預付款', '現金']
-const orderTypes = ['進貨', '銷售退回', '手動盤點', '進貨退出', '報廢']
+const orderTypes = ['進貨', '銷售退回', '調整進', '調整出', '進貨退出', '報廢']
 const untaxedAmount = computed(() => cartTotalAmount.value)
 const taxTypes = ['應稅', '免稅']
 const taxAmount = computed(() =>
@@ -230,7 +230,7 @@ onMounted(async () => {
         <label class="text-xs text-gray-400 mb-1 block">廠商</label>
         <select
           v-model="purchaseForm.fSupplier"
-          :disabled="purchaseForm.fType === '報廢' || purchaseForm.fType === '銷售退回'"
+          :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
           class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           >
@@ -242,7 +242,7 @@ onMounted(async () => {
         <label class="text-xs text-gray-400 mb-1 block">付款方式</label>
         <select
           v-model="purchaseForm.fPaymentMethod"
-          :disabled="purchaseForm.fType === '報廢' || purchaseForm.fType === '銷售退回'"
+          :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
           class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           <option v-for="m in paymentMethods" :key="m">{{ m }}</option>
@@ -252,7 +252,7 @@ onMounted(async () => {
         <label class="text-xs text-gray-400 mb-1 block">課稅別</label>
         <select
           v-model="purchaseForm.fTaxType"
-          :disabled="purchaseForm.fType === '報廢' || purchaseForm.fType === '銷售退回'"
+          :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
           class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         >
           <option v-for="t in taxTypes" :key="t">{{ t }}</option>
@@ -263,29 +263,39 @@ onMounted(async () => {
         <input
           v-model="purchaseForm.fInvoiceNo"
           type="text"
-          :disabled="purchaseForm.fType === '報廢'"
+          :disabled="
+            purchaseForm.fType === '報廢' ||
+            purchaseForm.fType === '調整進' ||
+            purchaseForm.fType === '調整出'
+          "
           :placeholder="
-            purchaseForm.fType === '報廢'
+            purchaseForm.fType === '報廢' ||
+            purchaseForm.fType === '調整進' ||
+            purchaseForm.fType === '調整出'
               ? '無須填寫'
               : purchaseForm.fType === '銷售退回'
-                ? '【必填】請輸入原消費發票號碼'
+                ? '請輸入原消費發票號碼'
                 : purchaseForm.fType === '進貨退出'
-                  ? '【必填】請輸入折讓單號或原進貨發票'
+                  ? '請輸入折讓單號或原進貨發票'
                   : '選填（一般進貨）'
           "
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
       </div>
       <div>
         <label class="text-xs text-gray-400 mb-1 block">發票日期</label>
         <input
           v-model="purchaseForm.fInvoiceDate"
-          :disabled="purchaseForm.fType === '報廢'"
+          :disabled="
+            purchaseForm.fType === '報廢' ||
+            purchaseForm.fType === '調整進' ||
+            purchaseForm.fType === '調整出'
+          "
           :placeholder="
-            purchaseForm.fType === '報廢' ? '請務必輸入報廢原因（例如：沾染污漬/樣品銷毀）' : '選填'
+            ['報廢', '調整進', '調整出'].includes(purchaseForm.fType) ? '無須填寫' : '選填'
           "
           type="date"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
       </div>
       <div class="col-span-2">
@@ -378,9 +388,6 @@ onMounted(async () => {
                     <p class="text-gray-300 mt-0.5 font-mono text-xs">
                       {{ item.product.fProduct }}
                     </p>
-                  </td>
-                  <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">
-                    {{ item.product.fProduct }}
                   </td>
                   <td
                     class="px-3 py-2.5 font-medium"
@@ -484,18 +491,20 @@ onMounted(async () => {
                     <input
                       v-model="cartItems[item.fVariantId].fQuantity"
                       type="number"
-                      :min="purchaseForm.fType === '手動盤點' ? undefined : 1"
+                      min="1"
                       class="w-14 px-2 py-1 border border-gray-200 rounded text-center focus:outline-none focus:border-indigo-400"
                     />
                   </td>
                   <td class="px-3 py-2.5">
                     <input
                       v-model="cartItems[item.fVariantId].fCostPrice"
-                      :disabled="['報廢', '手動盤點'].includes(purchaseForm.fType)"
+                      :disabled="
+                        ['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
+                      "
                       type="number"
                       min="0"
                       :placeholder="
-                        ['報廢', '手動盤點'].includes(purchaseForm.fType)
+                        ['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
                           ? '無須填寫'
                           : '輸入成本價'
                       "
@@ -531,20 +540,24 @@ onMounted(async () => {
             <span
               >總數量：<strong class="text-gray-700">{{ cartTotalQty }} 件</strong></span
             >
-            <span
-              >未稅金額：<strong class="text-gray-700"
-                >NT${{ untaxedAmount.toLocaleString() }}</strong
-              ></span
-            >
-            <span
-              >稅額（{{ purchaseForm.fTaxType === '應稅' ? '5%' : '免稅' }}）：
-              <strong class="text-gray-700">NT${{ taxAmount.toLocaleString() }}</strong>
-            </span>
-            <span
-              >含稅總計：<strong class="text-indigo-600 text-sm"
-                >NT${{ totalWithTax.toLocaleString() }}</strong
-              ></span
-            >
+
+            <!-- 只有進貨/銷售退回/進貨退出才顯示稅額 -->
+            <template v-if="!['報廢', '調整進', '調整出'].includes(purchaseForm.fType)">
+              <span
+                >未稅金額：<strong class="text-gray-700"
+                  >NT${{ untaxedAmount.toLocaleString() }}</strong
+                ></span
+              >
+              <span
+                >稅額（{{ purchaseForm.fTaxType === '應稅' ? '5%' : '免稅' }}）：
+                <strong class="text-gray-700">NT${{ taxAmount.toLocaleString() }}</strong>
+              </span>
+              <span
+                >含稅總計：<strong class="text-indigo-600 text-sm"
+                  >NT${{ totalWithTax.toLocaleString() }}</strong
+                ></span
+              >
+            </template>
           </div>
           <div class="flex gap-2 shrink-0 ml-6">
             <button
