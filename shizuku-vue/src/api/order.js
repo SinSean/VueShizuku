@@ -1,4 +1,4 @@
-import request from '@/api/myRequest'
+import request from '@/api/index'
 
 //  建立訂單
 export const createOrderAPI = async (data) => {
