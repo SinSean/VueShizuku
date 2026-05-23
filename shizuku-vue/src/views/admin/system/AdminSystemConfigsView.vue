@@ -148,18 +148,20 @@ const resetTest = () => {
         <!-- 必須放置 Toast 元件，載體才會呈現在画面的右上角 -->
         <Toast position="top-right" />
 
-        <!-- 頁頭標題區塊 -->
+        <!-- 頁頭標題區塊（正式上線微調） -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-wide">安全機制測試面板</h1>
-                <p class="text-sm text-slate-500 mt-1">模擬執行模式：可動態切換上方開關，並於下方即時測試登入反饋。</p>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-wide">系統安全機制設定</h1>
+                <p class="text-sm text-slate-500 mt-1">
+                    <span class="text-amber-600 font-medium">正式環境設定：</span>變更將即時套用至全站登入系統。您可於下方沙盒區驗證邏輯。
+                </p>
             </div>
 
             <div class="flex items-center gap-3">
                 <button @click="refreshConfigs" :disabled="loading"
                     class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50 disabled:opacity-60 transition-all duration-200 shadow-sm">
                     <i class="pi pi-refresh" :class="{ 'pi-spin': loading }"></i>
-                    <span>重新整理</span>
+                    <span>同步最新設定</span>
                 </button>
             </div>
         </div>
@@ -181,12 +183,12 @@ const resetTest = () => {
                                 :class="config.fIsActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'"></span>
                             <span class="text-xs font-medium"
                                 :class="config.fIsActive ? 'text-emerald-600' : 'text-slate-400'">
-                                {{ config.fIsActive ? '機制執行中' : '已關閉測試' }}
+                                {{ config.fIsActive ? '運作中' : '已停用' }}
                             </span>
                         </span>
                     </div>
 
-                    <!-- 功能開關：綁定 API 修改事件 -->
+                    <!-- 功能開關 -->
                     <ToggleSwitch v-model="config.fIsActive" @change="handleConfigChange(config)" />
                 </div>
 
@@ -204,7 +206,6 @@ const resetTest = () => {
                             <span class="text-xs text-slate-400">當登入連續失敗達此上限時觸發</span>
                         </div>
 
-                        <!-- 數字調整：綁定 @update:modelValue 確保拿到最新變更數值，傳入 API -->
                         <InputNumber v-model="config.fFailedAttemptsThreshold" showButtons buttonLayout="horizontal"
                             :min="1" :max="20" @update:modelValue="handleConfigChange(config)"
                             :disabled="!config.fIsActive" class="custom-input-number"
@@ -214,16 +215,17 @@ const resetTest = () => {
             </div>
         </div>
 
-        <!-- 下半部：即時互動模擬測試區 -->
+        <!-- 下半部：即時互動模擬測試區（強調安全隔離環境） -->
         <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-800">沙盒模擬登入測試區</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">點擊按鈕模擬「密碼輸入錯誤」，觀察系統如何根據上方設定進行防禦。</p>
+                    <h2 class="text-lg font-bold text-slate-800">安全機制模擬沙盒</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">點擊下方按鈕模擬密碼錯誤，<span
+                            class="text-indigo-600 font-medium">此區測試不會影響資料庫與真實帳號</span>。</p>
                 </div>
                 <button @click="resetTest"
                     class="text-xs font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
-                    重置測試模擬
+                    重置沙盒狀態
                 </button>
             </div>
 
@@ -231,7 +233,7 @@ const resetTest = () => {
                 <!-- 動作按鈕與計數 -->
                 <div
                     class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">目前連續失敗次數</span>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">目前模擬失敗次數</span>
                     <span class="text-4xl font-black text-slate-800 font-mono">{{ fakeFailedCount }}</span>
 
                     <button @click="simulateFailedLogin"
@@ -249,19 +251,19 @@ const resetTest = () => {
                         </Message>
                         <div v-else
                             class="text-sm text-slate-400 italic border border-dashed border-slate-200 rounded-xl p-4 text-center bg-white/50">
-                            暫無系統回傳訊息，請點擊左側按鈕開始模擬
+                            暫無系統回傳訊息，請點擊左側按鈕開始測試
                         </div>
                     </div>
 
                     <!-- 模擬登入表單的動態改變 -->
                     <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm space-y-3">
                         <span
-                            class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">前台登入畫面模擬狀態</span>
+                            class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">前台登入防禦狀態預覽</span>
 
                         <div class="p-4 rounded-xl border flex items-center justify-between"
                             :class="isAccountLocked ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-100 text-slate-600'">
                             <span class="text-sm font-medium">帳號控制狀態：</span>
-                            <span class="text-sm font-bold">{{ isAccountLocked ? '帳號已被硬鎖定（無法登入）' : '正常運作中' }}</span>
+                            <span class="text-sm font-bold">{{ isAccountLocked ? '帳號已被硬鎖定（前台將拒絕登入）' : '正常運作中' }}</span>
                         </div>
 
                         <!-- 模擬圖形驗證碼顯示 -->
