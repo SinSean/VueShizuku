@@ -30,6 +30,7 @@ const menuItems = ref([
   { label: '訂單管理', icon: 'pi pi-list', to: { name: 'admin-orders' } },
   { label: '金流管理', icon: 'pi pi-credit-card', to: { name: 'admin-payments' } },
   { label: '客服回覆', icon: 'pi pi-comments', to: { name: 'admin-customer-service' } },
+  { label: '系統管理', icon: 'pi pi-comments', to: { name: 'admin-system-settings' } },
 ])
 
 const handleLogout = () => {

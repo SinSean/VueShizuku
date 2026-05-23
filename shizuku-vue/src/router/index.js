@@ -212,6 +212,12 @@ const router = createRouter({
           component: () => import('@/views/admin/member/AdminMembersBlockView.vue'),
         },
         {
+          path: 'system/vertify/settings',
+          name: 'admin-system-settings',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/system/AdminSystemConfigsView.vue'),
+        },
+        {
           path: 'products',
           name: 'admin-products',
           meta: { requiresAdmin: true },
