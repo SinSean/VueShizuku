@@ -390,7 +390,7 @@ async function save() {
             >
               <option :value="1">上架中</option>
               <option :value="2">下架</option>
-              <option :value="2">尚未刊登</option>
+              <option :value="3">尚未刊登</option>
             </select>
           </div>
         </div>
