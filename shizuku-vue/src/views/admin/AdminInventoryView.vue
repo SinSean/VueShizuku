@@ -13,16 +13,19 @@ const isLoading = ref(true)
 const activeTab = ref('dashboard')
 const router = useRouter()
 const route = useRoute()
+const inventoryReport = ref([])
 
 async function loadData() {
   try {
     isLoading.value = true
-    const [inventoryRes, purchaseRes] = await Promise.all([
+    const [inventoryRes, purchaseRes, inventoryReportRes] = await Promise.all([
       productApi.getInventory(),
       productApi.getPurchaseOrders(),
+      productApi.getInventoryReport(),
     ])
     inventory.value = inventoryRes.data.data ?? []
     purchaseOrders.value = purchaseRes.data.data ?? []
+    inventoryReport.value = inventoryReportRes.data.data ?? []
   } catch (err) {
     console.error('載入失敗', err)
   } finally {
@@ -65,16 +68,6 @@ onMounted(async () => {
           </button>
         </div>
       </div>
-
-      <!-- 新增進貨單按鈕（只在進貨管理 Tab 顯示）-->
-      <button
-        v-if="activeTab === 'records'"
-        @click="router.push({ name: 'admin-inventory-create' })"
-        class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-      >
-        <i class="pi pi-plus" style="font-size: 11px"></i>
-        新增異動單
-      </button>
     </div>
 
     <!-- 載入中 -->
@@ -84,7 +77,7 @@ onMounted(async () => {
     <template v-else>
       <InventoryDashboard v-if="activeTab === 'dashboard'" :inventory="inventory" />
 
-      <InventoryList v-if="activeTab === 'inventory'" :inventory="inventory" />
+      <InventoryList v-if="activeTab === 'inventory'" :inventory="inventoryReport" />
 
       <PurchaseOrderList v-if="activeTab === 'records'" :purchaseOrders="purchaseOrders" />
     </template>

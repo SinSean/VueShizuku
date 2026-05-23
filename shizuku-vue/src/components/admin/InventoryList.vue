@@ -1,36 +1,63 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { productApi } from '@/api/Product.js'
+
+const showRecordModal = ref(false)
+const currentVariant = ref(null)
+const variantRecords = ref([])
+const isLoadingRecords = ref(false)
 
 const props = defineProps({
   inventory: { type: Array, default: () => [] },
 })
-const selectedStatus = ref('')
 
 const baseUrl = 'https://localhost:7197'
 const defaultImg = 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800'
+
 const keyword = ref('')
+const selectedStatus = ref('')
 const expandedIds = ref(new Set())
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+watch(
+  () => props.inventory,
+  (newVal) => {
+    newVal.forEach((p) => expandedIds.value.add(p.fProductId))
+  },
+  { immediate: true },
+)
+
+async function viewVariantRecords(variantId) {
+  isLoadingRecords.value = true
+  showRecordModal.value = true
+  currentVariant.value = variantId
+  try {
+    const res = await productApi.getStockRecords(variantId)
+    variantRecords.value = res.data.data ?? []
+  } catch (err) {
+    console.error('載入紀錄失敗', err)
+  } finally {
+    isLoadingRecords.value = false
+  }
+}
 
 const filteredInventory = computed(() => {
   let result = props.inventory
-
   if (keyword.value) {
     const kw = keyword.value.toLowerCase()
     result = result.filter(
       (p) =>
-        p.fProductName?.toLowerCase().includes(kw) || // ← 轉小寫比較
-        p.fProduct?.toLowerCase().includes(kw),
+        p.fProductName?.toLowerCase().includes(kw) ||
+        p.fProduct?.toLowerCase().includes(kw) ||
+        p.fVariants?.some((v) => v.fSkuCode?.toLowerCase().includes(kw)),
     )
   }
-
   if (selectedStatus.value) {
     result = result.filter((p) => p.fVariants?.some((v) => v.fStockStatus === selectedStatus.value))
   }
-
   return result
 })
-const currentPage = ref(1)
-const pageSize = ref(10)
 
 const totalCount = computed(() => filteredInventory.value.length)
 const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value))
@@ -43,25 +70,15 @@ const pagedInventory = computed(() => {
 function changePage(page) {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// 切換每頁筆數時回到第一頁
 watch(pageSize, () => {
   currentPage.value = 1
 })
-
-// 搜尋時回到第一頁
 watch(keyword, () => {
   currentPage.value = 1
 })
-
-watch(
-  () => props.inventory,
-  (newVal) => {
-    newVal.forEach((p) => expandedIds.value.add(p.fProductId))
-  },
-  { immediate: true },
-)
 
 function toggleExpand(id) {
   if (expandedIds.value.has(id)) {
@@ -74,23 +91,36 @@ function toggleExpand(id) {
 function stockStatusClass(status) {
   if (status === '售完') return 'bg-red-50 text-red-500'
   if (status === '低庫存') return 'bg-amber-50 text-amber-500'
-  if (status === '未設規格') return 'bg-gray-100 text-gray-400'
   return 'bg-green-50 text-green-600'
 }
 
-function profitRate(costPrice, price) {
-  if (!costPrice || !price || price === 0) return null
-  return Math.round(((price - costPrice) / price) * 100)
-}
+const totalRow = computed(() => ({
+  fPurchaseQty: props.inventory
+    .flatMap((p) => p.fVariants ?? [])
+    .reduce((a, v) => a + (v.fPurchaseQty ?? 0), 0),
+  fSalesQty: props.inventory
+    .flatMap((p) => p.fVariants ?? [])
+    .reduce((a, v) => a + (v.fSalesQty ?? 0), 0),
+  fReturnQty: props.inventory
+    .flatMap((p) => p.fVariants ?? [])
+    .reduce((a, v) => a + (v.fReturnQty ?? 0), 0),
+  fPurchaseReturnQty: props.inventory
+    .flatMap((p) => p.fVariants ?? [])
+    .reduce((a, v) => a + (v.fPurchaseReturnQty ?? 0), 0),
+  fScrapQty: props.inventory
+    .flatMap((p) => p.fVariants ?? [])
+    .reduce((a, v) => a + (v.fScrapQty ?? 0), 0),
+  fStock: props.inventory.reduce((a, p) => a + (p.fTotalStock ?? 0), 0),
+}))
 </script>
 
 <template>
   <div class="bg-white rounded-xl border border-gray-100 p-5">
     <!-- 標題列 -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
       <div>
-        <h3 class="text-base font-medium">庫存列表</h3>
-        <p class="text-sm text-gray-400 mt-0.5">共 {{ totalCount }} 筆商品</p>
+        <h3 class="text-lg font-medium text-gray-800">商品進銷存報表</h3>
+        <p class="text-xs text-gray-400 mt-0.5">共 {{ totalCount }} 筆商品</p>
       </div>
     </div>
 
@@ -101,9 +131,16 @@ function profitRate(costPrice, price) {
         <input
           v-model="keyword"
           type="text"
-          placeholder="搜尋商品名稱、貨號..."
-          class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
+          placeholder="搜尋商品名稱、貨號、SKU..."
+          class="w-full pl-9 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
         />
+        <button
+          v-if="keyword"
+          @click="keyword = ''"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+        >
+          <i class="pi pi-times" style="font-size: 11px"></i>
+        </button>
       </div>
       <div class="relative">
         <i class="pi pi-tag absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -115,128 +152,196 @@ function profitRate(costPrice, price) {
           <option value="正常">正常</option>
           <option value="低庫存">低庫存</option>
           <option value="售完">售完</option>
-          <option value="未設規格">未設規格</option>
         </select>
       </div>
     </div>
 
     <!-- 表格 -->
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="bg-gray-50">
-          <th
-            class="px-3 py-2.5 text-left text-gray-500 font-medium border-b border-gray-100 w-8"
-          ></th>
-          <th class="px-3 py-2.5 text-left text-gray-500 font-medium border-b border-gray-100">
-            商品
-          </th>
-          <th class="px-3 py-2.5 text-left text-gray-500 font-medium border-b border-gray-100">
-            總庫存
-          </th>
-          <th class="px-3 py-2.5 text-left text-gray-500 font-medium border-b border-gray-100">
-            售價
-          </th>
-          <th class="px-3 py-2.5 text-left text-gray-500 font-medium border-b border-gray-100">
-            狀態
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-for="product in pagedInventory" :key="product.fProductId">
-          <!-- 商品主列 -->
-          <tr
-            class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-            @click="toggleExpand(product.fProductId)"
-          >
-            <td class="px-3 py-3 text-gray-400">
-              <i
-                :class="
-                  expandedIds.has(product.fProductId) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'
-                "
-                style="font-size: 11px"
-              ></i>
-            </td>
-
-            <td class="px-3 py-3">
-              <div class="flex items-center gap-3">
-                <img
-                  :src="product.fImage ? baseUrl + product.fImage : defaultImg"
-                  class="w-10 h-10 object-cover rounded-lg border border-gray-100"
-                />
-                <div>
-                  <p class="font-medium text-gray-700">{{ product.fProductName }}</p>
-                  <p class="text-gray-400 mt-0.5 font-mono text-xs">{{ product.fProduct }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-3 py-3 font-medium">{{ product.fTotalStock }} 件</td>
-            <td class="px-3 py-3 text-gray-400">
-              NT${{ product.fVariants?.[0]?.fPrice?.toLocaleString() }}
-            </td>
-            <td class="px-3 py-3">
-              <span
-                v-if="!product.fVariants?.length"
-                class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-400"
-              >
-                未設規格
-              </span>
-            </td>
+    <div class="overflow-x-auto">
+      <table class="w-full" style="table-layout: fixed; min-width: 960px">
+        <colgroup>
+          <col style="width: 28px" />
+          <col style="width: 40px" />
+          <col style="width: 220px" />
+          <col style="width: 75px" />
+          <col style="width: 75px" />
+          <col style="width: 80px" />
+          <col style="width: 80px" />
+          <col style="width: 65px" />
+          <col style="width: 80px" />
+          <col style="width: 60px" />
+        </colgroup>
+        <thead class="text-sm">
+          <tr class="bg-gray-100 border-b-2 border-gray-200">
+            <th class="px-2 py-3"></th>
+            <th class="px-2 py-3 text-center text-gray-700 font-bold">No.</th>
+            <th class="px-3 py-3 text-left text-gray-700 font-bold">商品</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">進貨</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">銷量</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">銷售退回</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">進貨退出</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">報廢</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">當前存貨</th>
+            <th class="px-3 py-3 text-center text-gray-700 font-bold">異動紀錄</th>
           </tr>
-
-          <!-- 規格子列 -->
-          <template v-if="expandedIds.has(product.fProductId)">
+        </thead>
+        <tbody>
+          <!-- 合計列 -->
+          <tr class="border-b-2 border-gray-200 bg-gray-50">
+            <td colspan="3" class="px-25 py-3 text-gray-800 font-bold text-sm">全部商品</td>
+            <td class="px-3 py-3 text-center font-bold text-sm text-green-700">
+              {{ totalRow.fPurchaseQty }}
+            </td>
+            <td class="px-3 py-3 text-center font-bold text-sm text-red-500">
+              {{ totalRow.fSalesQty }}
+            </td>
+            <td class="px-3 py-3 text-center font-bold text-sm text-gray-600">
+              {{ totalRow.fReturnQty }}
+            </td>
+            <td class="px-3 py-3 text-center font-bold text-sm text-gray-600">
+              {{ totalRow.fPurchaseReturnQty }}
+            </td>
+            <td class="px-3 py-3 text-center font-bold text-sm text-gray-600">
+              {{ totalRow.fScrapQty }}
+            </td>
+            <td class="px-3 py-3 text-center font-bold text-sm text-gray-700">
+              {{ totalRow.fStock }}
+            </td>
+            <td></td>
+          </tr>
+          <template v-for="(product, index) in pagedInventory" :key="product.fProductId">
+            <!-- 商品主列 -->
             <tr
-              v-for="variant in product.fVariants"
-              :key="variant.fVariantId"
-              class="border-b border-gray-50 bg-gray-50/50"
+              class="border-b border-gray-200 hover:bg-gray-50 cursor-pointer bg-white"
+              @click="toggleExpand(product.fProductId)"
             >
-              <td></td>
-              <td class="px-3 py-2 pl-16">
-                <span class="text-gray-500">{{ variant.fColor }} / {{ variant.fSize }}</span>
+              <td class="px-2 py-3 text-gray-400">
+                <i
+                  :class="
+                    expandedIds.has(product.fProductId)
+                      ? 'pi pi-chevron-down'
+                      : 'pi pi-chevron-right'
+                  "
+                  style="font-size: 10px"
+                ></i>
               </td>
-              <td
-                class="px-3 py-2"
-                :class="
-                  variant.fStock === 0
-                    ? 'text-red-400 font-medium'
-                    : variant.fStock <= 5
-                      ? 'text-amber-500 font-medium'
-                      : 'text-gray-600'
-                "
-              >
-                {{ variant.fStock }} 件
+              <td class="px-2 py-3 text-center text-gray-700 text-sm">
+                {{ (currentPage - 1) * pageSize + index + 1 }}
               </td>
-              <td class="px-3 py-2 text-gray-400">
-                NT${{ variant.fPrice?.toLocaleString() }}
-                <span v-if="variant.fCostPrice" class="ml-2 text-gray-300 text-xs">
-                  成本 NT${{ variant.fCostPrice?.toLocaleString() }}
-                  <span
-                    v-if="profitRate(variant.fCostPrice, variant.fPrice) !== null"
-                    class="text-green-500 ml-1"
-                  >
-                    {{ profitRate(variant.fCostPrice, variant.fPrice) }}%
-                  </span>
-                </span>
+              <td class="px-3 py-3">
+                <div class="flex items-center gap-3">
+                  <img
+                    :src="product.fImage ? baseUrl + product.fImage : defaultImg"
+                    class="w-9 h-9 object-cover rounded-lg border border-gray-100 shrink-0"
+                  />
+                  <div>
+                    <p class="font-semibold text-gray-800 text-sm">{{ product.fProductName }}</p>
+                    <p class="text-gray-400 mt-0.5 font-mono text-[10px]">{{ product.fProduct }}</p>
+                  </div>
+                </div>
               </td>
-              <td class="px-3 py-2">
+              <td class="px-3 py-3 text-center font-bold text-sm text-green-700">
+                {{ product.fVariants?.reduce((a, v) => a + (v.fPurchaseQty ?? 0), 0) }}
+              </td>
+              <td class="px-3 py-3 text-center font-bold text-sm text-red-500">
+                {{ product.fVariants?.reduce((a, v) => a + (v.fSalesQty ?? 0), 0) }}
+              </td>
+              <td class="px-3 py-3 text-center font-bold text-sm text-gray-600">
+                {{ product.fVariants?.reduce((a, v) => a + (v.fReturnQty ?? 0), 0) }}
+              </td>
+              <td class="px-3 py-3 text-center font-bold text-sm text-gray-600">
+                {{ product.fVariants?.reduce((a, v) => a + (v.fPurchaseReturnQty ?? 0), 0) }}
+              </td>
+              <td class="px-3 py-3 text-center font-bold text-sm text-gray-600">
+                {{ product.fVariants?.reduce((a, v) => a + (v.fScrapQty ?? 0), 0) }}
+              </td>
+              <td class="px-3 py-3 text-center">
                 <span
                   :class="[
-                    'px-2 py-0.5 rounded-full text-xs',
-                    stockStatusClass(variant.fStockStatus),
+                    'px-2 py-0.5 rounded-full text-xs font-medium',
+                    product.fTotalStock === 0
+                      ? 'bg-red-50 text-red-600'
+                      : product.fTotalStock <= 5
+                        ? 'bg-amber-50 text-amber-600'
+                        : 'bg-green-50 text-green-600',
                   ]"
                 >
-                  {{ variant.fStockStatus }}
+                  {{ product.fTotalStock }}
                 </span>
               </td>
+              <td></td>
+            </tr>
+
+            <!-- 規格子列 -->
+            <template v-if="expandedIds.has(product.fProductId)">
+              <tr
+                v-for="variant in product.fVariants"
+                :key="variant.fVariantId"
+                class="border-b border-gray-100 bg-gray-70/70"
+              >
+                <td></td>
+                <td></td>
+                <td class="px-3 py-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 shrink-0"></div>
+                    <div>
+                      <p class="text-gray-700 font-bold text-xs">
+                        {{ variant.fColor }} / {{ variant.fSize }}
+                      </p>
+                      <p class="text-gray-500 font-mono text-[10px] mt-0.5">
+                        {{ variant.fSkuCode }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-3 py-2 text-center text-xs text-green-500">
+                  {{ variant.fPurchaseQty ?? 0 }}
+                </td>
+                <td class="px-3 py-2 text-center text-xs text-red-500">
+                  {{ variant.fSalesQty ?? 0 }}
+                </td>
+                <td class="px-3 py-2 text-center text-xs text-gray-500">
+                  {{ variant.fReturnQty ?? 0 }}
+                </td>
+                <td class="px-3 py-2 text-center text-xs text-gray-500">
+                  {{ variant.fPurchaseReturnQty ?? 0 }}
+                </td>
+                <td class="px-3 py-2 text-center text-xs text-gray-500">
+                  {{ variant.fScrapQty ?? 0 }}
+                </td>
+                <td class="px-3 py-2 text-center">
+                  <span
+                    :class="[
+                      'px-2 py-0.5 rounded-full text-xs',
+                      stockStatusClass(variant.fStockStatus),
+                    ]"
+                  >
+                    {{ variant.fStock }}
+                  </span>
+                </td>
+                <td class="px-3 py-2 text-center">
+                  <button
+                    @click.stop="viewVariantRecords(variant.fVariantId)"
+                    class="text-xs text-indigo-500 hover:text-indigo-700"
+                  >
+                    紀錄
+                  </button>
+                </td>
+              </tr>
+            </template>
+
+            <!-- 商品間分隔 -->
+            <tr class="h-2 bg-gray-100">
+              <td colspan="10" class="p-0"></td>
             </tr>
           </template>
-        </template>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
 
     <!-- 分頁列 -->
     <div class="flex items-center justify-between px-3 py-3 border-t border-gray-100 mt-2">
-      <span class="text-sm text-gray-400"> 共 {{ totalCount }} 筆，共 {{ totalPages }} 頁 </span>
+      <span class="text-sm text-gray-400">共 {{ totalCount }} 筆，共 {{ totalPages }} 頁</span>
       <div class="flex items-center gap-2">
         <button
           @click="changePage(currentPage - 1)"
@@ -283,6 +388,81 @@ function profitRate(costPrice, price) {
           <option :value="20">20 筆/頁</option>
           <option :value="50">50 筆/頁</option>
         </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 規格異動紀錄 Modal -->
+  <div
+    v-if="showRecordModal"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    @click.self="showRecordModal = false"
+  >
+    <div class="bg-white rounded-xl w-full mx-4 max-w-lg flex flex-col" style="max-height: 80vh">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+        <h3 class="font-medium">庫存異動紀錄</h3>
+        <button @click="showRecordModal = false" class="text-gray-400 hover:text-gray-600">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="overflow-y-auto flex-1 px-6 py-4">
+        <div v-if="isLoadingRecords" class="text-center text-gray-400 py-8">載入中...</div>
+        <div v-else-if="variantRecords.length === 0" class="text-center text-gray-300 py-8">
+          尚無異動紀錄
+        </div>
+        <table v-else class="w-full text-xs">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                日期
+              </th>
+              <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                異動類型
+              </th>
+              <th class="px-3 py-2 text-center text-gray-500 font-medium border-b border-gray-100">
+                數量
+              </th>
+              <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+                備註
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="record in variantRecords"
+              :key="record.fId"
+              class="border-b border-gray-50 last:border-0"
+            >
+              <td class="px-3 py-3 text-gray-400">
+                {{ new Date(record.fCreatedAt).toLocaleDateString('zh-TW') }}
+              </td>
+              <td class="px-3 py-3">
+                <span
+                  :class="[
+                    'px-2 py-0.5 rounded-full text-xs font-medium',
+                    ['進貨', '銷售退回', '調整進'].includes(record.fType)
+                      ? 'bg-green-50 text-green-600'
+                      : 'bg-red-50 text-red-500',
+                  ]"
+                >
+                  {{ record.fType || '進貨' }}
+                </span>
+              </td>
+              <td
+                class="px-3 py-3 text-center font-medium"
+                :class="
+                  ['進貨', '銷售退回', '調整進'].includes(record.fType)
+                    ? 'text-green-600'
+                    : 'text-red-500'
+                "
+              >
+                {{ ['進貨', '銷售退回', '調整進'].includes(record.fType) ? '+' : '-'
+                }}{{ record.fQuantity }}
+              </td>
+              <td class="px-3 py-3 text-gray-400">{{ record.fNote || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
