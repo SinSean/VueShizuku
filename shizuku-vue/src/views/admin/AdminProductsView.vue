@@ -336,6 +336,13 @@ onMounted(async () => {
           placeholder="搜尋商品名稱、貨號..."
           class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
         />
+        <button
+          v-if="keyword"
+          @click="((keyword = ''), fetchProducts())"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+        >
+          <i class="pi pi-times" style="font-size: 11px"></i>
+        </button>
       </div>
       <div class="relative">
         <i class="pi pi-tag absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -492,6 +499,7 @@ onMounted(async () => {
               <td class="px-3 py-3">
                 <span
                   :class="[
+                    'text-xs py-1 rounded-full font-medium inline-block w-14 text-center',
                     product.fStatus === 1
                       ? 'bg-green-50 text-green-700'
                       : product.fStatus === 2

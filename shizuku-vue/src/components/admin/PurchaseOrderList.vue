@@ -18,11 +18,23 @@ const currentOrder = ref(null)
 const currentPage = ref(1)
 const pageSize = 15
 
-const totalPages = computed(() => Math.ceil(props.purchaseOrders.length / pageSize))
+const totalPages = computed(() => Math.ceil(filteredOrders.value.length / pageSize))
 
 const pagedOrders = computed(() => {
   const start = (currentPage.value - 1) * pageSize
-  return props.purchaseOrders.slice(start, start + pageSize)
+  return filteredOrders.value.slice(start, start + pageSize)
+})
+const keyword = ref('')
+
+const filteredOrders = computed(() => {
+  if (!keyword.value) return props.purchaseOrders
+  const kw = keyword.value.toLowerCase()
+  return props.purchaseOrders.filter(
+    (o) =>
+      o.fOrderNo?.toLowerCase().includes(kw) ||
+      o.fSupplier?.toLowerCase().includes(kw) ||
+      o.fType?.toLowerCase().includes(kw),
+  )
 })
 
 function goToPage(page) {
@@ -65,9 +77,36 @@ function getQuantityPrefix(type) {
 
 <template>
   <div class="bg-white rounded-xl border border-gray-100 p-5">
-    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+    <div class="flex items-center gap-6 mb-4 pb-3 border-b border-gray-100">
+      <!-- 左側標題 -->
       <h3 class="text-sm font-medium">庫存異動紀錄</h3>
-      <div class="flex gap-2"></div>
+
+      <!-- 中間搜尋框 -->
+      <div class="relative w-full max-w-xs">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        <input
+          v-model="keyword"
+          type="text"
+          placeholder="搜尋單號、廠商、異動類型..."
+          class="w-full pl-8 pr-8 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400"
+        />
+        <button
+          v-if="keyword"
+          @click="keyword = ''"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+        >
+          <i class="pi pi-times" style="font-size: 10px"></i>
+        </button>
+      </div>
+
+      <!-- 右側按鈕 -->
+      <button
+        @click="router.push({ name: 'admin-inventory-create' })"
+        class="ml-auto flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shrink-0"
+      >
+        <i class="pi pi-plus" style="font-size: 11px"></i>
+        新增異動單
+      </button>
     </div>
 
     <table class="w-full text-xs">
