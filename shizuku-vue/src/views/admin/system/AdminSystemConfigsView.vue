@@ -3,13 +3,13 @@ import { ref, onMounted } from 'vue'
 import ToggleSwitch from 'primevue/toggleswitch'
 import InputNumber from 'primevue/inputnumber'
 import Message from 'primevue/message'
-import Toast from 'primevue/toast'        // 新增：引入 Toast 元件
-import { useToast } from 'primevue/usetoast' // 新增：引入 Toast 服務
-import { updateSystemConfig } from '@/api/adminSystem' // 請確認你的路徑
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
+import { updateSystemConfig, getSystemConfig } from '@/api/adminSystem'
 
-const toast = useToast() // 初始化 Toast
+const toast = useToast()
 
-// 狀態管理：預設為空，改從資料庫或 API 初始化
+// 狀態管理：預設結構
 const configs = ref([
     {
         fConfigKey: 'Captcha',
@@ -25,7 +25,6 @@ const configs = ref([
     }
 ])
 
-// 模擬前端測試區的狀態
 const loading = ref(false)
 const fakeFailedCount = ref(0)
 const testMessage = ref('')
@@ -33,15 +32,29 @@ const testSeverity = ref('info')
 const showFakeCaptcha = ref(false)
 const isAccountLocked = ref(false)
 
-// 撈取資料庫最新設定（變現）
+// 撈取資料庫最新設定（已對接你寫的前台方法）
 const loadConfigsFromApi = async () => {
     loading.value = true
     try {
-        // 提示：如果你有寫 GET API，可以取消下方註解並把資料塞入 configs.value
-        // const response = await request.get('/SystemApi/configs');
-        // if (response.data.success) { configs.value = response.data.data; }
+        const response = await getSystemConfig()
+        const res = response.data
 
-        // 這裡先維持現狀，但你可以透過重新整理按鈕調用此函式
+        // 完美對接你的 ApiResponse<T> 格式
+        if (res.success && res.data) {
+            // 找到陣列中的 Captcha 物件並賦值
+            const captcha = configs.value.find(c => c.fConfigKey === 'Captcha')
+            if (captcha) {
+                captcha.fIsActive = res.data.isCaptchaActive
+                captcha.fFailedAttemptsThreshold = res.data.captchaThreshold
+            }
+
+            // 找到陣列中的 Lockout 物件並賦值
+            const lockout = configs.value.find(c => c.fConfigKey === 'Lockout')
+            if (lockout) {
+                lockout.fIsActive = res.data.isLockoutActive
+                lockout.fFailedAttemptsThreshold = res.data.lockoutThreshold
+            }
+        }
     } catch (error) {
         console.error('讀取設定失敗', error)
         toast.add({ severity: 'error', summary: '錯誤', detail: '無法取得系統設定資料', life: 3000 })
@@ -55,12 +68,10 @@ onMounted(() => {
     loadConfigsFromApi()
 })
 
-// 實際呼叫後端 API 更新設定（變現）
+// 實際呼叫後端 API 更新設定
 const handleConfigChange = async (config) => {
-    // 重置下方的模擬測試狀態，讓開發者重新測試
     resetTest()
 
-    // 封裝成後端 UpdateConfigDto 要求的格式
     const payload = {
         configKey: config.fConfigKey,
         failedAttemptsThreshold: config.fFailedAttemptsThreshold,
@@ -71,7 +82,6 @@ const handleConfigChange = async (config) => {
         const response = await updateSystemConfig(payload)
 
         if (response.data.success) {
-            // 成功：彈出 PrimeVue Toast 提示
             toast.add({
                 severity: 'success',
                 summary: '更新成功',
@@ -97,12 +107,10 @@ const handleConfigChange = async (config) => {
     }
 }
 
-// 點擊重新整理按鈕
 const refreshConfigs = () => {
     loadConfigsFromApi()
 }
 
-// 使用者登入失敗的邏輯
 const simulateFailedLogin = () => {
     if (isAccountLocked.value) {
         testSeverity.value = 'error'
@@ -134,7 +142,6 @@ const simulateFailedLogin = () => {
     testMessage.value = '電子信箱或密碼輸入錯誤。'
 }
 
-// 重置測試區
 const resetTest = () => {
     fakeFailedCount.value = 0
     testMessage.value = ''
@@ -145,10 +152,8 @@ const resetTest = () => {
 
 <template>
     <div class="p-6 max-w-7xl mx-auto space-y-6">
-        <!-- 必須放置 Toast 元件，載體才會呈現在画面的右上角 -->
         <Toast position="top-right" />
 
-        <!-- 頁頭標題區塊（正式上線微調） -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 tracking-wide">系統安全機制設定</h1>
@@ -166,12 +171,10 @@ const resetTest = () => {
             </div>
         </div>
 
-        <!-- 上半部：設定卡片網格區塊 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div v-for="config in configs" :key="config.fConfigKey"
                 class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-200 hover:shadow-md">
 
-                <!-- 卡片頭部 -->
                 <div class="p-5 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <span
@@ -188,11 +191,9 @@ const resetTest = () => {
                         </span>
                     </div>
 
-                    <!-- 功能開關 -->
                     <ToggleSwitch v-model="config.fIsActive" @change="handleConfigChange(config)" />
                 </div>
 
-                <!-- 卡片內容物 -->
                 <div class="p-6 space-y-5">
                     <div>
                         <label
@@ -215,7 +216,6 @@ const resetTest = () => {
             </div>
         </div>
 
-        <!-- 下半部：即時互動模擬測試區（強調安全隔離環境） -->
         <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
@@ -230,7 +230,6 @@ const resetTest = () => {
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                <!-- 動作按鈕與計數 -->
                 <div
                     class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
                     <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">目前模擬失敗次數</span>
@@ -242,9 +241,7 @@ const resetTest = () => {
                     </button>
                 </div>
 
-                <!-- 模擬畫面的動態反應 -->
                 <div class="md:col-span-2 space-y-4">
-                    <!-- 系統訊息回傳提示 -->
                     <div class="min-h-[52px]">
                         <Message v-if="testMessage" :severity="testSeverity" class="!rounded-xl !m-0" :closable="false">
                             {{ testMessage }}
@@ -255,7 +252,6 @@ const resetTest = () => {
                         </div>
                     </div>
 
-                    <!-- 模擬登入表單的動態改變 -->
                     <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm space-y-3">
                         <span
                             class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">前台登入防禦狀態預覽</span>
@@ -266,7 +262,6 @@ const resetTest = () => {
                             <span class="text-sm font-bold">{{ isAccountLocked ? '帳號已被硬鎖定（前台將拒絕登入）' : '正常運作中' }}</span>
                         </div>
 
-                        <!-- 模擬圖形驗證碼顯示 -->
                         <div v-if="showFakeCaptcha"
                             class="p-4 bg-amber-50/50 border border-amber-200/70 rounded-xl space-y-2 animate-fade-in">
                             <div class="flex items-center justify-between">
@@ -287,7 +282,6 @@ const resetTest = () => {
 </template>
 
 <style scoped>
-/* 深度優化 PrimeVue 橫向按鈕樣式 */
 :deep(.custom-input-number .p-inputnumber-button) {
     background-color: #ffffff !important;
     border-color: #e2e8f0 !important;
@@ -313,7 +307,6 @@ const resetTest = () => {
     background-color: #10b981 !important;
 }
 
-/* 簡單的淡入動畫 */
 .animate-fade-in {
     animation: fadeIn 0.2s ease-out forwards;
 }
