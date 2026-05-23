@@ -9,3 +9,8 @@ export const getSystemConfig = () => {
 export const updateSystemConfig = (data) => {
     return request.put('/SystemApi/config', data);
 };
+
+// 取得系統日誌
+export const getSystemLogs = (params) => {
+    return request.get('/SystemLogsApi', { params });
+}

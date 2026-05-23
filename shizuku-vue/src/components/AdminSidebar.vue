@@ -31,6 +31,7 @@ const menuItems = ref([
   { label: '金流管理', icon: 'pi pi-credit-card', to: { name: 'admin-payments' } },
   { label: '客服回覆', icon: 'pi pi-comments', to: { name: 'admin-customer-service' } },
   { label: '系統管理', icon: 'pi pi-comments', to: { name: 'admin-system-settings' } },
+  { label: '系統日誌', icon: 'pi pi-comments', to: { name: 'admin-system-logs' } },
 ])
 
 const handleLogout = () => {

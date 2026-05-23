@@ -218,6 +218,12 @@ const router = createRouter({
           component: () => import('@/views/admin/system/AdminSystemConfigsView.vue'),
         },
         {
+          path: 'system/logs',
+          name: 'admin-system-logs',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/system/AdminSystemLogsView.vue'),
+        },
+        {
           path: 'products',
           name: 'admin-products',
           meta: { requiresAdmin: true },
