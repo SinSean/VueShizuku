@@ -2,61 +2,73 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 
-// 狀態管理
 const tickets = ref([])
 const isLoading = ref(true)
 const searchQuery = ref('')
 const selectedStatus = ref('全部')
 
-// 彈窗狀態管理
 const isModalOpen = ref(false)
 const selectedTicket = ref(null)
 
-// 撈取資料 (帶有防呆假資料機制，確保你現在一存檔就能看到漂亮畫面)
+// 1. 撈取資料 API
 const fetchTickets = async () => {
   isLoading.value = true
   try {
-    //  這裡的網址要換成你們 C# 後端真正撈取所有表單的 API 路由
     const response = await axios.get('https://localhost:7197/api/CustomerApi/Admin/AllTickets')
     if (response.data.success) {
       tickets.value = response.data.data
     }
   } catch (error) {
-    console.warn("API 尚未串接或發生錯誤，載入測試資料。")
-    // 如果 C# API 還沒寫好，自動載入這組假資料讓你先看排版效果！
-    tickets.value = [
-      { id: 101, memberId: 1, guestName: '陳大名', email: 'chen@example.com', category: '商品問題', subject: '衣服尺寸不合', content: '您好，我昨天收到的外套尺寸太小了，請問可以直接去門市換貨嗎？', status: '待處理', createTime: '2026-05-23 10:30' },
-      { id: 102, memberId: 0, guestName: '王小美 (訪客)', email: 'wang@example.com', category: '物流查詢', subject: '請問什麼時候出貨？', content: '我等了三天都還沒看到出貨通知，能幫我查一下進度嗎？', status: '已處理', createTime: '2026-05-22 14:15' },
-      { id: 103, memberId: 3, guestName: '林先生', email: 'lin@example.com', category: '退換貨', subject: '商品有瑕疵', content: '衣服背面有一個小破洞，再麻煩協助退貨處理，附上圖片連結...', status: '處理中', createTime: '2026-05-21 09:00' }
-    ]
+    console.error("API 呼叫失敗：", error)
   } finally {
     isLoading.value = false
   }
 }
 
-// 畫面載入時執行
+// 🟢 2. 新增：修改狀態 API (就是呼叫我們剛寫好的 PUT 方法)
+const updateTicketStatus = async (ticketId, newStatus) => {
+  try {
+    const apiUrl = 'https://localhost:7197/api/CustomerApi/Admin/TicketStatus'
+    const response = await axios.put(apiUrl, {
+      ticketId: ticketId,
+      newStatus: newStatus
+    })
+
+    if (response.data.success) {
+      // 成功後，不重新整理網頁，直接用 Vue 的響應式把畫面上的狀態改掉！
+      const targetTicket = tickets.value.find(t => t.id === ticketId)
+      if (targetTicket) {
+        targetTicket.status = newStatus
+      }
+      // 如果彈窗開著，連彈窗裡的狀態也一起改
+      if (selectedTicket.value && selectedTicket.value.id === ticketId) {
+        selectedTicket.value.status = newStatus
+      }
+      alert(`✅ 成功！${response.data.message}`)
+    }
+  } catch (error) {
+    console.error("修改狀態失敗：", error)
+    alert("更新失敗，請檢查網路或聯繫系統管理員。")
+  }
+}
+
 onMounted(() => {
   fetchTickets()
 })
 
-// 打開閱讀彈窗
 const openTicketModal = (ticket) => {
   selectedTicket.value = ticket
   isModalOpen.value = true
 }
 
-// 關閉閱讀彈窗
 const closeModal = () => {
   isModalOpen.value = false
-  setTimeout(() => { selectedTicket.value = null }, 200) // 等動畫跑完再清空
+  setTimeout(() => { selectedTicket.value = null }, 200)
 }
 
-// 前端搜尋與篩選邏輯
 const filteredTickets = computed(() => {
   return tickets.value.filter(ticket => {
-    // 關鍵字搜尋 (找姓名或主旨)
     const matchQuery = ticket.guestName.includes(searchQuery.value) || ticket.subject.includes(searchQuery.value)
-    // 狀態篩選
     const matchStatus = selectedStatus.value === '全部' || ticket.status === selectedStatus.value
     return matchQuery && matchStatus
   })
@@ -77,9 +89,10 @@ const filteredTickets = computed(() => {
     </div>
 
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
-      <div class="flex gap-2 w-full md:w-auto">
+      <div class="flex flex-wrap gap-2 w-full md:w-auto">
         <button @click="selectedStatus = '全部'" :class="selectedStatus === '全部' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-4 py-1.5 rounded-lg text-sm font-medium transition">全部</button>
         <button @click="selectedStatus = '待處理'" :class="selectedStatus === '待處理' ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-4 py-1.5 rounded-lg text-sm font-medium transition">待處理</button>
+        <button @click="selectedStatus = '處理中'" :class="selectedStatus === '處理中' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-4 py-1.5 rounded-lg text-sm font-medium transition">處理中</button>
         <button @click="selectedStatus = '已處理'" :class="selectedStatus === '已處理' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'" class="px-4 py-1.5 rounded-lg text-sm font-medium transition">已處理</button>
       </div>
       <div class="relative w-full md:w-72">
@@ -114,7 +127,8 @@ const filteredTickets = computed(() => {
                   'px-2.5 py-1 text-xs font-bold rounded-full border',
                   ticket.status === '待處理' ? 'bg-orange-50 text-orange-600 border-orange-200' : 
                   ticket.status === '處理中' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                  'bg-emerald-50 text-emerald-600 border-emerald-200'
+                  ticket.status === '已處理' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                  'bg-slate-100 text-slate-600 border-slate-300' // 不予處理
                 ]">
                   {{ ticket.status }}
                 </span>
@@ -159,15 +173,14 @@ const filteredTickets = computed(() => {
         </div>
 
         <div class="px-6 py-6 overflow-y-auto custom-scrollbar">
-          
           <div class="grid grid-cols-2 gap-y-4 gap-x-8 mb-6 border-b border-slate-100 pb-6">
             <div>
               <p class="text-xs text-slate-400 font-bold mb-1 uppercase tracking-wider">發問人</p>
               <p class="text-sm font-medium text-slate-800">{{ selectedTicket?.guestName }}</p>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-bold mb-1 uppercase tracking-wider">電子郵件</p>
-              <p class="text-sm font-medium text-slate-800">{{ selectedTicket?.email }}</p>
+              <p class="text-xs text-slate-400 font-bold mb-1 uppercase tracking-wider">目前的狀態</p>
+              <p class="text-sm font-bold text-indigo-600">{{ selectedTicket?.status }}</p>
             </div>
             <div>
               <p class="text-xs text-slate-400 font-bold mb-1 uppercase tracking-wider">建立時間</p>
@@ -190,8 +203,21 @@ const filteredTickets = computed(() => {
           </div>
         </div>
 
-        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-          <button @click="closeModal" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+          
+          <div class="flex gap-2">
+            <button v-if="selectedTicket?.status !== '處理中'" @click="updateTicketStatus(selectedTicket.id, '處理中')" class="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md text-sm font-medium transition">
+              標示處理中
+            </button>
+            <button v-if="selectedTicket?.status !== '已處理'" @click="updateTicketStatus(selectedTicket.id, '已處理')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-md text-sm font-medium transition">
+              標示已處理
+            </button>
+            <button v-if="selectedTicket?.status !== '不予處理'" @click="updateTicketStatus(selectedTicket.id, '不予處理')" class="px-3 py-1.5 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-md text-sm font-medium transition">
+              不予處理
+            </button>
+          </div>
+
+          <button @click="closeModal" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition shadow-sm w-full sm:w-auto">
             關閉視窗
           </button>
         </div>
