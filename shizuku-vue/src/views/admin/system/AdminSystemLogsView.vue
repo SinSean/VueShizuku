@@ -9,6 +9,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Dialog from 'primevue/dialog'
 import Toast from 'primevue/toast'
+import DatePicker from 'primevue/datepicker' // 引入 PrimeVue 的 DatePicker
 import { useToast } from 'primevue/usetoast'
 import { getSystemLogs } from '@/api/adminSystem'
 
@@ -39,7 +40,8 @@ const hasMoreData = ref(true) // 後端是否還有資料
 
 const filters = ref({
     global: '',
-    level: 'Information'
+    level: 'Information',
+    dateRange: null // 新增時間範圍欄位，預設為 null。格式會是 [Date, Date]
 })
 
 const logLevels = ref([
@@ -131,16 +133,32 @@ onMounted(() => {
 })
 
 const filteredLogs = computed(() => {
-    // 1. 先進行關鍵字與層級的過濾
+    // 1. 先進行關鍵字、層級與時間範圍的過濾
     const filtered = mockLogs.value.filter(log => {
+        // 關鍵字過濾
         if (filters.value.global) {
             const keyword = filters.value.global.toLowerCase()
             if (!log.message?.toLowerCase().includes(keyword)) return false
         }
+
+        // 層級過濾
         if (filters.value.level) {
             const selectedWeight = levelWeights[filters.value.level] || 0
             const currentLogWeight = levelWeights[log.level] || 0
             if (currentLogWeight < selectedWeight) return false
+        }
+
+        // 時間範圍過濾
+        if (filters.value.dateRange && filters.value.dateRange.length === 2) {
+            const [start, end] = filters.value.dateRange
+            if (start && end) {
+                const logTime = new Date(log.timestamp).getTime()
+                const startTime = new Date(start).getTime()
+                const endTime = new Date(end).getTime()
+
+                // 檢查日誌時間是否在選取的範圍之內
+                if (logTime < startTime || logTime > endTime) return false
+            }
         }
         return true
     })
@@ -168,6 +186,7 @@ const handleRefresh = async () => {
 const resetFilters = () => {
     filters.value.global = ''
     filters.value.level = 'Information'
+    filters.value.dateRange = null // 重置時間範圍
     firstRowIndex.value = 0 // 重置篩選時建議回第一頁
 }
 
@@ -202,7 +221,8 @@ const formatDateTime = (value) => {
 
         <!-- 篩選面板 -->
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <!-- 調整響應式佈局 grid-cols-1 到 md:grid-cols-4 以容納時間元件 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div class="space-y-1.5">
                     <label class="text-xs font-semibold text-slate-500">日誌關鍵字</label>
                     <IconField>
@@ -218,6 +238,13 @@ const formatDateTime = (value) => {
                         placeholder="選擇層級" class="w-full custom-select" />
                 </div>
 
+                <!-- 新增：時間範圍選取欄位 -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-500">時間範圍 (起 ~ 迄)</label>
+                    <DatePicker v-model="filters.dateRange" selectionMode="range" :showTime="true" hourFormat="24"
+                        placeholder="選擇起迄時間" class="w-full custom-datepicker" showIcon iconDisplay="input" />
+                </div>
+
                 <div>
                     <button @click="resetFilters"
                         class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-medium transition-colors">
@@ -229,7 +256,6 @@ const formatDateTime = (value) => {
 
         <!-- 資料表格 -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <!-- 💡 這裡加上了 :lazy="true"、:totalRecords、:first，並綁定 @page 事件 -->
             <DataTable :value="filteredLogs" paginator :rows="rows" :first="firstRowIndex" :loading="loading"
                 :lazy="true" :totalRecords="virtualTotalRecords" @page="onPageChange"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -352,5 +378,13 @@ const formatDateTime = (value) => {
 
 :deep(.custom-dialog .p-dialog-content) {
     padding: 1.5rem;
+}
+
+/* 新增：使 DatePicker 樣式呼應整體的圓角風格 */
+:deep(.custom-datepicker .p-inputtext) {
+    border-radius: 0.75rem !important;
+    border-color: #e2e8f0 !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.75rem !important;
 }
 </style>
