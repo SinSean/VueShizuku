@@ -1,10 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import ToggleSwitch from 'primevue/toggleswitch'
 import InputNumber from 'primevue/inputnumber'
 import Message from 'primevue/message'
+import Toast from 'primevue/toast'        // 新增：引入 Toast 元件
+import { useToast } from 'primevue/usetoast' // 新增：引入 Toast 服務
+import { updateSystemConfig } from '@/api/adminSystem' // 請確認你的路徑
 
-// 狀態管理：使用本地 ref 模擬資料庫撈出來的資料
+const toast = useToast() // 初始化 Toast
+
+// 狀態管理：預設為空，改從資料庫或 API 初始化
 const configs = ref([
     {
         fConfigKey: 'Captcha',
@@ -28,21 +33,76 @@ const testSeverity = ref('info')
 const showFakeCaptcha = ref(false)
 const isAccountLocked = ref(false)
 
-// 模擬更新設定
-const handleConfigChange = (config) => {
+// 撈取資料庫最新設定（變現）
+const loadConfigsFromApi = async () => {
+    loading.value = true
+    try {
+        // 提示：如果你有寫 GET API，可以取消下方註解並把資料塞入 configs.value
+        // const response = await request.get('/SystemApi/configs');
+        // if (response.data.success) { configs.value = response.data.data; }
+
+        // 這裡先維持現狀，但你可以透過重新整理按鈕調用此函式
+    } catch (error) {
+        console.error('讀取設定失敗', error)
+        toast.add({ severity: 'error', summary: '錯誤', detail: '無法取得系統設定資料', life: 3000 })
+    } finally {
+        loading.value = false
+    }
+}
+
+// 元件載入時，先去資料庫撈資料
+onMounted(() => {
+    loadConfigsFromApi()
+})
+
+// 實際呼叫後端 API 更新設定（變現）
+const handleConfigChange = async (config) => {
     // 重置下方的模擬測試狀態，讓開發者重新測試
     resetTest()
+
+    // 封裝成後端 UpdateConfigDto 要求的格式
+    const payload = {
+        configKey: config.fConfigKey,
+        failedAttemptsThreshold: config.fFailedAttemptsThreshold,
+        isActive: config.fIsActive
+    }
+
+    try {
+        const response = await updateSystemConfig(payload)
+
+        if (response.data.success) {
+            // 成功：彈出 PrimeVue Toast 提示
+            toast.add({
+                severity: 'success',
+                summary: '更新成功',
+                detail: `已同步更新 ${config.fConfigKey} 機制`,
+                life: 3000
+            })
+        } else {
+            toast.add({
+                severity: 'warn',
+                summary: '更新失敗',
+                detail: response.data.message,
+                life: 3000
+            })
+        }
+    } catch (error) {
+        console.error('API 連線失敗：', error)
+        toast.add({
+            severity: 'error',
+            summary: '連線錯誤',
+            detail: '系統配置同步失敗，請檢查網路或後端服務',
+            life: 3000
+        })
+    }
 }
 
-// 模擬重整按鈕
+// 點擊重新整理按鈕
 const refreshConfigs = () => {
-    loading.value = true
-    setTimeout(() => {
-        loading.value = false
-    }, 500)
+    loadConfigsFromApi()
 }
 
-// 模擬使用者登入失敗的邏輯（完完全全對應你寫的 C# 後端邏輯！）
+// 使用者登入失敗的邏輯
 const simulateFailedLogin = () => {
     if (isAccountLocked.value) {
         testSeverity.value = 'error'
@@ -50,14 +110,11 @@ const simulateFailedLogin = () => {
         return
     }
 
-    // 1. 失敗次數加 1
     fakeFailedCount.value++
 
-    // 2. 抓取目前的設定值
     const captchaConfig = configs.value.find(c => c.fConfigKey === 'Captcha')
     const lockoutConfig = configs.value.find(c => c.fConfigKey === 'Lockout')
 
-    // 3. 判斷硬鎖定是否觸發
     if (lockoutConfig.fIsActive && fakeFailedCount.value >= lockoutConfig.fFailedAttemptsThreshold) {
         isAccountLocked.value = true
         showFakeCaptcha.value = false
@@ -66,7 +123,6 @@ const simulateFailedLogin = () => {
         return
     }
 
-    // 4. 判斷驗證碼是否觸發
     if (captchaConfig.fIsActive && fakeFailedCount.value >= captchaConfig.fFailedAttemptsThreshold) {
         showFakeCaptcha.value = true
         testSeverity.value = 'warn'
@@ -74,7 +130,6 @@ const simulateFailedLogin = () => {
         return
     }
 
-    // 5. 一般失敗
     testSeverity.value = 'secondary'
     testMessage.value = '電子信箱或密碼輸入錯誤。'
 }
@@ -90,8 +145,10 @@ const resetTest = () => {
 
 <template>
     <div class="p-6 max-w-7xl mx-auto space-y-6">
+        <!-- 必須放置 Toast 元件，載體才會呈現在画面的右上角 -->
+        <Toast position="top-right" />
 
-        <!-- 頁頭標題區塊（與會員管理完全同步） -->
+        <!-- 頁頭標題區塊 -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 tracking-wide">安全機制測試面板</h1>
@@ -129,7 +186,7 @@ const resetTest = () => {
                         </span>
                     </div>
 
-                    <!-- 功能開關 -->
+                    <!-- 功能開關：綁定 API 修改事件 -->
                     <ToggleSwitch v-model="config.fIsActive" @change="handleConfigChange(config)" />
                 </div>
 
@@ -147,9 +204,10 @@ const resetTest = () => {
                             <span class="text-xs text-slate-400">當登入連續失敗達此上限時觸發</span>
                         </div>
 
+                        <!-- 數字調整：綁定 @update:modelValue 確保拿到最新變更數值，傳入 API -->
                         <InputNumber v-model="config.fFailedAttemptsThreshold" showButtons buttonLayout="horizontal"
-                            :min="1" :max="20" @input="handleConfigChange(config)" :disabled="!config.fIsActive"
-                            class="custom-input-number"
+                            :min="1" :max="20" @update:modelValue="handleConfigChange(config)"
+                            :disabled="!config.fIsActive" class="custom-input-number"
                             inputClass="w-12 text-center !py-1.5 !border-slate-200 text-sm font-medium" />
                     </div>
                 </div>
@@ -223,7 +281,6 @@ const resetTest = () => {
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
