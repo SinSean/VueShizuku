@@ -52,11 +52,14 @@ export const productApi = {
 
   getStats: () => axios.get(`${base}/stats`),
   getInventory: () => axios.get(`${base}/inventory`),
+  getInventoryReport: () => axios.get(`${base}/inventory-report`),
+
   getImages: (id) => axios.get(`${base}/${id}/images`),
   getRelated: (id) => axios.get(`${base}/${id}/related`),
 
-  getStockRecords: () => axios.get(`{{base}}/stock-records`),
-  addStockRecord: (dto) => axios.post(`{{base}}/stock-records`, dto),
+  getStockRecords: (variantId = null) =>
+    axios.get(`${base}/stock-records`, { params: variantId ? { variantId } : {} }),
+  addStockRecord: (dto) => axios.post(`${base}/stock-records`, dto),
   getPurchaseOrders: () => axios.get(`${base}/purchase-orders`),
   getPurchaseOrder: (id) => axios.get(`${base}/purchase-orders/${id}`),
   createPurchaseOrder: (dto) => axios.post(`${base}/purchase-orders`, dto),
