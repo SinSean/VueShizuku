@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'; // 擴充引入 onMounted
-import { loginAPI, getCaptchaAPI,googleLoginAPI } from '@/api/member';// 新增引入 googleLoginAPI
+import { loginAPI, getCaptchaAPI, googleLoginAPI } from '@/api/member';// 新增引入 googleLoginAPI
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
@@ -68,14 +68,15 @@ const handleLogin = async () => {
         // 攔截後端的 401 Unauthorized 狀態碼
         if (error.response && error.response.status === 401) {
             const apiMessage = error.response.data?.message || '認證失敗';
-            alert(apiMessage);
+            alert(apiMessage); // 只留這一個 alert
 
-            // 如果錯誤訊息提及驗證碼、失敗上限，或者畫面上已經在顯示驗證碼了
-            if (apiMessage.includes('驗證碼') || apiMessage.includes('上限') || showCaptcha.value) {
+            // 只有在後端訊息明確提到「驗證碼」時，才顯示圖形驗證
+            if (apiMessage.includes('驗證碼')) {
                 showCaptcha.value = true;
-
-                // 不管是驗證碼錯還是密碼錯，只要在驗證碼模式下失敗，舊驗證碼就失效了，必須刷新
-                await fetchCaptcha();
+                await fetchCaptcha(); // 重新整理驗證碼圖片
+            } else {
+                // 如果是帳號被鎖定（訊息包含「上限」）或其他錯誤，一律隱藏圖形驗證
+                showCaptcha.value = false;
             }
         } else if (error.code === 'ECONNABORTED') {
             alert('伺服器回應太久（逾時），請檢查後端是否掛掉');
@@ -135,7 +136,7 @@ const handleGoogleCallback = async (response) => {
         }
     } catch (error) {
         console.error("Google 登入出錯:", error);
-        
+
         // 攔截後端回傳的異常訊息 (例如：帳號停用、金鑰過期)
         const errorMsg = error.response?.data?.message || 'Google 登入驗證失敗，請聯絡客服人員';
         alert(errorMsg);
@@ -232,7 +233,7 @@ onMounted(() => {
                 <span class="text-xs text-slate-400 uppercase tracking-wider font-medium">或使用其他帳號登入</span>
                 <span class="border-b border-slate-200/60 w-1/5"></span>
             </div>
-            
+
             <div class="flex justify-center w-full">
                 <div id="google-btn" class="w-full flex justify-center"></div>
             </div>
