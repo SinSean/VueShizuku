@@ -263,6 +263,12 @@ const router = createRouter({
           meta: { requiresAdmin: true },
           component: () => import('@/views/admin/AdminCustomerServiceView.vue'),
         },
+        {
+      path: 'ticket-list',
+      name: 'admin-ticket-list',
+      meta: { requiresAdmin: true },
+      component: () => import('@/views/admin/AdminTicketList.vue')
+    }
       ],
     },
     // 4. 錯誤路徑處理(永遠放最後一個)

@@ -32,6 +32,7 @@ const menuItems = [
   { label: '訂單管理', icon: 'pi pi-list', to: { name: 'admin-orders' } },
   { label: '金流管理', icon: 'pi pi-credit-card', to: { name: 'admin-payments' } },
   { label: '客服回覆', icon: 'pi pi-comments', to: { name: 'admin-customer-service' } },
+  { label: '表單留言紀錄', icon: 'pi pi-envelope', to: { name: 'admin-ticket-list' } },
 ]
 
 
