@@ -52,7 +52,7 @@ onMounted(async () => {
           <button
             v-for="tab in [
               { label: '總覽儀表板', value: 'dashboard' },
-              { label: '庫存列表', value: 'inventory' },
+              { label: '庫存總覽', value: 'inventory' },
               { label: '庫存異動單管理', value: 'records' },
             ]"
             :key="tab.value"
