@@ -268,7 +268,13 @@ onMounted(() => {
             class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
           >
             <img
-              :src="item.fImage ? baseUrl + item.fImage : defaultImg"
+              :src="
+                product.fImage
+                  ? product.fImage.startsWith('http')
+                    ? product.fImage
+                    : baseUrl + product.fImage
+                  : defaultImg
+              "
               class="w-8 h-8 object-cover rounded-lg border border-gray-100 shrink-0"
             />
             <div class="flex-1 min-w-0">

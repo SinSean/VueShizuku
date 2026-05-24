@@ -94,8 +94,9 @@ onMounted(async () => {
     relatedProducts.value = relatedRes.data.data ?? []
     product.value = productRes.data.data
     variants.value = variantRes.data.data ?? []
-    productImages.value = (imagesRes.data.data ?? []).map((img) => baseUrl + img)
-
+    productImages.value = (imagesRes.data.data ?? []).map((img) =>
+      img.startsWith('http') ? img : baseUrl + img,
+    )
     // 自動預設選取第一個顏色與尺寸
     if (availableColors.value.length > 0) {
       selectedColor.value = availableColors.value[0]
@@ -333,7 +334,13 @@ onMounted(async () => {
           >
             <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-3">
               <img
-                :src="item.fImage ? baseUrl + item.fImage : defaultImg"
+                :src="
+                  item.fImage
+                    ? item.fImage.startsWith('http')
+                      ? item.fImage
+                      : baseUrl + item.fImage
+                    : defaultImg
+                "
                 :alt="item.fName"
                 class="w-full h-full object-cover group-hover:opacity-80"
               />

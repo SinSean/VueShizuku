@@ -21,8 +21,8 @@ const sortOrder = ref('latest')
 
 const sortedProducts = computed(() => {
   const list = [...(products.value ?? [])]
-  if (sortOrder.value === 'priceAsc') return list.sort((a, b) => a.fPrice - b.fPrice)
-  if (sortOrder.value === 'priceDesc') return list.sort((a, b) => b.fPrice - a.fPrice)
+  if (sortOrder.value === 'priceAsc') return list.sort((a, b) => a.fMinPrice - b.fMinPrice)
+  if (sortOrder.value === 'priceDesc') return list.sort((a, b) => b.fMinPrice - a.fMinPrice)
   if (sortOrder.value === 'hot') return list.sort((a, b) => b.fId - a.fId)
   return list
 })
@@ -63,7 +63,8 @@ function changePage(page) {
 
 // 取得目前有效的分類 ID（props 優先，其次才是網址）
 function getActiveCategoryId() {
-  if (props.categoryId !== null && props.categoryId !== undefined) return props.categoryId
+  // props 有明確設定（包含 null）就用 props
+  if (props.categoryId !== undefined) return props.categoryId
 
   const fromRoute = route.query.categoryId
   if (fromRoute) return Number(fromRoute)
@@ -140,7 +141,13 @@ onMounted(() => {
                 new
               </div>
               <img
-                :src="product.fImage ? baseUrl + product.fImage + '?t=' + Date.now() : defaultImg"
+                :src="
+                  product.fImage
+                    ? product.fImage.startsWith('http')
+                      ? product.fImage
+                      : baseUrl + product.fImage
+                    : defaultImg
+                "
                 :alt="product.fName"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
