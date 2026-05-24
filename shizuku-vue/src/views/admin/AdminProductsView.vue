@@ -451,7 +451,13 @@ onMounted(async () => {
                 >
                   <img
                     v-if="product.fImage"
-                    :src="baseUrl + product.fImage"
+                    :src="
+                      product.fImage
+                        ? product.fImage.startsWith('http')
+                          ? product.fImage
+                          : baseUrl + product.fImage
+                        : defaultImg
+                    "
                     class="w-full h-full object-cover rounded-lg"
                   />
                   <i v-else class="pi pi-image text-sm"></i>
