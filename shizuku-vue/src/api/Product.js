@@ -62,6 +62,7 @@ export const productApi = {
   addStockRecord: (dto) => axios.post(`${base}/stock-records`, dto),
   getPurchaseOrders: () => axios.get(`${base}/purchase-orders`),
   getPurchaseOrder: (id) => axios.get(`${base}/purchase-orders/${id}`),
+  getVariantBySkuOrId: (sku) => axios.get(`${base}/variant-by-sku`, { params: { sku } }),
   createPurchaseOrder: (dto) => axios.post(`${base}/purchase-orders`, dto),
   addVariants: (id, variants) => axios.post(`${base}/${id}/variants`, variants),
 }
