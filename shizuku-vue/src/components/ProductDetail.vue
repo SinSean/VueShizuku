@@ -18,8 +18,7 @@ const variants = ref([])
 // ])
 const isLoading = ref(true)
 
-const baseUrl = 'https://localhost:7197'
-const defaultImg = 'https://placehold.co/800x800/d5e6f3/333/png?text=800*800'
+import { getImageUrl } from '@/utils/imageHelper'
 const productImages = ref([])
 
 const placeholderImages = [

@@ -18,6 +18,7 @@ const goToCart = () => {
   // 切換頁面後，把原本打開的下拉小選單給隱藏起來
   menu.value.hide()
 }
+import { getImageUrl } from '@/utils/imageHelper'
 </script>
 
 <template>
@@ -46,7 +47,7 @@ const goToCart = () => {
           @click.stop
           class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md transition-colors group"
         >
-          <img :src="item.image" alt="商品縮圖" class="w-14 h-14 object-cover rounded flex-shrink-0" />
+          <img :src="getImageUrl(item.image)" alt="商品縮圖" class="w-14 h-14 object-cover rounded flex-shrink-0" />
 
           <div class="flex flex-col flex-1">
             <span class="text-sm font-bold text-gray-800">{{ item.name }}</span>

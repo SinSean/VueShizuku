@@ -1,4 +1,4 @@
-import request from '@/api/myRequest'
+import request from '@/api/index'
 
 //  建立訂單
 export const createOrderAPI = async (data) => {
@@ -52,4 +52,10 @@ export const getOrderTransactionsAPI = async (orderNo) => {
 
 export const orderApi = {
   getSalesStats: () => request.get(`/orderApi/sales-stats`), //13
+}
+
+// 取得首頁熱銷商品排行
+export const getTopProductsAPI = async () => {
+  const response = await request.get('/orderApi/top-products')
+  return response.data
 }

@@ -1,11 +1,9 @@
 <script setup>
-import { ref, shallowRef, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { triggerOrderScanAPI } from '@/api/adminOrder'
-import { useAdminNotification } from '@/composables/useAdminNotification'
 
 //匯入子元件
 import AllOrdersWidget from '@/components/admin/orders/AllOrdersWidget.vue'
@@ -58,13 +56,8 @@ const onDialogHide = () => {
   activeWidgetComponent.value = null
 }
 
-// ── 即時通知：只接收 category = 'order' 的警報 ──
-const toast = useToast()
-const { connect, disconnect } = useAdminNotification(toast, 'order')
-onMounted(() => connect())
-onUnmounted(() => disconnect())
-
 // ── 手動觸發訂單異常掃描 ──
+const toast = useToast()
 const scanning = ref(false)
 const triggerScan = async () => {
   scanning.value = true

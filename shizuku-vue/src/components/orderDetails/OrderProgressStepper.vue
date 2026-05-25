@@ -112,11 +112,22 @@ const activeStepIndex = computed(() => {
 
     <div class="w-full p-2">
       <div class="relative flex justify-between w-full">
-        <div class="absolute top-4 left-0 right-0 h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
-
+        <!-- 灰線背景：從第一個圈圈中心連到最後一個圈圈中心 -->
         <div
-          class="absolute top-4 left-0 h-0.5 bg-emerald-500 -translate-y-1/2 transition-all duration-500 ease-out z-0"
-          :style="{ width: (activeStepIndex / (timelineEvents.length - 1)) * 100 + '%' }"
+          class="absolute top-4 h-0.5 bg-gray-100 -translate-y-1/2 z-0"
+          :style="{
+            left: (100 / (2 * timelineEvents.length)) + '%',
+            right: (100 / (2 * timelineEvents.length)) + '%'
+          }"
+        ></div>
+
+        <!-- 綠線進度：同樣起點，根據當前步驟精準推移到對應的圈圈中心 -->
+        <div
+          class="absolute top-4 h-0.5 bg-emerald-500 -translate-y-1/2 transition-all duration-500 ease-out z-0"
+          :style="{
+            left: (100 / (2 * timelineEvents.length)) + '%',
+            width: (Math.max(0, activeStepIndex) / (timelineEvents.length - 1)) * (100 - (100 / timelineEvents.length)) + '%'
+          }"
         ></div>
 
         <div

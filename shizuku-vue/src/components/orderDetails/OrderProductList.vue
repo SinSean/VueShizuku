@@ -5,6 +5,7 @@ const props = defineProps({
     required: true,
   },
 })
+import { getImageUrl } from '@/utils/imageHelper'
 </script>
 
 <template>
@@ -22,7 +23,7 @@ const props = defineProps({
         <!-- 商品圖片 -->
         <div class="w-20 h-24 bg-[#f8f8f8] rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
           <img
-            :src="item.productImage"
+            :src="getImageUrl(item.productImage)"
             alt="商品圖片"
             class="w-full h-full object-cover mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
           />

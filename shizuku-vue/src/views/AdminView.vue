@@ -1,5 +1,14 @@
 <script setup>
+import { onMounted, onUnmounted } from 'vue'
+import { useToast } from 'primevue/usetoast'
 import AdminSidebar from '@/components/AdminSidebar.vue'
+import { useAdminNotification } from '@/composables/useAdminNotification'
+
+const toast = useToast()
+const { connect, disconnect } = useAdminNotification(toast, 'all')
+
+onMounted(() => connect())
+onUnmounted(() => disconnect())
 </script>
 
 <template>
@@ -13,3 +22,4 @@ import AdminSidebar from '@/components/AdminSidebar.vue'
     </main>
   </div>
 </template>
+

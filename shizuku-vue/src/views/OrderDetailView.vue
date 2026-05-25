@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
@@ -33,16 +33,6 @@ const isLoading = ref(true)
 
 // 導入倒數計時組合式函數 (專注倒數管理職責)
 const { timeLeft, startCountdown } = useOrderCountdown(orderData)
-
-// 導入詳情流程操作組合式函數 (專注重新付款金流與取消訂單，完美對接 ApiResponse 規範)
-const {
-  showResultModal,
-  resultStatus,
-  resultMessage,
-  handleRepay,
-  handleCancel,
-  handleCountdownEnd,
-} = useOrderDetailActions(orderId)
 
 // 讀取訂單詳細資訊
 const fetchOrderDetail = async () => {
@@ -96,6 +86,16 @@ const fetchOrderDetail = async () => {
   }
 }
 
+// 導入詳情流程操作組合式函數 (專注重新付款金流與取消訂單，完美對接 ApiResponse 規範)
+const {
+  showResultModal,
+  resultStatus,
+  resultMessage,
+  handleRepay,
+  handleCancel,
+  handleCountdownEnd,
+} = useOrderDetailActions(orderId, fetchOrderDetail)
+
 onMounted(async () => {
   await fetchOrderDetail()
 })
@@ -104,23 +104,72 @@ const goBack = () => {
   router.push({ name: 'MemberOrders' })
 }
 
-// ========== 申請退款 ==========
-const handleRefundRequest = async () => {
-  const reason = prompt('請簡述退款原因（例如：買錯了、不想買了、欲更換付款方式等）：')
-  if (!reason) return // 使用者按取消
+// ========== 統一取消與退款彈出視窗狀態 ==========
+const showActionModal = ref(false)
+const actionModalMode = ref('') // 'cancel' | 'refund'
+const refundReason = ref('')
+const isSubmitting = ref(false)
 
-  try {
-    const res = await requestRefundAPI(orderId, reason)
-    if (res && res.success) {
-      toast.add({ severity: 'success', summary: '申請成功', detail: res.message, life: 5000 })
-      // 重新加載最新的訂單詳細，如果是秒退款，會直接是已退款狀態！
-      await fetchOrderDetail()
-    } else {
-      toast.add({ severity: 'error', summary: '申請失敗', detail: res?.message || '退款申請發生錯誤', life: 5000 })
+const quickReasons = [
+  '買錯商品',
+  '不想買了',
+  '重複下單',
+  '想換付款方式',
+  '找到更便宜的'
+]
+
+const selectQuickReason = (reason) => {
+  refundReason.value = reason
+}
+
+const openCancelModal = () => {
+  actionModalMode.value = 'cancel'
+  showActionModal.value = true
+}
+
+const openRefundModal = () => {
+  actionModalMode.value = 'refund'
+  refundReason.value = ''
+  showActionModal.value = true
+}
+
+const submitAction = async () => {
+  if (actionModalMode.value === 'cancel') {
+    try {
+      isSubmitting.value = true
+      await handleCancel()
+      showActionModal.value = false
+    } catch (err) {
+      console.error(err)
+    } finally {
+      isSubmitting.value = false
     }
-  } catch (err) {
-    toast.add({ severity: 'error', summary: '系統錯誤', detail: '無法連線伺服器，請稍後再試。', life: 4000 })
+  } else {
+    if (!refundReason.value.trim()) {
+      toast.add({ severity: 'warn', summary: '提示', detail: '請填寫或選擇退款原因。', life: 3000 })
+      return
+    }
+
+    try {
+      isSubmitting.value = true
+      const res = await requestRefundAPI(orderId, refundReason.value.trim())
+      if (res && res.success) {
+        toast.add({ severity: 'success', summary: '申請成功', detail: res.message, life: 5000 })
+        showActionModal.value = false
+        await fetchOrderDetail()
+      } else {
+        toast.add({ severity: 'error', summary: '申請失敗', detail: res?.message || '退款申請發生錯誤', life: 5000 })
+      }
+    } catch (err) {
+      toast.add({ severity: 'error', summary: '系統錯誤', detail: '無法連線伺服器，請稍後再試。', life: 4000 })
+    } finally {
+      isSubmitting.value = false
+    }
   }
+}
+
+const handleRefundRequest = () => {
+  openRefundModal()
 }
 </script>
 
@@ -204,7 +253,7 @@ const handleRefundRequest = async () => {
 
       <!-- 6. 操作按鈕 (最底部壓陣) -->
       <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm mt-2">
-        <OrderActions :order="orderData" @repay="handleRepay" @cancel="handleCancel" @requestRefund="handleRefundRequest" />
+        <OrderActions :order="orderData" @repay="handleRepay" @cancel="openCancelModal" @requestRefund="handleRefundRequest" />
       </div>
     </div>
 
@@ -216,6 +265,119 @@ const handleRefundRequest = async () => {
       @update:visible="showResultModal = $event"
       @countdown-end="handleCountdownEnd"
     />
+
+    <!-- 統一取消/退款申請高級彈出視窗 -->
+    <div
+      v-if="showActionModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs transition-all duration-300"
+    >
+      <!-- Modal Box -->
+      <div
+        class="bg-white rounded-3xl p-7 max-w-md w-full mx-4 shadow-2xl border border-gray-100 relative overflow-hidden transition-all duration-300 transform scale-100"
+      >
+        <!-- 頂部色條 -->
+        <div
+          class="absolute top-0 left-0 w-full h-1.5"
+          :class="actionModalMode === 'cancel' ? 'bg-amber-500' : 'bg-rose-500'"
+        ></div>
+
+        <!-- 關閉按鈕 -->
+        <button
+          @click="showActionModal = false"
+          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-100 rounded-full cursor-pointer"
+        >
+          <i class="pi pi-times text-sm"></i>
+        </button>
+
+        <div class="flex flex-col items-center text-center mt-2">
+          <!-- 圖示 -->
+          <div
+            class="p-4 rounded-full mb-4"
+            :class="actionModalMode === 'cancel' ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'"
+          >
+            <i
+              :class="actionModalMode === 'cancel' ? 'pi pi-exclamation-circle' : 'pi pi-info-circle'"
+              class="text-2xl"
+            ></i>
+          </div>
+
+          <!-- 標題 -->
+          <h3 class="text-xl font-black text-gray-800 tracking-tight">
+            {{ actionModalMode === 'cancel' ? '確認取消訂單' : '申請取消與退款' }}
+          </h3>
+
+          <!-- 副標題 -->
+          <p class="text-xs text-gray-500 mt-2 leading-relaxed px-2">
+            {{
+              actionModalMode === 'cancel'
+                ? '此筆訂單尚未付款，取消後將無法復原，商品庫存將被釋放。確定要取消此訂單嗎？'
+                : '此訂單已付款，取消將同步申請退款。請提供取消與退款原因，以利客服快速處理。'
+            }}
+          </p>
+
+          <!-- 退款專用欄位 (選擇快速原因與文字框) -->
+          <div v-if="actionModalMode === 'refund'" class="w-full mt-5 text-left">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2.5 block"
+              >快速選擇原因</label
+            >
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button
+                v-for="reason in quickReasons"
+                :key="reason"
+                type="button"
+                @click="selectQuickReason(reason)"
+                class="px-3 py-1.5 text-xs rounded-lg transition-all border text-left cursor-pointer"
+                :class="
+                  refundReason === reason
+                    ? 'bg-rose-600 border-rose-600 text-white font-bold shadow-sm'
+                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300'
+                "
+              >
+                {{ reason }}
+              </button>
+            </div>
+
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block"
+              >詳細原因說明</label
+            >
+            <textarea
+              v-model="refundReason"
+              placeholder="請簡述您的退款原因..."
+              class="w-full border border-gray-200 rounded-xl p-3.5 text-sm focus:border-stone-900 focus:ring-1 focus:ring-stone-900 outline-none resize-none h-24 transition-all"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 底部按鈕 -->
+        <div class="flex gap-3 mt-7">
+          <button
+            @click="showActionModal = false"
+            class="flex-1 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-semibold text-gray-500 cursor-pointer"
+          >
+            {{ actionModalMode === 'cancel' ? '保留訂單' : '返回' }}
+          </button>
+          <button
+            @click="submitAction"
+            :disabled="isSubmitting"
+            class="flex-1 py-3 text-white rounded-xl transition-all text-sm font-semibold flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+            :class="
+              actionModalMode === 'cancel'
+                ? 'bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400'
+                : 'bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400'
+            "
+          >
+            <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
+            {{
+              isSubmitting
+                ? '處理中...'
+                : actionModalMode === 'cancel'
+                  ? '確認取消'
+                  : '提交申請'
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
