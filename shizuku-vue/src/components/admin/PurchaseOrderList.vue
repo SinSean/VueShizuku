@@ -6,7 +6,10 @@ import { productApi } from '@/api/Product.js'
 const router = useRouter()
 
 const props = defineProps({
-  purchaseOrders: { type: Array, default: () => [] },
+  purchaseOrders: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['refresh'])
@@ -17,15 +20,13 @@ const currentOrder = ref(null)
 // 分頁
 const currentPage = ref(1)
 const pageSize = 15
-
 const totalPages = computed(() => Math.ceil(filteredOrders.value.length / pageSize))
-
 const pagedOrders = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   return filteredOrders.value.slice(start, start + pageSize)
 })
-const keyword = ref('')
 
+const keyword = ref('')
 const filteredOrders = computed(() => {
   if (!keyword.value) return props.purchaseOrders
   const kw = keyword.value.toLowerCase()
@@ -37,13 +38,33 @@ const filteredOrders = computed(() => {
   )
 })
 
+const showEditModal = ref(false)
+const editingOrder = ref(null)
+const editingStatus = ref('已完成')
+
+function editOrder(order) {
+  editingOrder.value = order
+  editingStatus.value = order.fStatus
+  showEditModal.value = true
+}
+
+async function saveEditOrder() {
+  try {
+    await productApi.updatePurchaseOrderStatus(editingOrder.value.fId, editingStatus.value)
+    showEditModal.value = false
+    emit('refresh')
+  } catch (err) {
+    alert('更新失敗，請再試一次')
+  }
+}
+
 function goToPage(page) {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
 }
 
-// 異動類型不需要廠商/付款方式的清單
 const noSupplierTypes = ['報廢', '銷售退回', '調整進', '調整出', '進貨退出']
+
 async function viewOrder(id) {
   const res = await productApi.getPurchaseOrder(id)
   currentOrder.value = res.data.data
@@ -55,11 +76,11 @@ function getTypeClass(type) {
     case '進貨':
       return 'bg-green-50 text-green-700 border border-green-100'
     case '銷售退回':
-      return 'bg-green-50 text-green-600 border border-green-100' // ← 加
+      return 'bg-green-50 text-green-600 border border-green-100'
     case '調整進':
       return 'bg-green-50 text-green-600 border border-green-100'
     case '調整出':
-      return 'bg-red-50 text-red-600 border border-red-100' // ← 改顏色區分
+      return 'bg-red-50 text-red-600 border border-red-100'
     case '進貨退出':
       return 'bg-red-50 text-red-600 border border-red-100'
     case '報廢':
@@ -113,6 +134,9 @@ function getQuantityPrefix(type) {
       <thead>
         <tr class="bg-gray-50">
           <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
+            狀態
+          </th>
+          <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
             異動單號
           </th>
           <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
@@ -136,18 +160,30 @@ function getQuantityPrefix(type) {
           <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
             付款方式
           </th>
-          <th class="px-3 py-2 border-b border-gray-100" style="width: 60px"></th>
+          <th class="px-3 py-2 border-b border-gray-100" style="width: 80px"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="pagedOrders.length === 0">
-          <td colspan="9" class="text-center text-gray-300 py-8">尚無異動紀錄</td>
+          <td colspan="10" class="text-center text-gray-300 py-8">尚無異動紀錄</td>
         </tr>
         <tr
           v-for="order in pagedOrders"
           :key="order.fId"
           class="border-b border-gray-50 last:border-0 hover:bg-gray-50"
         >
+          <td class="px-3 py-3">
+            <span
+              :class="[
+                'px-2 py-0.5 rounded-full text-xs font-medium',
+                order.fStatus === '已完成'
+                  ? 'bg-green-50 text-green-700'
+                  : 'bg-amber-50 text-amber-600',
+              ]"
+            >
+              {{ order.fStatus }}
+            </span>
+          </td>
           <td class="px-3 py-3 font-mono font-medium text-indigo-600">{{ order.fOrderNo }}</td>
           <td class="px-3 py-3 text-gray-500">{{ order.fSupplier || '—' }}</td>
           <td class="px-3 py-3 text-gray-400">
@@ -167,13 +203,19 @@ function getQuantityPrefix(type) {
           <td class="px-3 py-3 text-gray-400">
             {{ noSupplierTypes.includes(order.fType) ? '—' : order.fPaymentMethod || '—' }}
           </td>
+          <!-- ✅ 查看 + 編輯 兩個按鈕 -->
           <td class="px-3 py-3">
-            <button
-              @click="viewOrder(order.fId)"
-              class="text-xs text-indigo-500 hover:text-indigo-700"
-            >
-              查看
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                @click="viewOrder(order.fId)"
+                class="text-xs text-indigo-500 hover:text-indigo-700"
+              >
+                查看
+              </button>
+              <button @click="editOrder(order)" class="text-xs text-gray-400 hover:text-gray-600">
+                編輯
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -254,7 +296,6 @@ function getQuantityPrefix(type) {
       <div
         class="grid grid-cols-4 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 shrink-0 text-xs"
       >
-        <!-- 廠商、付款方式：報廢/銷售退回/手動盤點/進貨退出 時隱藏 -->
         <template v-if="!noSupplierTypes.includes(currentOrder?.fType)">
           <div>
             <p class="text-gray-400 mb-0.5">廠商</p>
@@ -358,14 +399,11 @@ function getQuantityPrefix(type) {
       <!-- 底部合計 -->
       <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 shrink-0">
         <div class="flex justify-between items-end">
-          <!-- 左側：只有進貨類型才顯示總數量 -->
           <div class="text-xs text-gray-500">
             <template v-if="!noSupplierTypes.includes(currentOrder?.fType)">
               總數量：<strong class="text-gray-700">{{ currentOrder?.fTotalQuantity }} 件</strong>
             </template>
           </div>
-
-          <!-- 右側 -->
           <div class="text-right space-y-1 text-xs text-gray-500">
             <template v-if="!noSupplierTypes.includes(currentOrder?.fType)">
               <div class="flex justify-between gap-16">
@@ -387,13 +425,63 @@ function getQuantityPrefix(type) {
                 >
               </div>
             </template>
-
-            <!-- 調整進/調整出/報廢：只在右下角顯示總數量 -->
             <template v-else>
               總數量：<strong class="text-gray-700">{{ currentOrder?.fTotalQuantity }} 件</strong>
             </template>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 編輯狀態 Modal -->
+  <div
+    v-if="showEditModal"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    @click.self="showEditModal = false"
+  >
+    <div class="bg-white rounded-xl w-full mx-4 max-w-sm">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h3 class="font-medium">編輯異動單狀態</h3>
+        <button @click="showEditModal = false" class="text-gray-400 hover:text-gray-600">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <!-- Body -->
+      <div class="px-6 py-4 space-y-3">
+        <div>
+          <p class="text-xs text-gray-400 mb-1">異動單號</p>
+          <p class="text-sm font-mono text-indigo-600">{{ editingOrder?.fOrderNo }}</p>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 mb-1 block">狀態</label>
+          <select
+            v-model="editingStatus"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white"
+          >
+            <option value="已完成">已完成</option>
+            <option value="未處理">未處理</option>
+          </select>
+        </div>
+        <p class="text-xs text-amber-500" v-if="editingStatus === '已完成'">
+          ⚠️ 改為已完成後，庫存將自動更新
+        </p>
+      </div>
+      <!-- Footer -->
+      <div class="flex justify-end gap-2 px-6 py-4 border-t border-gray-100">
+        <button
+          @click="showEditModal = false"
+          class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50"
+        >
+          取消
+        </button>
+        <button
+          @click="saveEditOrder"
+          class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+        >
+          儲存
+        </button>
       </div>
     </div>
   </div>

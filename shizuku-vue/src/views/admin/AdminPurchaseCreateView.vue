@@ -29,6 +29,7 @@ const suppliers = ref([
 
 const paymentMethods = ['月結30天', '月結60天', '月結90天', '貨到付款', '預付款', '現金']
 const orderTypes = ['進貨', '銷售退回', '調整進', '調整出', '進貨退出', '報廢']
+const statusTypes = ['已完成', '未處理']
 const untaxedAmount = computed(() => cartTotalAmount.value)
 const taxTypes = ['應稅', '免稅']
 const taxAmount = computed(() =>
@@ -215,7 +216,7 @@ onMounted(async () => {
 
     <!-- 廠商資訊 -->
     <div
-      class="grid grid-cols-4 gap-3 p-4 bg-white rounded-xl border border-gray-100 mb-4 shrink-0"
+      class="grid grid-cols-5 gap-3 p-4 bg-white rounded-xl border border-gray-100 mb-4 shrink-0"
     >
       <div>
         <label class="text-xs text-gray-400 mb-1 block">異動類型</label>
@@ -226,6 +227,7 @@ onMounted(async () => {
           <option v-for="t in orderTypes" :key="t">{{ t }}</option>
         </select>
       </div>
+
       <div>
         <label class="text-xs text-gray-400 mb-1 block">廠商</label>
         <select
@@ -238,6 +240,7 @@ onMounted(async () => {
           <option v-for="supplier in suppliers" :key="supplier">{{ supplier }}</option>
         </select>
       </div>
+
       <div>
         <label class="text-xs text-gray-400 mb-1 block">付款方式</label>
         <select
@@ -258,6 +261,7 @@ onMounted(async () => {
           <option v-for="t in taxTypes" :key="t">{{ t }}</option>
         </select>
       </div>
+
       <div>
         <label class="text-xs text-gray-400 mb-1 block">發票號碼</label>
         <input
@@ -298,7 +302,7 @@ onMounted(async () => {
           class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
       </div>
-      <div class="col-span-2">
+      <div class="col-span-3">
         <label class="text-xs text-gray-400 mb-1 block">備註</label>
         <input
           v-model="purchaseForm.fNote"
@@ -306,8 +310,17 @@ onMounted(async () => {
           :placeholder="
             purchaseForm.fType === '報廢' ? '請務必輸入報廢原因（例如：沾染污漬/樣品銷毀）' : '選填'
           "
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400"
         />
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 mb-1 block">狀態</label>
+        <select
+          v-model="purchaseForm.fStatus"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white"
+        >
+          <option v-for="s in statusTypes" :key="s">{{ s }}</option>
+        </select>
       </div>
     </div>
 
