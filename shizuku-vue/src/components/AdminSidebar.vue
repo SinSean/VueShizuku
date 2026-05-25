@@ -123,7 +123,7 @@ const handleLogout = () => {
 
           <button
             @click="item.open = !item.open"
-            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-indigo-900/30"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-indigo-900/30 transition-colors"
           >
             <i :class="item.icon" />
 
@@ -132,7 +132,7 @@ const handleLogout = () => {
             </span>
 
             <i
-              class="pi pi-chevron-down ml-auto"
+              class="pi pi-chevron-down ml-auto transition-transform duration-200"
               :class="{ 'rotate-180': item.open }"
             />
           </button>
@@ -146,12 +146,13 @@ const handleLogout = () => {
               :key="child.label"
               :to="child.to"
               custom
-              v-slot="{ navigate }"
+              v-slot="{ navigate, isActive }"
             >
 
               <button
                 @click="navigate"
-                class="w-full flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-indigo-900/30"
+                class="w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-colors"
+                :class="isActive ? 'bg-indigo-600 text-white font-medium' : 'text-slate-400 hover:bg-indigo-900/30'"
               >
                 <i :class="child.icon" />
 
@@ -167,12 +168,13 @@ const handleLogout = () => {
           v-else
           :to="item.to"
           custom
-          v-slot="{ navigate }"
+          v-slot="{ navigate, isActive }"
         >
 
           <button
             @click="navigate"
-            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-900/30"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
+            :class="isActive ? 'bg-indigo-600 text-white font-medium' : 'text-slate-400 hover:bg-indigo-900/30'"
           >
             <i :class="item.icon" />
 
@@ -185,12 +187,12 @@ const handleLogout = () => {
 
     </nav>
 
-    <Divider />
+    <Divider class="!my-0 !border-indigo-800/30" />
 
     <div class="px-3 py-6">
       <button
         @click="handleLogout"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-900/20"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-900/20 hover:text-red-400 transition-colors"
       >
         <i class="pi pi-sign-out" />
         登出

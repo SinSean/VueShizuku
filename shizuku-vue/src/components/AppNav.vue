@@ -21,7 +21,6 @@ const API_BASE_URL = 'https://localhost:7197'
 onMounted(async () => {
   try {
     const res = await productApi.getDropdowns()
-    // 這裡根據你提供的 JSON 結構層級：res.data.data.categories
     const categories = res.data?.data?.categories ?? []
 
     const filterKey = '風格搭配-'
@@ -39,7 +38,6 @@ onMounted(async () => {
   }
 })
 
-// 延遲隱藏，避免滑鼠移到選單前就消失
 function showMenu(type) {
   clearTimeout(hideTimer)
   showStyleMenu.value = type === 'style'
@@ -59,7 +57,6 @@ function goToCategory(id) {
   router.push({ path: '/all', query: { categoryId: id } })
 }
 
-// 處理登出邏輯
 const handleLogout = () => {
   authStore.logout()
   alert('您已成功登出')
@@ -76,7 +73,7 @@ const handleLogout = () => {
         </router-link>
       </div>
       <ul
-        class="hidden lg:flex left-4 flex justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700">
+        class="hidden lg:flex left-4 justify-center gap-8 text-[16px] font-bold tracking-widest uppercase text-gray-700">
         <li>
           <router-link to="/" class="hover:text-gray-400 cursor-pointer transition-colors">首頁</router-link>
         </li>
@@ -112,7 +109,7 @@ const handleLogout = () => {
         <li>
           <a @click="router.push({ path: '/all', query: { categoryId: 18 } })"
             class="hover:text-gray-400 cursor-pointer transition-colors text-red-400 hover:text-red-500">
-            🔥 限時特價
+            限時特價
           </a>
         </li>
         <li>
@@ -120,7 +117,7 @@ const handleLogout = () => {
         </li>
         <li v-if="authStore.isLogin && authStore.userLevel !== null && authStore.userLevel > 0">
           <router-link :to="{ name: 'point-store' }"
-            class="hover:text-gray-400 cursor-pointer transition-colors">點數商城💧</router-link>
+            class="hover:text-gray-400 cursor-pointer transition-colors">點數商城</router-link>
         </li>
       </ul>
       <div class="absolute right-4 lg:right-10 flex items-center gap-5 text-gray-600">
