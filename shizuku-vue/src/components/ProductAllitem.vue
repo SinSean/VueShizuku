@@ -94,6 +94,15 @@ watch(
   },
 )
 
+// 監聽網址的 keyword 變化
+watch(
+  () => route.query.keyword,
+  (newVal) => {
+    keyword.value = newVal || ''
+    fetchProducts()
+  },
+)
+
 // 監聽 props 的 categoryId 變化（Sidebar 點擊）
 watch(
   () => props.categoryId,
@@ -103,6 +112,9 @@ watch(
 )
 
 onMounted(() => {
+  if (route.query.keyword) {
+    keyword.value = route.query.keyword
+  }
   fetchProducts()
 })
 </script>
