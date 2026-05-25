@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 
+const API_BASE_URL = 'https://localhost:7197';
+
 const isAccountOpen = ref(true);
 
 const toggleSection = (section) => {
@@ -22,24 +24,31 @@ const menuItems = [
             { name: '個人檔案', routeName: 'MemberProfile' }, //已完成
             { name: '銀行帳號 / 信用卡', routeName: 'MemberPayMentmetod' },//已完成畫面
             { name: '地址', routeName: 'MemberAddress' },  //已完成
-            { name: '更改密碼', routeName: 'MemberSetPassword' },//已完成畫面
             { name: '通知設置', routeName: 'MemberNotificationSet' },//已完成畫面
             { name: '隱私設定', routeName: 'MemberPrivacySetting' }//已完成畫面
         ]
     },
     { title: '訂單列表', icon: 'pi pi-list', routeName: 'MemberOrders' },//已完成轉接
     //{ title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
+    { title: '客服紀錄', icon: 'pi pi-envelope', routeName: 'MemberTickets' },
     { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberVouchers' },
     { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberPointsDashboard' },//已完成畫面
     //{ title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberEmpty' }
+
+    
 ];
 </script>
 
 <template>
     <aside class="w-64 bg-slate-50 border-r border-slate-200 h-full p-4">
         <div class="flex items-center gap-3 mb-8 px-2">
-            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
-                <i class="pi pi-user text-2xl"></i>
+            <div
+                class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shadow-sm overflow-hidden border border-slate-200">
+                <img v-if="authStore.user?.fImage"
+                    :src="authStore.user.fImage.startsWith('http') ? authStore.user.fImage : `${API_BASE_URL}/uploads/avatars/${authStore.user.fImage}`"
+                    class="w-full h-full object-cover" />
+
+                <i v-else class="pi pi-user text-2xl"></i>
             </div>
             <div>
                 <h3 class="font-bold text-slate-1000">{{ authStore.userName }}</h3>

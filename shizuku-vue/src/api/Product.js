@@ -4,7 +4,8 @@ const base = 'https://localhost:7197/api/product'
 
 export const productApi = {
   // 查詢列表 新增分類篩選
-  getList: (keyword, categoryId) => axios.get(base, { params: { keyword, categoryId } }),
+  getList: (keyword, categoryId, isAdmin = false) =>
+    axios.get(base, { params: { keyword, categoryId, isAdmin } }),
 
   // 查單筆
   getById: (id) => axios.get(`${base}/${id}`),
@@ -51,11 +52,21 @@ export const productApi = {
 
   getStats: () => axios.get(`${base}/stats`),
   getInventory: () => axios.get(`${base}/inventory`),
-  getImages: (id) => axios.get(`${base}/${id}/images`),
+  getInventoryReport: () => axios.get(`${base}/inventory-report`),
 
-  getStockRecords: () => axios.get(`{{base}}/stock-records`),
-  addStockRecord: (dto) => axios.post(`{{base}}/stock-records`, dto),
+  getImages: (id) => axios.get(`${base}/${id}/images`),
+  getRelated: (id) => axios.get(`${base}/${id}/related`),
+
+  getStockRecords: (variantId = null) =>
+    axios.get(`${base}/stock-records`, { params: variantId ? { variantId } : {} }),
+  addStockRecord: (dto) => axios.post(`${base}/stock-records`, dto),
   getPurchaseOrders: () => axios.get(`${base}/purchase-orders`),
   getPurchaseOrder: (id) => axios.get(`${base}/purchase-orders/${id}`),
+  updatePurchaseOrderStatus: (id, status) =>
+    axios.put(`${base}/purchase-orders/${id}/status`, JSON.stringify(status), {
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  getVariantBySkuOrId: (sku) => axios.get(`${base}/variant-by-sku`, { params: { sku } }),
   createPurchaseOrder: (dto) => axios.post(`${base}/purchase-orders`, dto),
+  addVariants: (id, variants) => axios.post(`${base}/${id}/variants`, variants),
 }

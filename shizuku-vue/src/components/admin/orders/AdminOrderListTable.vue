@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
 import { ORDER_STATUS, orderStatusManager } from '@/services/orderStatusManager'
 
 const props = defineProps({

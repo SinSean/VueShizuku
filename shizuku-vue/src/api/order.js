@@ -1,4 +1,4 @@
-import request from '@/api/myRequest'
+import request from '@/api/index'
 
 //  建立訂單
 export const createOrderAPI = async (data) => {
@@ -47,5 +47,15 @@ export const requestRefundAPI = async (orderNo, reason) => {
 // 後端 PaymentAdminService 已有此資料，透過 orderNo 比對 orderId 取出
 export const getOrderTransactionsAPI = async (orderNo) => {
   const response = await request.get(`/orderApi/${orderNo}/transactions`)
+  return response.data
+}
+
+export const orderApi = {
+  getSalesStats: () => request.get(`/orderApi/sales-stats`), //13
+}
+
+// 取得首頁熱銷商品排行
+export const getTopProductsAPI = async () => {
+  const response = await request.get('/orderApi/top-products')
   return response.data
 }

@@ -142,9 +142,18 @@ const router = createRouter({
               name: 'MemberEmpty',
               component: () => import('@/components/member/MemberEmpty.vue'),
             },
+            {
+              path: 'tickets', 
+              name: 'MemberTickets', // 這個名字要跟側邊欄對應
+              component: () => import('@/components/member/MemberTickets.vue'), // 指向我們剛建的檔案
+            },
           ],
         },
-        { path: '/point-store', name: 'point-store', component: () => import('@/components/member/MemberStore.vue'), },
+        {
+          path: '/point-store',
+          name: 'point-store',
+          component: () => import('@/components/member/MemberStore.vue'),
+        },
       ],
     },
 
@@ -203,7 +212,25 @@ const router = createRouter({
           path: 'members',
           name: 'admin-members',
           meta: { requiresAdmin: true },
-          component: () => import('@/views/admin/AdminMembersView.vue'),
+          component: () => import('@/views/admin/member/AdminMembersView.vue'),
+        },
+        {
+          path: 'members/block',
+          name: 'admin-members-block',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/member/AdminMembersBlockView.vue'),
+        },
+        {
+          path: 'system/vertify/settings',
+          name: 'admin-system-settings',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/system/AdminSystemConfigsView.vue'),
+        },
+        {
+          path: 'system/logs',
+          name: 'admin-system-logs',
+          meta: { requiresAdmin: true },
+          component: () => import('@/views/admin/system/AdminSystemLogsView.vue'),
         },
         {
           path: 'products',
@@ -235,6 +262,11 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminPurchaseCreateView.vue'),
         },
         {
+          path: 'inventory/scan',
+          name: 'admin-inventory-scan',
+          component: () => import('@/views/admin/AdminProductScanView.vue'),
+        },
+        {
           path: 'categories',
           name: 'admin-categories',
           meta: { requiresAdmin: true },
@@ -258,6 +290,12 @@ const router = createRouter({
           meta: { requiresAdmin: true },
           component: () => import('@/views/admin/AdminCustomerServiceView.vue'),
         },
+        {
+      path: 'ticket-list',
+      name: 'admin-ticket-list',
+      meta: { requiresAdmin: true },
+      component: () => import('@/views/admin/AdminTicketList.vue')
+    }
       ],
     },
     // 4. 錯誤路徑處理(永遠放最後一個)
@@ -279,7 +317,7 @@ router.beforeEach((to) => {
 })
 
 // 前台檢測
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
 
   // 1. 定義哪些頁面是「只有會員才能進去」的
@@ -292,14 +330,13 @@ router.beforeEach(async (to, from, next) => {
   if (isMemberPage && !authStore.isLogin) {
     // 如果要去會員頁但沒登入 -> 踢回登入頁
     alert('請先登入會員')
-    next({ name: 'Login' })
+    await router.push({ name: 'Login' })
   } else if (isAuthPage && authStore.isLogin) {
     // 如果已經登入了還想去登入頁 -> 踢回首頁
-    next({ name: 'home' })
-  } else {
-    // 其他情況正常放行
-    next()
+    await router.push({ name: 'home' })
   }
+
+  // 這裡完全不需要寫任何 return 與 next()，沒進 if 的情況 Vue 3 就會預設直接放行
 })
 
 export default router

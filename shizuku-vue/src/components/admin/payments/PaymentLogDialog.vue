@@ -79,6 +79,9 @@ const translateKey = (key) => {
     paymentUrl: '金流支付跳轉網址',
     web: '電腦版網頁支付連結',
     app: '手機版 App 支付連結',
+    refundTransactionId: '退款交易ID',
+    refundTransactionDate: '退款交易日期',
+    refundAmount: '退款金額',
   }
   // 查字典，如果找不到對應的中文，就顯示原本的英文名稱
   return dictionary[key] || key
@@ -341,25 +344,43 @@ watch(
                       <!-- 中文翻譯子欄位與值 -->
                       <span class="font-semibold text-gray-700">
                         {{ translateKey(subKey) }}：
-                        
+
                         <!-- 1. 如果是 payInfo 付款明細陣列 -->
-                        <div v-if="subKey === 'payInfo' && Array.isArray(subVal)" class="mt-2 flex flex-col gap-2">
-                          <div v-for="(pay, pIdx) in subVal" :key="pIdx" class="bg-white p-3 rounded-lg border border-purple-200 flex flex-col gap-1.5 shadow-sm font-normal">
-                            <div class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5">
+                        <div
+                          v-if="subKey === 'payInfo' && Array.isArray(subVal)"
+                          class="mt-2 flex flex-col gap-2"
+                        >
+                          <div
+                            v-for="(pay, pIdx) in subVal"
+                            :key="pIdx"
+                            class="bg-white p-3 rounded-lg border border-purple-200 flex flex-col gap-1.5 shadow-sm font-normal"
+                          >
+                            <div
+                              class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5"
+                            >
                               <i class="pi pi-credit-card"></i> 實體付款明細 #{{ pIdx + 1 }}
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-gray-600">
+                            <div
+                              class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-gray-600"
+                            >
                               <div>
                                 <span class="text-gray-400">付款管道:</span>
-                                <strong class="text-gray-800 ml-1">{{ pay.method || '未載明' }}</strong>
+                                <strong class="text-gray-800 ml-1">{{
+                                  pay.method || '未載明'
+                                }}</strong>
                               </div>
                               <div>
                                 <span class="text-gray-400">交易金額:</span>
-                                <strong class="text-emerald-600 ml-1">${{ pay.amount?.toLocaleString() }}</strong>
+                                <strong class="text-emerald-600 ml-1"
+                                  >${{ pay.amount?.toLocaleString() }}</strong
+                                >
                               </div>
                               <div v-if="pay.maskedCardNumber" class="col-span-1 md:col-span-2">
                                 <span class="text-gray-400">信用卡卡號 (遮罩):</span>
-                                <strong class="font-mono bg-gray-50 px-1.5 py-0.5 rounded ml-1 text-gray-700 border border-gray-100">{{ pay.maskedCardNumber }}</strong>
+                                <strong
+                                  class="font-mono bg-gray-50 px-1.5 py-0.5 rounded ml-1 text-gray-700 border border-gray-100"
+                                  >{{ pay.maskedCardNumber }}</strong
+                                >
                               </div>
                               <div v-if="pay.cardBrand">
                                 <span class="text-gray-400">發卡組織:</span>
@@ -370,19 +391,35 @@ watch(
                         </div>
 
                         <!-- 2. 如果是 packages 商品包裹明細陣列 -->
-                        <div v-else-if="subKey === 'packages' && Array.isArray(subVal)" class="mt-2 flex flex-col gap-2">
-                          <div v-for="(pkg, pIdx) in subVal" :key="pIdx" class="bg-white p-3 rounded-lg border border-purple-200 shadow-sm flex flex-col gap-1.5 font-normal">
-                            <div class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5">
+                        <div
+                          v-else-if="subKey === 'packages' && Array.isArray(subVal)"
+                          class="mt-2 flex flex-col gap-2"
+                        >
+                          <div
+                            v-for="(pkg, pIdx) in subVal"
+                            :key="pIdx"
+                            class="bg-white p-3 rounded-lg border border-purple-200 shadow-sm flex flex-col gap-1.5 font-normal"
+                          >
+                            <div
+                              class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5"
+                            >
                               <i class="pi pi-box"></i> 包裹明細 #{{ pIdx + 1 }}
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-gray-600">
+                            <div
+                              class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-gray-600"
+                            >
                               <div>
                                 <span class="text-gray-400">包裹編號:</span>
-                                <strong class="font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 ml-1">{{ pkg.id }}</strong>
+                                <strong
+                                  class="font-mono bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 ml-1"
+                                  >{{ pkg.id }}</strong
+                                >
                               </div>
                               <div>
                                 <span class="text-gray-400">包裹金額:</span>
-                                <strong class="text-amber-600 font-bold ml-1">${{ pkg.amount?.toLocaleString() }}</strong>
+                                <strong class="text-amber-600 font-bold ml-1"
+                                  >${{ pkg.amount?.toLocaleString() }}</strong
+                                >
                               </div>
                               <div class="col-span-1 md:col-span-2">
                                 <span class="text-gray-400">包裹名稱:</span>
@@ -390,8 +427,13 @@ watch(
                               </div>
                             </div>
                             <!-- 包裹內的產品明細 -->
-                            <div v-if="pkg.products && Array.isArray(pkg.products)" class="bg-purple-50/50 p-2 rounded-lg border border-purple-100/50 mt-2 font-normal">
-                              <div class="text-[10px] font-black text-purple-700 mb-1 flex items-center gap-1">
+                            <div
+                              v-if="pkg.products && Array.isArray(pkg.products)"
+                              class="bg-purple-50/50 p-2 rounded-lg border border-purple-100/50 mt-2 font-normal"
+                            >
+                              <div
+                                class="text-[10px] font-black text-purple-700 mb-1 flex items-center gap-1"
+                              >
                                 <i class="pi pi-list"></i> 包裹內商品清單：
                               </div>
                               <div
@@ -399,44 +441,88 @@ watch(
                                 :key="prIdx"
                                 class="text-[11px] text-gray-700 flex justify-between py-1 border-b border-purple-100/20 last:border-0"
                               >
-                                <span>名稱: <strong class="text-gray-900">{{ prod.name }}</strong></span>
-                                <span>數量: <strong class="text-gray-900">{{ prod.quantity }}</strong></span>
-                                <span>單價: <strong class="text-emerald-600">${{ prod.price }}</strong></span>
+                                <span
+                                  >名稱:
+                                  <strong class="text-gray-900">{{ prod.name }}</strong></span
+                                >
+                                <span
+                                  >數量:
+                                  <strong class="text-gray-900">{{ prod.quantity }}</strong></span
+                                >
+                                <span
+                                  >單價:
+                                  <strong class="text-emerald-600">${{ prod.price }}</strong></span
+                                >
                               </div>
                             </div>
                           </div>
                         </div>
 
                         <!-- 3. 如果是 paymentUrl 金流支付跳轉網址 (含有 web, app 鍵) -->
-                        <div v-else-if="subKey === 'paymentUrl' && typeof subVal === 'object' && subVal !== null" class="mt-2 flex flex-col gap-2 font-normal">
-                          <div class="bg-white p-3 rounded-lg border border-purple-200 shadow-sm flex flex-col gap-2">
-                            <div class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5">
+                        <div
+                          v-else-if="
+                            subKey === 'paymentUrl' && typeof subVal === 'object' && subVal !== null
+                          "
+                          class="mt-2 flex flex-col gap-2 font-normal"
+                        >
+                          <div
+                            class="bg-white p-3 rounded-lg border border-purple-200 shadow-sm flex flex-col gap-2"
+                          >
+                            <div
+                              class="text-xs font-bold text-purple-600 border-b border-purple-100 pb-1 mb-1 flex items-center gap-1.5"
+                            >
                               <i class="pi pi-link"></i> 支付通道跳轉網址
                             </div>
                             <div class="flex flex-col gap-2 text-xs">
                               <!-- Web 網頁版連結 -->
-                              <div v-if="subVal.web" class="flex flex-col md:flex-row md:items-center gap-1.5">
-                                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold scale-90 origin-left shrink-0 flex items-center gap-1">
+                              <div
+                                v-if="subVal.web"
+                                class="flex flex-col md:flex-row md:items-center gap-1.5"
+                              >
+                                <span
+                                  class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold scale-90 origin-left shrink-0 flex items-center gap-1"
+                                >
                                   <i class="pi pi-desktop"></i> 電腦網頁
                                 </span>
-                                <a :href="subVal.web" target="_blank" class="text-blue-600 hover:underline break-all font-mono">{{ subVal.web }}</a>
+                                <a
+                                  :href="subVal.web"
+                                  target="_blank"
+                                  class="text-blue-600 hover:underline break-all font-mono"
+                                  >{{ subVal.web }}</a
+                                >
                               </div>
                               <!-- App 行動版連結 -->
-                              <div v-if="subVal.app" class="flex flex-col md:flex-row md:items-center gap-1.5 mt-1">
-                                <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold scale-90 origin-left shrink-0 flex items-center gap-1">
+                              <div
+                                v-if="subVal.app"
+                                class="flex flex-col md:flex-row md:items-center gap-1.5 mt-1"
+                              >
+                                <span
+                                  class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold scale-90 origin-left shrink-0 flex items-center gap-1"
+                                >
                                   <i class="pi pi-mobile"></i> 手機 App
                                 </span>
-                                <a :href="subVal.app" target="_blank" class="text-emerald-600 hover:underline break-all font-mono">{{ subVal.app }}</a>
+                                <a
+                                  :href="subVal.app"
+                                  target="_blank"
+                                  class="text-emerald-600 hover:underline break-all font-mono"
+                                  >{{ subVal.app }}</a
+                                >
                               </div>
                             </div>
                           </div>
                         </div>
 
                         <!-- 4. 其他巢狀 JSON 回應 (萬用後備) -->
-                        <div v-else-if="typeof subVal === 'object' && subVal !== null" class="mt-1 bg-white p-2 rounded border border-purple-100 font-normal">
-                          <pre class="text-[10px] text-gray-500 font-mono whitespace-pre-wrap leading-relaxed">{{ JSON.stringify(subVal, null, 2) }}</pre>
+                        <div
+                          v-else-if="typeof subVal === 'object' && subVal !== null"
+                          class="mt-1 bg-white p-2 rounded border border-purple-100 font-normal"
+                        >
+                          <pre
+                            class="text-[10px] text-gray-500 font-mono whitespace-pre-wrap leading-relaxed"
+                            >{{ JSON.stringify(subVal, null, 2) }}</pre
+                          >
                         </div>
-                        
+
                         <!-- 4. 純文字 -->
                         <span v-else class="text-gray-900 font-mono break-all">{{ subVal }}</span>
                       </span>
@@ -449,7 +535,12 @@ watch(
                     :class="{
                       'text-green-600 font-bold': value === 1 || value === '0000' || value === '1',
                       'text-red-600': value === 0 || value === '0',
-                      'text-blue-600 font-normal break-all': value !== 1 && value !== '0000' && value !== 0 && value !== '1' && value !== '0',
+                      'text-blue-600 font-normal break-all':
+                        value !== 1 &&
+                        value !== '0000' &&
+                        value !== 0 &&
+                        value !== '1' &&
+                        value !== '0',
                     }"
                   >
                     {{ value }}

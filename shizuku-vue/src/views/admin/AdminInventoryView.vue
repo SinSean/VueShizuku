@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { productApi } from '@/api/Product.js'
 import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import InventoryDashboard from '@/components/admin/InventoryDashboard.vue'
 import InventoryList from '@/components/admin/InventoryList.vue'
 import PurchaseOrderList from '@/components/admin/PurchaseOrderList.vue'
@@ -11,16 +12,20 @@ const purchaseOrders = ref([])
 const isLoading = ref(true)
 const activeTab = ref('dashboard')
 const router = useRouter()
+const route = useRoute()
+const inventoryReport = ref([])
 
 async function loadData() {
   try {
     isLoading.value = true
-    const [inventoryRes, purchaseRes] = await Promise.all([
+    const [inventoryRes, purchaseRes, inventoryReportRes] = await Promise.all([
       productApi.getInventory(),
       productApi.getPurchaseOrders(),
+      productApi.getInventoryReport(),
     ])
     inventory.value = inventoryRes.data.data ?? []
     purchaseOrders.value = purchaseRes.data.data ?? []
+    inventoryReport.value = inventoryReportRes.data.data ?? []
   } catch (err) {
     console.error('載入失敗', err)
   } finally {
@@ -28,7 +33,13 @@ async function loadData() {
   }
 }
 
-onMounted(loadData)
+onMounted(async () => {
+  //  如果有 tab 參數就切換到對應 Tab
+  if (route.query.tab) {
+    activeTab.value = route.query.tab
+  }
+  await loadData()
+})
 </script>
 
 <template>
@@ -41,8 +52,8 @@ onMounted(loadData)
           <button
             v-for="tab in [
               { label: '總覽儀表板', value: 'dashboard' },
-              { label: '庫存列表', value: 'inventory' },
-              { label: '進貨管理', value: 'records' },
+              { label: '庫存總覽', value: 'inventory' },
+              { label: '庫存異動單管理', value: 'records' },
             ]"
             :key="tab.value"
             @click="activeTab = tab.value"
@@ -57,16 +68,6 @@ onMounted(loadData)
           </button>
         </div>
       </div>
-
-      <!-- 新增進貨單按鈕（只在進貨管理 Tab 顯示）-->
-      <button
-        v-if="activeTab === 'records'"
-        @click="router.push({ name: 'admin-inventory-create' })"
-        class="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-      >
-        <i class="pi pi-plus" style="font-size: 11px"></i>
-        新增進貨單
-      </button>
     </div>
 
     <!-- 載入中 -->
@@ -76,7 +77,7 @@ onMounted(loadData)
     <template v-else>
       <InventoryDashboard v-if="activeTab === 'dashboard'" :inventory="inventory" />
 
-      <InventoryList v-if="activeTab === 'inventory'" :inventory="inventory" />
+      <InventoryList v-if="activeTab === 'inventory'" :inventory="inventoryReport" />
 
       <PurchaseOrderList v-if="activeTab === 'records'" :purchaseOrders="purchaseOrders" />
     </template>

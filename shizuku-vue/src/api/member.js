@@ -58,3 +58,31 @@ export const updatePhoneWithCodeAPI = (data) => {
 export const updateBirthdayWithCodeAPI = (data) => {
     return request.post('/MemberApi/security/update-birthday', data);
 };
+
+// 執行更新密碼
+export const updatePasswordWithCodeAPI = (data) => {
+    return request.post('/MemberApi/security/update-password', data);
+};
+
+// 更新會員頭像
+export const updateAvatar = (memberId, data) => {
+    return request.post(`/MemberApi/${memberId}/upload-avatar`, data);
+};
+
+// Google 第三方登入 API
+export const googleLoginAPI = (data) => {
+    return request.post('/MemberApi/google-login', data);
+};
+
+// 忘記密碼流程 API
+export const forgotPasswordRequestCodeAPI = (data) => {
+    return request.post('/MemberApi/forgot-password/request-code', data);
+};
+
+export const forgotPasswordVerifyCodeAPI = (data) => {
+    return request.post('/MemberApi/forgot-password/verify-code', data);
+};
+
+export const forgotPasswordResetAPI = (data) => {
+    return request.post('/MemberApi/forgot-password/reset', data);
+};

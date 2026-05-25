@@ -5,6 +5,7 @@ import { getAllOrdersForAdminAPI } from '@/api/adminOrder'
 import AdminOrderListTable from './AdminOrderListTable.vue'
 import AdminOrderDetailModal from './AdminOrderDetailModal.vue'
 import { ORDER_STATUS, orderStatusManager } from '@/services/orderStatusManager'
+import DatePicker from 'primevue/datepicker'
 
 const toast = useToast()
 const orders = ref([])
@@ -12,6 +13,8 @@ const loading = ref(false)
 
 // 篩選與搜尋狀態
 const searchQuery = ref('')
+const searchMemberId = ref('')
+const dateRange = ref(null)
 const statusFilter = ref('all')
 
 // Modal 控制狀態
@@ -63,19 +66,49 @@ const statusOptions = computed(() => {
   })
 })
 
+// 重設所有篩選條件
+const resetFilters = () => {
+  searchQuery.value = ''
+  searchMemberId.value = ''
+  dateRange.value = null
+  statusFilter.value = 'all'
+}
+
 // 計算屬性：負責搜尋與過濾的聯動
 const filteredOrders = computed(() => {
   let result = orders.value
 
-  // 過濾狀態
+  // 1. 過濾狀態
   if (statusFilter.value !== 'all') {
     result = result.filter((o) => o.status === Number(statusFilter.value))
   }
 
-  // 過濾訂單編號
+  // 2. 過濾訂單編號
   if (searchQuery.value) {
-    const keyword = searchQuery.value.toLowerCase()
+    const keyword = searchQuery.value.toLowerCase().trim()
     result = result.filter((o) => o.orderNo.toLowerCase().includes(keyword))
+  }
+
+  // 3. 過濾會員編號 (精確比對)
+  if (searchMemberId.value) {
+    const mId = Number(searchMemberId.value.trim())
+    if (!isNaN(mId)) {
+      result = result.filter((o) => o.memberId === mId)
+    }
+  }
+
+  // 4. 過濾時間區間 (createdAt)
+  if (dateRange.value && dateRange.value[0]) {
+    const start = new Date(dateRange.value[0])
+    start.setHours(0, 0, 0, 0)
+
+    let end = dateRange.value[1] ? new Date(dateRange.value[1]) : new Date(start)
+    end.setHours(23, 59, 59, 999)
+
+    result = result.filter((o) => {
+      const orderTime = new Date(o.createdAt)
+      return orderTime >= start && orderTime <= end
+    })
   }
 
   return result
@@ -102,6 +135,7 @@ onMounted(() => {
 
     <!-- 搜尋與過濾區塊 -->
     <div class="bg-white p-4 rounded-lg shadow-sm border mb-6 flex flex-wrap gap-4 items-end">
+      <!-- 搜尋訂單編號 -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-sm font-medium text-gray-700 mb-1">搜尋訂單編號</label>
         <div class="relative">
@@ -110,15 +144,48 @@ onMounted(() => {
             v-model="searchQuery"
             type="text"
             placeholder="輸入 ORD..."
-            class="w-full border-gray-300 border rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full border-gray-300 border rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
+
+      <!-- 搜尋會員編號 -->
+      <div class="w-48">
+        <label class="block text-sm font-medium text-gray-700 mb-1">搜尋會員編號</label>
+        <div class="relative">
+          <i class="pi pi-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input
+            v-model="searchMemberId"
+            type="text"
+            placeholder="輸入會員 ID"
+            class="w-full border-gray-300 border rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <!-- 時間區間 -->
+      <div class="w-64">
+        <label class="block text-sm font-medium text-gray-700 mb-1">時間區間</label>
+        <DatePicker
+          v-model="dateRange"
+          selectionMode="range"
+          :manualInput="false"
+          placeholder="選擇時間範圍"
+          class="w-full"
+          showIcon
+          iconDisplay="input"
+          :pt="{
+            input: { class: 'w-full border-gray-300 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500' }
+          }"
+        />
+      </div>
+
+      <!-- 訂單狀態 -->
       <div class="w-48">
         <label class="block text-sm font-medium text-gray-700 mb-1">訂單狀態</label>
         <select
           v-model="statusFilter"
-          class="w-full border-gray-300 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+          class="w-full border-gray-300 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
         >
           <option value="all">全部狀態</option>
           <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
@@ -126,6 +193,15 @@ onMounted(() => {
           </option>
         </select>
       </div>
+
+      <!-- 重設篩選按鈕 -->
+      <button
+        @click="resetFilters"
+        class="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md shadow-sm transition-colors duration-200 flex items-center gap-2 min-h-[38px]"
+      >
+        <i class="pi pi-filter-slash"></i>
+        重設篩選
+      </button>
     </div>
 
     <!-- 訂單列表表格組件 -->

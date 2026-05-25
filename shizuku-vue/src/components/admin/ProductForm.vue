@@ -182,9 +182,12 @@ async function save() {
   const minPrice = Math.min(...variants.value.map((v) => Number(v.fPrice)))
 
   try {
+    // 更新基本資料
     if (props.isEdit) {
       const productRes = await productApi.getById(props.productId)
       const currentProduct = productRes.data.data
+      const existingVariants = variants.value.filter((v) => v.fId)
+      const newVariants = variants.value.filter((v) => !v.fId)
       await productApi.update(props.productId, {
         fId: props.productId,
         fName: form.value.fName,
@@ -194,17 +197,33 @@ async function save() {
         fCategoryId: form.value.fCategoryId,
         fDescription: form.value.fDescription,
       })
-      await productApi.updateVariants(
-        props.productId,
-        variants.value.map((v) => ({
-          fId: v.fId,
-          fStock: Number(v.fStock),
-          fPrice: Number(v.fPrice),
-        })),
-      )
+      if (existingVariants.length > 0) {
+        await productApi.updateVariants(
+          props.productId,
+          variants.value.map((v) => ({
+            fId: v.fId,
+            fStock: Number(v.fStock),
+            fPrice: Number(v.fPrice),
+          })),
+        )
+      }
+      //新增新規格
+      if (newVariants.length > 0) {
+        await productApi.addVariants(
+          props.productId,
+          newVariants.map((v) => ({
+            fColorId: v.fColorId,
+            fSizeId: v.fSizeId,
+            fStock: Number(v.fStock),
+            fPrice: Number(v.fPrice),
+          })),
+        )
+      }
+      //上傳新主圖(有換才上傳)
       if (mainPhotoFile.value) {
         await productApi.uploadImage(props.productId, mainPhotoFile.value)
       }
+      //上傳新增其他圖片
       for (const file of photoFiles.value) {
         await productApi.uploadImageExtra(props.productId, file)
       }
@@ -371,7 +390,7 @@ async function save() {
             >
               <option :value="1">上架中</option>
               <option :value="2">下架</option>
-              <option :value="2">尚未刊登</option>
+              <option :value="3">尚未刊登</option>
             </select>
           </div>
         </div>
@@ -397,7 +416,6 @@ async function save() {
       </div>
       <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-3 border border-gray-100">
         <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden flex-1">
-          <span class="px-3 py-2 bg-white text-gray-400 text-xs border-r border-gray-200">NT$</span>
           <input
             type="number"
             v-model="batchVariantStock"
@@ -406,6 +424,8 @@ async function save() {
           />
         </div>
         <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden flex-1">
+          <span class="px-3 py-2 bg-white text-gray-400 text-xs border-r border-gray-200">NT$</span>
+
           <input
             type="number"
             v-model="batchVariantPrice"

@@ -1,15 +1,12 @@
 <script setup>
-import { ref, shallowRef, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { triggerPaymentScanAPI } from '@/api/adminOrder'
-import { useAdminNotification } from '@/composables/useAdminNotification'
 
 // 1. 匯入子元件
 import AllPaymentsWidget from '@/components/admin/payments/AllPaymentsWidget.vue'
-import AnomalyPaymentWidget from '@/components/admin/payments/AnomalyPaymentWidget.vue'
 import RevenueDataWidget from '@/components/admin/payments/RevenueDataWidget.vue'
 import RefundManagementWidget from '@/components/admin/payments/RefundManagementWidget.vue'
 
@@ -25,16 +22,8 @@ const widgets = [
     title: '全站交易對帳',
     desc: '監控全站金流流水，支援單號檢視、支付狀態查詢與詳細通訊日誌。',
     icon: 'pi pi-credit-card',
-    gridSpan: 'md:col-span-3',
+    gridSpan: 'md:col-span-2',
     component: AllPaymentsWidget,
-  },
-  {
-    id: 'failed-monitor',
-    title: '異常支付監控',
-    desc: '即時偵測高頻失敗刷卡、異常高額交易，保障金流交易安全。',
-    icon: 'pi pi-exclamation-circle',
-    gridSpan: 'col-span-1',
-    component: AnomalyPaymentWidget,
   },
   {
     id: 'revenue-stats',
@@ -67,13 +56,8 @@ const onDialogHide = () => {
   activeWidgetComponent.value = null
 }
 
-// ── 即時通知：只接收 category = 'payment' 的警報 ──
-const toast = useToast()
-const { connect, disconnect } = useAdminNotification(toast, 'payment')
-onMounted(() => connect())
-onUnmounted(() => disconnect())
-
 // ── 手動觸發金流異常掃描──
+const toast = useToast()
 const scanning = ref(false)
 const triggerScan = async () => {
   scanning.value = true
@@ -118,8 +102,8 @@ const triggerScan = async () => {
         />
       </div>
 
-      <!-- 泡泡卡片區塊 - 採 3 欄制佈局 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+      <!-- 泡泡卡片區塊 - 採 2 欄制佈局 (與訂單控制中心相同) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
         <div
           v-for="widget in widgets"
           :key="widget.id"
@@ -192,3 +176,4 @@ const triggerScan = async () => {
 </template>
 
 <style scoped></style>
+
