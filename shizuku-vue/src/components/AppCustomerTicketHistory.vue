@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { customerApi } from '@/api/customer';
 
 const tickets = ref([]);
 const expandedId = ref(null);
@@ -26,7 +26,7 @@ onMounted(async () => {
   }
 
   try {
-    const response = await axios.get(`https://localhost:7197/api/CustomerApi/History/${memberId}`);
+    const response = await customerApi.getHistory(memberId);
     if (response.data.success) {
       tickets.value = response.data.data;
     }

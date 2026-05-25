@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { adminCustomerApi } from '@/api/customer'
 
 const tickets = ref([])
 const isLoading = ref(true)
@@ -14,7 +14,7 @@ const selectedTicket = ref(null)
 const fetchTickets = async () => {
   isLoading.value = true
   try {
-    const response = await axios.get('https://localhost:7197/api/CustomerApi/Admin/AllTickets')
+    const response = await adminCustomerApi.getAllTickets()
     if (response.data.success) {
       tickets.value = response.data.data
     }
@@ -28,11 +28,7 @@ const fetchTickets = async () => {
 // 🟢 2. 新增：修改狀態 API (就是呼叫我們剛寫好的 PUT 方法)
 const updateTicketStatus = async (ticketId, newStatus) => {
   try {
-    const apiUrl = 'https://localhost:7197/api/CustomerApi/Admin/TicketStatus'
-    const response = await axios.put(apiUrl, {
-      ticketId: ticketId,
-      newStatus: newStatus
-    })
+    const response = await adminCustomerApi.updateTicketStatus(ticketId, newStatus)
 
     if (response.data.success) {
       // 成功後，不重新整理網頁，直接用 Vue 的響應式把畫面上的狀態改掉！
