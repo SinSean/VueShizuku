@@ -152,13 +152,7 @@ onMounted(() => {
                 new
               </div>
               <img
-                :src="
-                  product.fImage
-                    ? product.fImage.startsWith('http')
-                      ? product.fImage
-                      : baseUrl + product.fImage
-                    : defaultImg
-                "
+                :src="getImageUrl(product.fImage)"
                 :alt="product.fName"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

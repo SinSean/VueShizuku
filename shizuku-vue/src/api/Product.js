@@ -48,6 +48,7 @@ export const productApi = {
   checkItems: (variantIds) => request.post('/product/check-items', variantIds),
 
   getImages: (id) => request.get(`/product/${id}/images`),
+  getRelated: (id) => request.get(`/product/${id}/related`),
 
   getStockRecords: () => request.get('/product/stock-records'),
   addStockRecord: (dto) => request.post('/product/stock-records', dto),
