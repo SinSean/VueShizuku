@@ -2,9 +2,9 @@
 import { ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { updateProfileAPI, updateAvatar } from '@/api/member';
+import { API_BASE_URL } from '@/api/index';
 
 const authStore = useAuthStore();
-const API_BASE_URL = 'https://localhost:7197';
 
 const profile = ref({
     fId: 0,

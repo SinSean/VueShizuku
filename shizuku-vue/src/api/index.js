@@ -1,8 +1,10 @@
 import axios from 'axios';
 import router from '@/router';
 
+export const API_BASE_URL = 'https://localhost:7197';
+
 const request = axios.create({
-    baseURL: 'https://localhost:7197/api',
+    baseURL: `${API_BASE_URL}/api`,
 });
 
 // 【JWT 自動化】請求攔截器

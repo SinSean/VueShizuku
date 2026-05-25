@@ -1,10 +1,9 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { API_BASE_URL } from '@/api/index';
 
 const authStore = useAuthStore();
-
-const API_BASE_URL = 'https://localhost:7197';
 
 const isAccountOpen = ref(true);
 
