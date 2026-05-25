@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { productApi } from '@/api/Product.js'
+import { getImageUrl } from '@/utils/imageHelper'
 
 const batchVariantPrice = ref('')
 const batchVariantStock = ref('')
@@ -135,12 +136,12 @@ async function loadProduct() {
   }
 
   if (p.fImage) {
-    mainPhotoPreview.value = 'https://localhost:7197' + p.fImage
+    mainPhotoPreview.value = getImageUrl(p.fImage)
   }
 
   const allImages = imagesRes.data.data ?? []
   photoPreviews.value = allImages.map((img) => ({
-    url: 'https://localhost:7197' + img,
+    url: getImageUrl(img),
     isNew: false,
   }))
 

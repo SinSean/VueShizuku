@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
-import axios from 'axios';
+import { customerApi } from '@/api/customer';
 import { useAuthStore } from '@/stores/auth'; // 引入組長寫的權限 Store
 
 const authStore = useAuthStore();
@@ -21,8 +21,7 @@ const isSubmitting = ref(false);
 // 取得分類下拉選單資料
 const fetchCategories = async () => {
   try {
-    const apiUrl = 'https://localhost:7197/api/CustomerApi/Categories';
-    const response = await axios.get(apiUrl);
+    const response = await customerApi.getCategories();
     categories.value = response.data.data; 
   } catch (error) {
     console.error("取得分類失敗：", error);
@@ -33,8 +32,7 @@ const fetchCategories = async () => {
 const submitForm = async () => {
   isSubmitting.value = true;
   try {
-    const apiUrl = 'https://localhost:7197/api/CustomerApi/Submit';
-    const response = await axios.post(apiUrl, formData);
+    const response = await customerApi.submitForm(formData);
     
     if (response.data.success) {
       alert(response.data.message); 

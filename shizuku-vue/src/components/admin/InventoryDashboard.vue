@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Chart from 'chart.js/auto'
+import { getImageUrl } from '@/utils/imageHelper'
 import { orderApi } from '@/api/order' //熱銷商品api
 
 const salesStats = ref([])
@@ -8,7 +9,7 @@ const props = defineProps({
   inventory: { type: Array, default: () => [] },
 })
 
-const baseUrl = 'https://localhost:7197'
+
 const defaultImg = 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800'
 
 const donutChartRef = ref(null)
@@ -268,13 +269,7 @@ onMounted(() => {
             class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
           >
             <img
-              :src="
-                product.fImage
-                  ? product.fImage.startsWith('http')
-                    ? product.fImage
-                    : baseUrl + product.fImage
-                  : defaultImg
-              "
+              :src="getImageUrl(item.fImage)"
               class="w-8 h-8 object-cover rounded-lg border border-gray-100 shrink-0"
             />
             <div class="flex-1 min-w-0">

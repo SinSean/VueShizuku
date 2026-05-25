@@ -1,7 +1,7 @@
 <script setup>
 import { ref, nextTick } from 'vue';
 // 這裡假設你已經有 axios，如果沒有請自行換成 fetch 或你原本呼叫 API 的方式
-import axios from 'axios'; 
+import { customerApi } from '@/api/customer'; 
 
 const messages = ref([
   { 
@@ -26,9 +26,7 @@ const sendMessage = async (text) => {
 
   try {
     // 2. 配合你的 C# Controller，改用 POST 發送，並包裝成 JSON 物件
-    const response = await axios.post('https://localhost:7197/api/CustomerApi/bot', {
-      Message: messageToSend 
-    });
+    const response = await customerApi.getChatbotReply(messageToSend);
     
     // 3. 配合組長規定的 ApiResponse 格式，必須多加一層 .data 才能拆開包裝拿到裡面的 reply
     messages.value.push({ sender: '智能客服', text: response.data.data.reply });

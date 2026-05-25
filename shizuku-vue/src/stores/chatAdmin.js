@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, shallowRef } from 'vue';
 import * as signalR from '@microsoft/signalr';
+import { chatApi } from '@/api/chat';
+import { getBackendUrl } from '@/utils/imageHelper';
 
 export const useChatAdminStore = defineStore('chatAdmin', () => {
   const activeGuests = ref({});
@@ -12,29 +14,27 @@ export const useChatAdminStore = defineStore('chatAdmin', () => {
     if (isInitialized.value) return;
 
     try {
-      const response = await fetch('https://localhost:7197/api/ChatApi/GetChatMembers');
-      if (response.ok) {
-        const apiResult = await response.json();
-        // 配合組長規範：從 apiResult.data 迴圈抓取會員清單
-        if (apiResult.success && apiResult.data) {
-          apiResult.data.forEach(m => {
-            activeGuests.value[m.memberId] = {
-              memberId: m.memberId,
-              realName: m.realName,
-              messages: [],
-              unreadCount: 0,
-              hasLoadedHistory: false,
-              isOnline: false
-            };
-          });
-        }
+      const res = await chatApi.getChatMembers();
+      const apiResult = res.data;
+      // 配合組長規範：從 apiResult.data 迴圈抓取會員清單
+      if (apiResult.success && apiResult.data) {
+        apiResult.data.forEach(m => {
+          activeGuests.value[m.memberId] = {
+            memberId: m.memberId,
+            realName: m.realName,
+            messages: [],
+            unreadCount: 0,
+            hasLoadedHistory: false,
+            isOnline: false
+          };
+        });
       }
     } catch (err) {
       console.error("載入會員名單失敗:", err);
     }
 
     connection.value = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:7197/chatHub")
+      .withUrl(getBackendUrl('/chatHub'))
       .withAutomaticReconnect()
       .build();
 

@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { productApi } from '@/api/Product.js'
 import QRCode from 'qrcode'
+import { getImageUrl } from '@/utils/imageHelper'
 
 const showRecordModal = ref(false)
 const currentVariant = ref(null)
@@ -12,8 +13,7 @@ const props = defineProps({
   inventory: { type: Array, default: () => [] },
 })
 
-const baseUrl = 'https://localhost:7197'
-const defaultImg = 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=800'
+
 
 const keyword = ref('')
 const selectedStatus = ref('')
@@ -265,13 +265,7 @@ const totalRow = computed(() => {
                 <td class="px-3 py-3">
                   <div class="flex items-center gap-3">
                     <img
-                      :src="
-                        product.fImage
-                          ? product.fImage.startsWith('http')
-                            ? product.fImage
-                            : baseUrl + product.fImage
-                          : defaultImg
-                      "
+                      :src="getImageUrl(product.fImage)"
                       class="w-9 h-9 object-cover rounded-lg border border-gray-100 shrink-0"
                     />
                     <div>

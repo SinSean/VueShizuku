@@ -2,6 +2,8 @@
 import { ref, onMounted, nextTick } from 'vue';
 import * as signalR from '@microsoft/signalr';
 import { useAuthStore } from '@/stores/auth';
+import { chatApi } from '@/api/chat';
+import { getBackendUrl } from '@/utils/imageHelper';
 
 const authStore = useAuthStore();
 const messages = ref([]);
@@ -16,26 +18,24 @@ onMounted(async () => {
   const memberId = authStore.user?.fId || authStore.user?.fMemberId || 0;
 
   try {
-    const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${memberId}`);
-    if (response.ok) {
-      const apiResult = await response.json();
-      if (apiResult.success && apiResult.data) {
-        //  關鍵：如果是 Admin 發的，強制顯示 '線上客服'，否則顯示客人自己的名字
-        messages.value = apiResult.data.map(m => ({
-          sender: m.type === 'Admin' ? '線上客服' : m.senderName,
-          text: m.text,
-          isMe: m.isMe,
-          time: m.time
-        }));
-        scrollToBottom();
-      }
+    const res = await chatApi.getHistory(memberId);
+    const apiResult = res.data;
+    if (apiResult.success && apiResult.data) {
+      //  關鍵：如果是 Admin 發的，強制顯示 '線上客服'，否則顯示客人自己的名字
+      messages.value = apiResult.data.map(m => ({
+        sender: m.type === 'Admin' ? '線上客服' : m.senderName,
+        text: m.text,
+        isMe: m.isMe,
+        time: m.time
+      }));
+      scrollToBottom();
     }
   } catch (err) {
     console.error("歷史紀錄載入失敗: ", err);
   }
 
   connection = new signalR.HubConnectionBuilder()
-    .withUrl("https://localhost:7197/chatHub")
+    .withUrl(getBackendUrl('/chatHub'))
     .withAutomaticReconnect()
     .build();
 

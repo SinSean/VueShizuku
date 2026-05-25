@@ -2,6 +2,7 @@
 import { ref, onMounted, nextTick, watch } from 'vue';
 import { useAdminStore } from '@/stores/admin';
 import { useChatAdminStore } from '@/stores/chatAdmin';
+import { chatApi } from '@/api/chat';
 
 const adminStore = useAdminStore();
 const chatAdminStore = useChatAdminStore();
@@ -30,18 +31,16 @@ const selectGuest = async (memberId) => {
 
   if (!guest.hasLoadedHistory) {
     try {
-      const response = await fetch(`https://localhost:7197/api/ChatApi/GetHistory/${memberId}`);
-      if (response.ok) {
-        const apiResult = await response.json();
-        if (apiResult.success && apiResult.data) {
-          guest.messages = apiResult.data.map(m => ({ 
-              sender: m.type, 
-              realSenderName: m.senderName, 
-              text: m.text, 
-              time: m.time 
-          })); 
-          guest.hasLoadedHistory = true;
-        }
+      const res = await chatApi.getAdminHistory(memberId);
+      const apiResult = res.data;
+      if (apiResult.success && apiResult.data) {
+        guest.messages = apiResult.data.map(m => ({ 
+            sender: m.type, 
+            realSenderName: m.senderName, 
+            text: m.text, 
+            time: m.time 
+        })); 
+        guest.hasLoadedHistory = true;
       }
     } catch (err) {
       console.error("歷史紀錄載入失敗:", err);

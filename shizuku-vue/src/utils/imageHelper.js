@@ -20,3 +20,13 @@ export const getImageUrl = (path) => {
   }
   return `${baseUrl}${path}`
 }
+
+/**
+ * 取得後端網站的根網址 (例如 "https://localhost:7197") 並拼接指定路徑
+ * @param {string} path - 拼接路徑 (例如 "/chatHub")
+ * @returns {string} 完整網址
+ */
+export const getBackendUrl = (path = '') => {
+  return `${baseUrl}${path}`
+}
+

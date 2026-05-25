@@ -1,72 +1,57 @@
-import axios from 'axios'
-
-const base = 'https://localhost:7197/api/product'
+import request from '@/api/index'
 
 export const productApi = {
   // 查詢列表 新增分類篩選
-  getList: (keyword, categoryId, isAdmin = false) =>
-    axios.get(base, { params: { keyword, categoryId, isAdmin } }),
+  getList: (keyword, categoryId) => request.get('/product', { params: { keyword, categoryId } }),
 
   // 查單筆
-  getById: (id) => axios.get(`${base}/${id}`),
+  getById: (id) => request.get(`/product/${id}`),
 
   // 查規格
-  getVariants: (id) => axios.get(`${base}/${id}/variants`),
+  getVariants: (id) => request.get(`/product/${id}/variants`),
 
   // 查下拉選單
-  getDropdowns: () => axios.get(`${base}/dropdowns`),
+  getDropdowns: () => request.get('/product/dropdowns'),
 
   // 新增商品
-  create: (dto) => axios.post(base, dto),
+  create: (dto) => request.post('/product', dto),
 
   // 上傳圖片
   uploadImage: (id, file) => {
     const formData = new FormData()
     formData.append('photo', file)
-    return axios.post(`${base}/${id}/image`, formData, {
+    return request.post(`/product/${id}/image`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
   uploadImageExtra: (id, file) => {
     const formData = new FormData()
     formData.append('photo', file)
-    return axios.post(`${base}/${id}/image/extra`, formData, {
+    return request.post(`/product/${id}/image/extra`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
 
   // 更新商品
-  update: (id, dto) => axios.put(`${base}/${id}`, dto),
+  update: (id, dto) => request.put(`/product/${id}`, dto),
 
   // 更新庫存
-  updateVariants: (id, variants) => axios.put(`${base}/${id}/variants`, variants),
+  updateVariants: (id, variants) => request.put(`/product/${id}/variants`, variants),
 
   // 刪除
-  delete: (id) => axios.delete(`${base}/${id}`),
+  delete: (id) => request.delete(`/product/${id}`),
 
-  getStats: () => axios.get(`${base}/stats`),
-  getInventory: () => axios.get(`${base}/inventory`),
+  getStats: () => request.get('/product/stats'),
+  getInventory: () => request.get('/product/inventory'),
 
   //結帳時檢查庫存與價格
-  checkItems: (variantIds) => axios.post(`${base}/check-items`, variantIds),
+  checkItems: (variantIds) => request.post('/product/check-items', variantIds),
 
-  getStats: () => axios.get(`${base}/stats`),
-  getInventory: () => axios.get(`${base}/inventory`),
-  getInventoryReport: () => axios.get(`${base}/inventory-report`),
+  getImages: (id) => request.get(`/product/${id}/images`),
 
-  getImages: (id) => axios.get(`${base}/${id}/images`),
-  getRelated: (id) => axios.get(`${base}/${id}/related`),
-
-  getStockRecords: (variantId = null) =>
-    axios.get(`${base}/stock-records`, { params: variantId ? { variantId } : {} }),
-  addStockRecord: (dto) => axios.post(`${base}/stock-records`, dto),
-  getPurchaseOrders: () => axios.get(`${base}/purchase-orders`),
-  getPurchaseOrder: (id) => axios.get(`${base}/purchase-orders/${id}`),
-  updatePurchaseOrderStatus: (id, status) =>
-    axios.put(`${base}/purchase-orders/${id}/status`, JSON.stringify(status), {
-      headers: { 'Content-Type': 'application/json' },
-    }),
-  getVariantBySkuOrId: (sku) => axios.get(`${base}/variant-by-sku`, { params: { sku } }),
-  createPurchaseOrder: (dto) => axios.post(`${base}/purchase-orders`, dto),
-  addVariants: (id, variants) => axios.post(`${base}/${id}/variants`, variants),
+  getStockRecords: () => request.get('/product/stock-records'),
+  addStockRecord: (dto) => request.post('/product/stock-records', dto),
+  getPurchaseOrders: () => request.get('/product/purchase-orders'),
+  getPurchaseOrder: (id) => request.get(`/product/purchase-orders/${id}`),
+  createPurchaseOrder: (dto) => request.post('/product/purchase-orders', dto),
 }
