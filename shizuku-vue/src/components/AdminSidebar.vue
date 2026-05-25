@@ -8,8 +8,6 @@ const router = useRouter()
 const adminStore = useAdminStore()
 
 const menuItems = ref([
-  { label: '儀表板', icon: 'pi pi-home', to: { name: 'admin-dashboard' } },
-
   {
     label: '會員管理',
     icon: 'pi pi-users',
@@ -62,20 +60,13 @@ const handleLogout = () => {
 
 <template>
   <aside
-    class="w-64 min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden shadow-2xl"
-  >
-    <div
-      class="absolute top-[-60px] left-[-60px] w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl"
-    />
+    class="w-64 min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden shadow-2xl">
+    <div class="absolute top-[-60px] left-[-60px] w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl" />
 
-    <div
-      class="absolute bottom-[-40px] right-[-40px] w-60 h-60 bg-violet-500/10 rounded-full blur-3xl"
-    />
+    <div class="absolute bottom-[-40px] right-[-40px] w-60 h-60 bg-violet-500/10 rounded-full blur-3xl" />
 
     <div class="relative z-10 px-6 py-8 flex items-center gap-3">
-      <div
-        class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center"
-      >
+      <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
         <i class="pi pi-bolt text-white" />
       </div>
 
@@ -93,9 +84,7 @@ const handleLogout = () => {
     <Divider class="!my-0 !border-indigo-800/30" />
 
     <div class="relative z-10 px-5 py-5 flex items-center gap-3">
-      <div
-        class="w-10 h-10 rounded-full bg-indigo-600/40 flex items-center justify-center text-white"
-      >
+      <div class="w-10 h-10 rounded-full bg-indigo-600/40 flex items-center justify-center text-white">
         {{ adminStore.adminName?.charAt(0) ?? 'A' }}
       </div>
 
@@ -114,46 +103,28 @@ const handleLogout = () => {
 
     <nav class="flex-1 px-3 py-6 flex flex-col gap-1 overflow-y-auto">
 
-      <template
-        v-for="item in menuItems"
-        :key="item.label"
-      >
+      <template v-for="item in menuItems" :key="item.label">
 
         <div v-if="item.children">
 
-          <button
-            @click="item.open = !item.open"
-            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-indigo-900/30 transition-colors"
-          >
+          <button @click="item.open = !item.open"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-indigo-900/30 transition-colors">
             <i :class="item.icon" />
 
             <span>
               {{ item.label }}
             </span>
 
-            <i
-              class="pi pi-chevron-down ml-auto transition-transform duration-200"
-              :class="{ 'rotate-180': item.open }"
-            />
+            <i class="pi pi-chevron-down ml-auto transition-transform duration-200"
+              :class="{ 'rotate-180': item.open }" />
           </button>
 
-          <div
-            v-show="item.open"
-            class="ml-4 mt-1 flex flex-col gap-1"
-          >
-            <router-link
-              v-for="child in item.children"
-              :key="child.label"
-              :to="child.to"
-              custom
-              v-slot="{ navigate, isActive }"
-            >
+          <div v-show="item.open" class="ml-4 mt-1 flex flex-col gap-1">
+            <router-link v-for="child in item.children" :key="child.label" :to="child.to" custom
+              v-slot="{ navigate, isActive }">
 
-              <button
-                @click="navigate"
-                class="w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-colors"
-                :class="isActive ? 'bg-indigo-600 text-white font-medium' : 'text-slate-400 hover:bg-indigo-900/30'"
-              >
+              <button @click="navigate" class="w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-colors"
+                :class="isActive ? 'bg-indigo-600 text-white font-medium' : 'text-slate-400 hover:bg-indigo-900/30'">
                 <i :class="child.icon" />
 
                 {{ child.label }}
@@ -164,18 +135,10 @@ const handleLogout = () => {
 
         </div>
 
-        <router-link
-          v-else
-          :to="item.to"
-          custom
-          v-slot="{ navigate, isActive }"
-        >
+        <router-link v-else :to="item.to" custom v-slot="{ navigate, isActive }">
 
-          <button
-            @click="navigate"
-            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
-            :class="isActive ? 'bg-indigo-600 text-white font-medium' : 'text-slate-400 hover:bg-indigo-900/30'"
-          >
+          <button @click="navigate" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
+            :class="isActive ? 'bg-indigo-600 text-white font-medium' : 'text-slate-400 hover:bg-indigo-900/30'">
             <i :class="item.icon" />
 
             {{ item.label }}
@@ -190,10 +153,8 @@ const handleLogout = () => {
     <Divider class="!my-0 !border-indigo-800/30" />
 
     <div class="px-3 py-6">
-      <button
-        @click="handleLogout"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-900/20 hover:text-red-400 transition-colors"
-      >
+      <button @click="handleLogout"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-900/20 hover:text-red-400 transition-colors">
         <i class="pi pi-sign-out" />
         登出
       </button>
