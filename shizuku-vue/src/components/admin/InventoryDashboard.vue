@@ -269,10 +269,10 @@ onMounted(() => {
           >
             <img
               :src="
-                product.fImage
-                  ? product.fImage.startsWith('http')
-                    ? product.fImage
-                    : baseUrl + product.fImage
+                item.fImage
+                  ? item.fImage.startsWith('http')
+                    ? item.fImage
+                    : baseUrl + item.fImage
                   : defaultImg
               "
               class="w-8 h-8 object-cover rounded-lg border border-gray-100 shrink-0"
