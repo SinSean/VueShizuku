@@ -1,12 +1,35 @@
 <script setup>
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth'; // 引入組長寫的登入狀態
 
 import AppCustomerForm from '@/components/AppCustomerForm.vue';
 import AppCustomerChatbot from '@/components/AppCustomerChatbot.vue';
 import AppCustomerLiveChat from '@/components/AppCustomerLiveChat.vue';
 
 const currentView = ref('menu');
+const router = useRouter();
+const authStore = useAuthStore(); // 取得 Store 實體
+
+// 專門處理點擊「真人客服」按鈕的方法
+const handleLiveChatClick = () => {
+  if (!authStore.isLogin) {
+    alert("親愛的顧客您好，使用真人客服前請先登入會員！");
+    router.push({ name: 'Login' }); // 踢去組長的登入頁
+    return;
+  }
+  currentView.value = 'livechat';
+};
+
+// 專門處理點擊「表單回覆」按鈕的方法
+const handleFeedbackClick = () => {
+  if (!authStore.isLogin) {
+    alert("親愛的顧客您好，為了方便您日後追蹤客服進度，填寫表單前請先登入會員！");
+    router.push({ name: 'Login' }); // 踢去組長的登入頁
+    return;
+  }
+  currentView.value = 'feedback';
+};
 </script>
 
 <template>
@@ -42,7 +65,7 @@ const currentView = ref('menu');
           <p class="text-xs text-gray-500 text-center">輸入關鍵字，24 小時為您快速解答常見問題。</p>
         </div>
 
-        <div @click="currentView = 'livechat'" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
+        <div @click="handleLiveChatClick" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
           <div class="flex items-center gap-2 mb-4 text-gray-800 group-hover:text-blue-600 transition-colors">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
             <h3 class="text-xl font-bold tracking-widest">真人客服</h3>
@@ -50,7 +73,7 @@ const currentView = ref('menu');
           <p class="text-xs text-gray-500 text-center">即時與專人連線，解決您的疑難雜症。</p>
         </div>
 
-        <div @click="currentView = 'feedback'" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
+        <div @click="handleFeedbackClick" class="bg-white border border-gray-300 p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all group h-full">
           <div class="flex items-center gap-2 mb-4 text-gray-800 group-hover:text-blue-600 transition-colors">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
             <h3 class="text-xl font-bold tracking-widest">表單回覆</h3>

@@ -30,9 +30,12 @@ const menuItems = [
     },
     { title: '訂單列表', icon: 'pi pi-list', routeName: 'MemberOrders' },//已完成轉接
     //{ title: '通知總覽', icon: 'pi pi-bell', routeName: 'MemberEmpty' },
+    { title: '客服紀錄', icon: 'pi pi-envelope', routeName: 'MemberTickets' },
     { title: '我的優惠券', icon: 'pi pi-ticket', routeName: 'MemberVouchers' },
     { title: '我的點數', icon: 'pi pi-wallet', routeName: 'MemberPointsDashboard' },//已完成畫面
     //{ title: '交易支付及退款查詢', icon: 'pi pi-credit-card', routeName: 'MemberEmpty' }
+
+    
 ];
 </script>
 

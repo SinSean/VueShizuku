@@ -30,12 +30,13 @@ const menuItems = ref([
   { label: '訂單管理', icon: 'pi pi-list', to: { name: 'admin-orders' } },
   { label: '金流管理', icon: 'pi pi-credit-card', to: { name: 'admin-payments' } },
   { label: '客服回覆', icon: 'pi pi-comments', to: { name: 'admin-customer-service' } },
+  { label: '表單留言紀錄', icon: 'pi pi-envelope', to: { name: 'admin-ticket-list' } },
   {
-    label: '系統管理', icon: 'pi pi-cog', // 調整為更適合系統管理的齒輪圖標
+    label: '系統管理', icon: 'pi pi-cog', 
     open: false,
     children: [
-      { label: '安全設定', icon: 'pi pi-shield', to: { name: 'admin-system-settings' } }, // 盾牌圖標代表安全機制
-      { label: '系統日誌', icon: 'pi pi-file', to: { name: 'admin-system-logs' } }       // 檔案或日誌圖標
+      { label: '安全設定', icon: 'pi pi-shield', to: { name: 'admin-system-settings' } }, 
+      { label: '系統日誌', icon: 'pi pi-file', to: { name: 'admin-system-logs' } }      
     ]
   },
 ])
