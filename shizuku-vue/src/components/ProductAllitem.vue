@@ -21,19 +21,54 @@ const sortOrder = ref('latest')
 
 const sortedProducts = computed(() => {
   const list = [...(products.value ?? [])]
-  if (sortOrder.value === 'priceAsc') return list.sort((a, b) => a.fPrice - b.fPrice)
-  if (sortOrder.value === 'priceDesc') return list.sort((a, b) => b.fPrice - a.fPrice)
+  if (sortOrder.value === 'priceAsc') return list.sort((a, b) => a.fMinPrice - b.fMinPrice)
+  if (sortOrder.value === 'priceDesc') return list.sort((a, b) => b.fMinPrice - a.fMinPrice)
   if (sortOrder.value === 'hot') return list.sort((a, b) => b.fId - a.fId)
   return list
 })
 
+//做分頁12/頁
+const currentPage = ref(1)
+const pageSize = 12
+
+const totalCount = computed(() => sortedProducts.value.length)
+const totalPages = computed(() => Math.ceil(totalCount.value / pageSize))
+
+const pagedProducts = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return sortedProducts.value.slice(start, start + pageSize)
+})
+// 排序或分類變更時回到第一頁
+watch(sortOrder, () => {
+  currentPage.value = 1
+})
+watch(
+  () => props.categoryId,
+  () => {
+    currentPage.value = 1
+  },
+)
+watch(
+  () => route.query.categoryId,
+  () => {
+    currentPage.value = 1
+  },
+)
+
+function changePage(page) {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // 取得目前有效的分類 ID（props 優先，其次才是網址）
 function getActiveCategoryId() {
-  if (props.categoryId !== null && props.categoryId !== undefined) return props.categoryId
-  
+  // props 有明確設定（包含 null）就用 props
+  if (props.categoryId !== undefined) return props.categoryId
+
   const fromRoute = route.query.categoryId
   if (fromRoute) return Number(fromRoute)
-  
+
   return null
 }
 
@@ -59,6 +94,15 @@ watch(
   },
 )
 
+// 監聽網址的 keyword 變化
+watch(
+  () => route.query.keyword,
+  (newVal) => {
+    keyword.value = newVal || ''
+    fetchProducts()
+  },
+)
+
 // 監聽 props 的 categoryId 變化（Sidebar 點擊）
 watch(
   () => props.categoryId,
@@ -68,6 +112,9 @@ watch(
 )
 
 onMounted(() => {
+  if (route.query.keyword) {
+    keyword.value = route.query.keyword
+  }
   fetchProducts()
 })
 </script>
@@ -75,7 +122,9 @@ onMounted(() => {
 <template>
   <div class="max-w-[1400px] mx-auto px-4 py-14 text-center">
     <!-- 工具列：項目計數與排序 -->
-    <div class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4">
+    <div
+      class="max-w-[1400px] mx-auto px-4 mb-8 flex justify-between items-center text-sm border-b pb-4"
+    >
       <span class="text-gray-500">顯示 {{ sortedProducts.length }} 個項目</span>
       <select
         v-model="sortOrder"
@@ -94,15 +143,23 @@ onMounted(() => {
     <!-- 商品列表區塊 -->
     <div v-else class="flex-1 min-w-0">
       <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
-        <div v-for="product in sortedProducts" :key="product.fId" class="group cursor-pointer">
+        <div v-for="product in pagedProducts" :key="product.fId" class="group cursor-pointer">
           <RouterLink :to="'/product/' + product.fId">
             <!-- 商品圖片 -->
             <div class="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-4">
-              <div class="absolute top-2 left-2 z-10 bg-black/40 text-white text-[10px] px-2 py-0.5 tracking-wider">
+              <div
+                class="absolute top-2 left-2 z-10 bg-black/40 text-white text-[10px] px-2 py-0.5 tracking-wider"
+              >
                 new
               </div>
               <img
-                :src="product.fImage ? baseUrl + product.fImage + '?t=' + Date.now() : defaultImg"
+                :src="
+                  product.fImage
+                    ? product.fImage.startsWith('http')
+                      ? product.fImage
+                      : baseUrl + product.fImage
+                    : defaultImg
+                "
                 :alt="product.fName"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
@@ -137,5 +194,52 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    <!-- 分頁列 -->
+    <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-16">
+      <button
+        @click="changePage(currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        ‹
+      </button>
+
+      <template v-for="page in totalPages" :key="page">
+        <button
+          v-if="
+            page === 1 ||
+            page === totalPages ||
+            (page >= currentPage - 1 && page <= currentPage + 1)
+          "
+          @click="changePage(page)"
+          :class="[
+            'w-9 h-9 flex items-center justify-center border text-sm transition-colors',
+            currentPage === page
+              ? 'bg-black text-white border-black'
+              : 'border-gray-200 text-gray-500 hover:bg-gray-50',
+          ]"
+        >
+          {{ page }}
+        </button>
+        <span
+          v-else-if="page === currentPage - 2 || page === currentPage + 2"
+          class="text-gray-300 text-sm"
+          >...</span
+        >
+      </template>
+
+      <button
+        @click="changePage(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        class="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        ›
+      </button>
+    </div>
+
+    <!-- 顯示目前頁數 -->
+    <p class="text-xs text-gray-400 text-center mt-4">
+      第 {{ currentPage }} 頁，共 {{ totalPages }} 頁（{{ totalCount }} 件商品）
+    </p>
   </div>
 </template>

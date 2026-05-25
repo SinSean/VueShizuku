@@ -4,6 +4,7 @@ import { productApi } from '@/api/Product.js'
 import { useRouter } from 'vue-router'
 import AppCartMenu from './AppCartMenu.vue'
 import AppNavHamburgerMenu from './AppNavHamburgerMenu.vue'
+import AppSearch from './AppSearch.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const styleCategories = ref([])
@@ -123,12 +124,7 @@ const handleLogout = () => {
         </li>
       </ul>
       <div class="absolute right-4 lg:right-10 flex items-center gap-5 text-gray-600">
-        <button class="hover:text-gray-400 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
+        <AppSearch />
 
         <AppCartMenu />
 

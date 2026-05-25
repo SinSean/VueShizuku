@@ -49,3 +49,7 @@ export const getOrderTransactionsAPI = async (orderNo) => {
   const response = await request.get(`/orderApi/${orderNo}/transactions`)
   return response.data
 }
+
+export const orderApi = {
+  getSalesStats: () => request.get(`/orderApi/sales-stats`), //13
+}

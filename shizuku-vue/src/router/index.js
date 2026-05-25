@@ -149,7 +149,11 @@ const router = createRouter({
             },
           ],
         },
-        { path: '/point-store', name: 'point-store', component: () => import('@/components/member/MemberStore.vue'), },
+        {
+          path: '/point-store',
+          name: 'point-store',
+          component: () => import('@/components/member/MemberStore.vue'),
+        },
       ],
     },
 
@@ -256,6 +260,11 @@ const router = createRouter({
           path: 'inventory/create',
           name: 'admin-inventory-create',
           component: () => import('@/views/admin/AdminPurchaseCreateView.vue'),
+        },
+        {
+          path: 'inventory/scan',
+          name: 'admin-inventory-scan',
+          component: () => import('@/views/admin/AdminProductScanView.vue'),
         },
         {
           path: 'categories',
