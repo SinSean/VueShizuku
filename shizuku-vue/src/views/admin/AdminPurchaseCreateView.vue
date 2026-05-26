@@ -366,7 +366,7 @@ onMounted(async () => {
                   <th
                     class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
                   >
-                    貨號
+                    規格編號
                   </th>
                   <th
                     class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-16"
@@ -398,9 +398,9 @@ onMounted(async () => {
                     <p class="text-gray-400 mt-0.5">
                       {{ item.variant.fColor }} / {{ item.variant.fSize }}
                     </p>
-                    <p class="text-gray-300 mt-0.5 font-mono text-xs">
-                      {{ item.product.fProduct }}
-                    </p>
+                  </td>
+                  <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">
+                    {{ item.variant.fSkuCode }}
                   </td>
                   <td
                     class="px-3 py-2.5 font-medium"
