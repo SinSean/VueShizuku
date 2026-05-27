@@ -223,7 +223,7 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="p-6 flex flex-col" style="height: calc(130vh - 40px)">
+  <div class="h-[calc(115vh-64px)] min-h-0 bg-gray-50 p-6 flex flex-col">
     <!-- 標題列 -->
     <div class="flex items-center gap-3 mb-4 shrink-0">
       <button
@@ -240,7 +240,7 @@ onMounted(async () => {
 
     <!-- 廠商資訊 -->
     <div
-      class="grid grid-cols-5 gap-3 p-4 bg-white rounded-xl border border-gray-100 mb-4 shrink-0"
+      class="mb-4 grid shrink-0 grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-5"
     >
       <div>
         <label class="text-xs text-gray-400 mb-1 block">異動類型</label>
@@ -264,8 +264,6 @@ onMounted(async () => {
               : 'border-gray-200 focus:border-indigo-400',
           ]"
         >
-          >
-
           <option v-for="supplier in suppliers" :key="supplier">{{ supplier }}</option>
         </select>
       </div>
@@ -331,21 +329,20 @@ onMounted(async () => {
           class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
       </div>
-      <div class="col-span-3">
+      <div class="sm:col-span-2 lg:col-span-3">
         <label class="text-xs text-gray-400 mb-1 block">備註</label>
         <input
           v-model="purchaseForm.fNote"
           type="text"
           :class="[
-            'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none',
+            'w-full px-3 py-1.5 border rounded-lg text-sm placeholder-gray-400 focus:outline-none',
             purchaseForm.fType === '報廢' && !purchaseForm.fNote?.trim()
-              ? 'border-red-400 bg-red-50'
+              ? 'border-red-400 bg-red-50 focus:border-red-400'
               : 'border-gray-200 focus:border-indigo-400',
           ]"
           :placeholder="
             purchaseForm.fType === '報廢' ? '請務必輸入報廢原因（例如：沾染污漬/樣品銷毀）' : '選填'
           "
-          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400"
         />
       </div>
       <div>
@@ -360,12 +357,12 @@ onMounted(async () => {
     </div>
 
     <!-- 左右分欄 + 底部合計 -->
-    <div class="flex flex-col flex-1 overflow-hidden gap-4">
+    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
       <!-- 左右分欄 -->
-      <div class="grid grid-cols-12 gap-4 flex-1 overflow-hidden">
+      <div class="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden xl:grid-cols-12">
         <!-- 左側：商品挑選 -->
         <div
-          class="col-span-5 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
+          class="flex min-h-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm xl:col-span-5"
         >
           <div
             class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0"
@@ -451,7 +448,7 @@ onMounted(async () => {
                   </td>
                 </tr>
                 <!-- 搜尋結果為空時顯示 -->
-                <tr v-if="searchResults.length === 0">
+                <tr v-if="searchResults.length === 0 && purchaseSearch">
                   <td colspan="4" class="px-4 py-8 text-center">
                     <p class="text-gray-400 text-sm mb-3">查無符合商品</p>
                     <p class="text-gray-300 text-xs mb-4">請先至商品管理建立商品後再進行庫存異動</p>
@@ -463,6 +460,10 @@ onMounted(async () => {
                     </button>
                   </td>
                 </tr>
+                <!-- 資料載入中 -->
+                <tr v-else-if="searchResults.length === 0 && isLoading">
+                  <td colspan="4" class="text-center text-gray-300 py-8">載入中...</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -470,7 +471,7 @@ onMounted(async () => {
 
         <!-- 右側：已選商品 -->
         <div
-          class="col-span-7 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
+          class="flex min-h-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm xl:col-span-7"
         >
           <div
             class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0"
@@ -584,9 +585,9 @@ onMounted(async () => {
       </div>
 
       <!-- 底部合計（獨立一行在最下方）-->
-      <div class="bg-white rounded-xl border border-gray-100 p-4 shrink-0">
-        <div class="flex items-center justify-end">
-          <div class="flex gap-6 text-xs text-gray-500">
+      <div class="shrink-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-gray-500">
             <span
               >已選：<strong class="text-gray-700">{{ cartCount }} 筆</strong></span
             >
@@ -612,7 +613,7 @@ onMounted(async () => {
               >
             </template>
           </div>
-          <div class="flex gap-2 shrink-0 ml-6">
+          <div class="flex shrink-0 gap-2 lg:ml-6">
             <button
               @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
               class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
