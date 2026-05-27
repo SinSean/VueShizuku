@@ -18,9 +18,9 @@ const props = defineProps({
 
 // ── 基本資料 ──
 const form = ref({
-  fName: '',
+  fName: '正韓空運軟糯親膚坑條圓領T',
   fCategoryId: null,
-  fDescription: '',
+  fDescription: '細緻坑條面料（Ribbed）、微透膚感、柔和奶油色系',
   fStatus: 3,
 })
 
@@ -294,24 +294,17 @@ async function save() {
         <div class="flex gap-3">
           <!-- 已上傳主圖 -->
           <div v-if="mainPhotoPreview" class="relative w-24 h-24">
-            <img
-              :src="mainPhotoPreview"
-              class="w-full h-full object-cover rounded-lg border border-gray-100"
-            />
-            <button
-              @click="((mainPhotoPreview = null), (mainPhotoFile = null))"
+            <img :src="mainPhotoPreview" class="w-full h-full object-cover rounded-lg border border-gray-100" />
+            <button @click="((mainPhotoPreview = null), (mainPhotoFile = null))"
               class="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center"
-              aria-label="移除主圖"
-            >
+              aria-label="移除主圖">
               <i class="pi pi-times" style="font-size: 9px"></i>
             </button>
           </div>
 
           <!-- 上傳主圖按鈕 -->
-          <label
-            v-else
-            class="w-24 h-24 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-300 transition-colors"
-          >
+          <label v-else
+            class="w-24 h-24 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-300 transition-colors">
             <input type="file" accept="image/*" class="hidden" @change="onMainPhotoChange" />
             <i class="pi pi-image text-gray-300 mb-1" style="font-size: 20px"></i>
             <span class="text-[10px] text-gray-300">上傳主圖</span>
@@ -327,23 +320,16 @@ async function save() {
 
         <div class="grid grid-cols-4 gap-2">
           <div v-for="(photo, index) in photoPreviews" :key="index" class="relative aspect-square">
-            <img
-              :src="photo.url"
-              class="w-full h-full object-cover rounded-lg border border-gray-100"
-            />
-            <button
-              @click="removePhoto(index)"
+            <img :src="photo.url" class="w-full h-full object-cover rounded-lg border border-gray-100" />
+            <button @click="removePhoto(index)"
               class="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center"
-              aria-label="移除圖片"
-            >
+              aria-label="移除圖片">
               <i class="pi pi-times" style="font-size: 9px"></i>
             </button>
           </div>
 
-          <label
-            v-if="photoPreviews.length < 9"
-            class="aspect-square border border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-300 transition-colors"
-          >
+          <label v-if="photoPreviews.length < 9"
+            class="aspect-square border border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-300 transition-colors">
             <input type="file" accept="image/*" multiple class="hidden" @change="onPhotoChange" />
             <i class="pi pi-plus text-gray-300 mb-1" style="font-size: 14px" aria-hidden="true"></i>
             <span class="text-[10px] text-gray-300">{{ photoPreviews.length }}/9</span>
@@ -357,25 +343,15 @@ async function save() {
       <h3 class="text-sm font-medium mb-4 pb-3 border-b border-gray-100">基本資料</h3>
       <div class="space-y-4">
         <div>
-          <label class="text-xs text-gray-500 mb-1.5 block"
-            >商品名稱 <span class="text-red-400">*</span></label
-          >
-          <input
-            v-model="form.fName"
-            type="text"
-            placeholder="請輸入商品名稱"
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400"
-          />
+          <label class="text-xs text-gray-500 mb-1.5 block">商品名稱 <span class="text-red-400">*</span></label>
+          <input v-model="form.fName" type="text" placeholder="請輸入商品名稱"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-xs text-gray-500 mb-1.5 block"
-              >分類 <span class="text-red-400">*</span></label
-            >
-            <select
-              v-model="form.fCategoryId"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white"
-            >
+            <label class="text-xs text-gray-500 mb-1.5 block">分類 <span class="text-red-400">*</span></label>
+            <select v-model="form.fCategoryId"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white">
               <option :value="null">選擇分類</option>
               <option v-for="cat in categories" :key="cat.fId" :value="cat.fId">
                 {{ cat.fFullName }}
@@ -384,10 +360,8 @@ async function save() {
           </div>
           <div>
             <label class="text-xs text-gray-500 mb-1.5 block">商品狀態</label>
-            <select
-              v-model="form.fStatus"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white"
-            >
+            <select v-model="form.fStatus"
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white">
               <option :value="1">上架中</option>
               <option :value="2">下架</option>
               <option :value="3">尚未刊登</option>
@@ -396,12 +370,8 @@ async function save() {
         </div>
         <div>
           <label class="text-xs text-gray-500 mb-1.5 block">商品描述</label>
-          <textarea
-            v-model="form.fDescription"
-            rows="4"
-            placeholder="請輸入商品描述..."
-            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 resize-none"
-          ></textarea>
+          <textarea v-model="form.fDescription" rows="4" placeholder="請輸入商品描述..."
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 resize-none"></textarea>
         </div>
       </div>
     </div>
@@ -416,27 +386,17 @@ async function save() {
       </div>
       <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-3 border border-gray-100">
         <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden flex-1">
-          <input
-            type="number"
-            v-model="batchVariantStock"
-            placeholder="數量"
-            class="flex-1 px-3 py-2 text-xs focus:outline-none bg-white"
-          />
+          <input type="number" v-model="batchVariantStock" placeholder="數量"
+            class="flex-1 px-3 py-2 text-xs focus:outline-none bg-white" />
         </div>
         <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden flex-1">
           <span class="px-3 py-2 bg-white text-gray-400 text-xs border-r border-gray-200">NT$</span>
 
-          <input
-            type="number"
-            v-model="batchVariantPrice"
-            placeholder="價格"
-            class="flex-1 px-3 py-2 text-xs focus:outline-none bg-white"
-          />
+          <input type="number" v-model="batchVariantPrice" placeholder="價格"
+            class="flex-1 px-3 py-2 text-xs focus:outline-none bg-white" />
         </div>
-        <button
-          @click="applyBatchVariant"
-          class="shrink-0 px-4 py-2 text-xs border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium"
-        >
+        <button @click="applyBatchVariant"
+          class="shrink-0 px-4 py-2 text-xs border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium">
           全部套用
         </button>
       </div>
@@ -460,39 +420,24 @@ async function save() {
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="(variant, index) in variants"
-            :key="index"
-            class="border-b border-gray-50 last:border-0"
-          >
+          <tr v-for="(variant, index) in variants" :key="index" class="border-b border-gray-50 last:border-0">
             <td class="px-2 py-2">
-              <select
-                v-model="variant.fColorId"
-                class="w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white"
-              >
+              <select v-model="variant.fColorId" class="w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white">
                 <option v-for="c in colors" :key="c.fId" :value="c.fId">{{ c.fName }}</option>
               </select>
             </td>
             <td class="px-2 py-2">
-              <select
-                v-model="variant.fSizeId"
-                class="w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white"
-              >
+              <select v-model="variant.fSizeId" class="w-full px-2 py-1.5 border border-gray-200 rounded-md bg-white">
                 <option v-for="s in sizes" :key="s.fId" :value="s.fId">{{ s.fName }}</option>
               </select>
             </td>
             <td class="px-2 py-2">
-              <input
-                v-model="variant.fStock"
-                type="number"
-                class="w-full px-2 py-1.5 border border-gray-200 rounded-md text-center"
-              />
+              <input v-model="variant.fStock" type="number"
+                class="w-full px-2 py-1.5 border border-gray-200 rounded-md text-center" />
             </td>
             <td class="px-2 py-2">
               <div class="flex items-center border border-gray-200 rounded-md overflow-hidden">
-                <span class="px-2 py-1.5 bg-gray-50 text-gray-400 text-xs border-r border-gray-200"
-                  >NT$</span
-                >
+                <span class="px-2 py-1.5 bg-gray-50 text-gray-400 text-xs border-r border-gray-200">NT$</span>
                 <input v-model="variant.fPrice" type="number" class="flex-1 px-2 py-1.5" />
               </div>
             </td>
@@ -504,10 +449,8 @@ async function save() {
           </tr>
         </tbody>
       </table>
-      <button
-        @click="addVariant"
-        class="mt-3 w-full flex items-center justify-center gap-2 py-2 border border-dashed border-gray-200 rounded-lg text-xs text-gray-400 hover:text-indigo-500"
-      >
+      <button @click="addVariant"
+        class="mt-3 w-full flex items-center justify-center gap-2 py-2 border border-dashed border-gray-200 rounded-lg text-xs text-gray-400 hover:text-indigo-500">
         <i class="pi pi-plus" style="font-size: 12px"></i>新增規格
       </button>
     </div>
@@ -532,16 +475,12 @@ async function save() {
 
     <!-- ✨ 取消與儲存按鈕 -->
     <div class="flex justify-center gap-4 pt-2 pb-8">
-      <button
-        @click="router.push({ name: 'admin-products' })"
-        class="px-8 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors"
-      >
+      <button @click="router.push({ name: 'admin-products' })"
+        class="px-8 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors">
         取消
       </button>
-      <button
-        @click="save"
-        class="px-8 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-      >
+      <button @click="save"
+        class="px-8 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
         {{ isEdit ? '更新商品' : '儲存商品' }}
       </button>
     </div>
