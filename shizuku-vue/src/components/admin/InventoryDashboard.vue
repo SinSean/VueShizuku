@@ -17,14 +17,17 @@ let donutChart = null
 let barChart = null
 
 const totalStock = computed(() => props.inventory.reduce((a, p) => a + (p.fTotalStock ?? 0), 0))
+
 const lowStockCount = computed(
   () =>
     props.inventory.flatMap((p) => p.fVariants ?? []).filter((v) => v.fStock > 0 && v.fStock <= 5)
       .length,
 )
+
 const outOfStockCount = computed(
   () => props.inventory.flatMap((p) => p.fVariants ?? []).filter((v) => v.fStock === 0).length,
 )
+
 const avgProfit = computed(() => {
   const items = props.inventory
     .flatMap((p) => p.fVariants ?? [])
@@ -44,7 +47,6 @@ const lowStockList = computed(() =>
     .sort((a, b) => a.fStock - b.fStock)
     .slice(0, 5),
 )
-
 function stockStatusClass(status) {
   if (status === '售完') return 'bg-red-50 text-red-500'
   if (status === '低庫存') return 'bg-amber-50 text-amber-500'
@@ -83,11 +85,19 @@ function buildCharts() {
 
   const categoryMap = {}
   props.inventory.forEach((p) => {
-    const cat = p.fProduct?.split('-')[0] ?? '其他'
-    const stock = p.fTotalStock ?? 0
-    categoryMap[cat] = (categoryMap[cat] ?? 0) + stock
+    const sku = p.fProduct ?? ''
+    let cat = '其他'
+    if (sku.startsWith('TOPTEE')) cat = 'T恤'
+    else if (sku.startsWith('TOPSHT')) cat = '襯衫'
+    else if (sku.startsWith('TOPJKT')) cat = '外套'
+    else if (sku.startsWith('BOTPNT')) cat = '長褲'
+    else if (sku.startsWith('BOTSHO')) cat = '短褲'
+    else if (sku.startsWith('DRSLDR')) cat = '長洋裝'
+    else if (sku.startsWith('DRSSDR')) cat = '短洋裝'
+    else if (sku.startsWith('ACCHAT')) cat = '帽子'
+    else if (sku.startsWith('ACCBAG')) cat = '包包'
+    categoryMap[cat] = (categoryMap[cat] ?? 0) + (p.fTotalStock ?? 0)
   })
-
   if (barChartRef.value) {
     if (barChart) barChart.destroy()
     barChart = new Chart(barChartRef.value, {
@@ -267,19 +277,12 @@ onMounted(() => {
             :key="item.fVariantId"
             class="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
           >
-            <img
-              :src="
-                product.fImage
-                  ? product.fImage.startsWith('http')
-                    ? product.fImage
-                    : baseUrl + product.fImage
-                  : defaultImg
-              "
-              class="w-8 h-8 object-cover rounded-lg border border-gray-100 shrink-0"
-            />
+            <!-- 移除 img，改成文字 -->
+
             <div class="flex-1 min-w-0">
               <p class="text-xs font-medium text-gray-700 truncate">{{ item.fProductName }}</p>
               <p class="text-xs text-gray-400 mt-0.5">{{ item.fColor }} / {{ item.fSize }}</p>
+              <p class="text-[10px] font-mono text-gray-300 mt-0.5">{{ item.fSkuCode }}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">

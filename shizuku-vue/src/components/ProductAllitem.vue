@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { productApi } from '@/api/Product.js'
 import { useRoute } from 'vue-router'
+const baseUrl = 'https://localhost:7197'
 
 const route = useRoute()
 

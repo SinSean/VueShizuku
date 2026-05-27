@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router'
 import InventoryDashboard from '@/components/admin/InventoryDashboard.vue'
 import InventoryList from '@/components/admin/InventoryList.vue'
 import PurchaseOrderList from '@/components/admin/PurchaseOrderList.vue'
+import { onActivated } from 'vue'
 
 const inventory = ref([])
 const purchaseOrders = ref([])
@@ -39,6 +40,10 @@ onMounted(async () => {
     activeTab.value = route.query.tab
   }
   await loadData()
+})
+
+onActivated(() => {
+  loadData()
 })
 </script>
 
