@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router'
 import InventoryDashboard from '@/components/admin/InventoryDashboard.vue'
 import InventoryList from '@/components/admin/InventoryList.vue'
 import PurchaseOrderList from '@/components/admin/PurchaseOrderList.vue'
+import { onActivated } from 'vue'
 
 const inventory = ref([])
 const purchaseOrders = ref([])
@@ -40,6 +41,10 @@ onMounted(async () => {
   }
   await loadData()
 })
+
+onActivated(() => {
+  loadData()
+})
 </script>
 
 <template>
@@ -49,21 +54,16 @@ onMounted(async () => {
       <div class="flex items-center gap-6">
         <h1 class="text-xl font-medium">庫存管理</h1>
         <div class="flex gap-1">
-          <button
-            v-for="tab in [
-              { label: '總覽儀表板', value: 'dashboard' },
-              { label: '庫存總覽', value: 'inventory' },
-              { label: '庫存異動單管理', value: 'records' },
-            ]"
-            :key="tab.value"
-            @click="activeTab = tab.value"
-            :class="[
-              'px-4 py-1.5 text-sm rounded-lg transition-colors',
-              activeTab === tab.value
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100',
-            ]"
-          >
+          <button v-for="tab in [
+            { label: '總覽儀表板', value: 'dashboard' },
+            { label: '庫存總覽', value: 'inventory' },
+            { label: '庫存異動單管理', value: 'records' },
+          ]" :key="tab.value" @click="activeTab = tab.value" :class="[
+            'px-4 py-1.5 text-sm rounded-lg transition-colors',
+            activeTab === tab.value
+              ? 'bg-indigo-600 text-white'
+              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100',
+          ]">
             {{ tab.label }}
           </button>
         </div>
@@ -79,7 +79,7 @@ onMounted(async () => {
 
       <InventoryList v-if="activeTab === 'inventory'" :inventory="inventoryReport" />
 
-      <PurchaseOrderList v-if="activeTab === 'records'" :purchaseOrders="purchaseOrders" />
+      <PurchaseOrderList v-if="activeTab === 'records'" :purchaseOrders="purchaseOrders" @refresh="loadData" />
     </template>
   </div>
 </template>

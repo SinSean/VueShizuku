@@ -48,7 +48,10 @@ const searchResults = computed(() => {
     console.log('fProduct:', p.fProduct)
     ;(p.fVariants ?? []).forEach((v) => {
       const match =
-        !kw || p.fProductName?.toLowerCase().includes(kw) || p.fProduct?.toLowerCase().includes(kw) // ← 加貨號搜尋
+        !kw ||
+        p.fProductName?.toLowerCase().includes(kw) ||
+        p.fProduct?.toLowerCase().includes(kw) ||
+        v.fSkuCode?.toLowerCase().includes(kw) // ← 加貨號搜尋
       if (match) results.push({ product: p, variant: v })
     })
   })
@@ -75,6 +78,7 @@ function toggleVariant(item) {
       fCostPrice: null,
       fProductName: item.product.fProductName,
       fProduct: item.product.fProduct, // ← 加這行
+      fSkuCode: item.variant.fSkuCode,
       fColor: item.variant.fColor,
       fSize: item.variant.fSize,
       fStock: item.variant.fStock,
@@ -92,6 +96,7 @@ function toggleAll(checked) {
           fCostPrice: null,
           fProductName: item.product.fProductName,
           fProduct: item.product.fProduct,
+          fSkuCode: item.variant.fSkuCode,
           fColor: item.variant.fColor,
           fSize: item.variant.fSize,
           fStock: item.variant.fStock,
@@ -141,6 +146,25 @@ async function submit() {
   // ▶【改動 1】宣告動態業務名稱，擺脫寫死的「進貨」字眼
   const actionName = purchaseForm.value.fType || '進貨'
 
+  if (['調整出', '進貨退出', '報廢'].includes(actionName)) {
+    const overStock = details.some((d) => {
+      const item = cartItems.value[d.fVariantId]
+      return d.fQuantity > item.fStock
+    })
+    if (overStock) {
+      alert('異動數量不能超過目前庫存！')
+      return
+    }
+  }
+
+  // if (
+  //   !['報廢', '銷售退回', '調整進', '調整出'].includes(actionName) &&
+  //   !purchaseForm.value.fSupplier
+  // ) {
+  //   alert('請選擇廠商')
+  //   return
+  // }
+
   // ▶【改動 2】新增報廢防呆機制：若選報廢，備註（原因）未填則攔截並警告
   if (actionName === '報廢' && !purchaseForm.value.fNote?.trim()) {
     alert('商品報廢時，請務必在「備註」欄位輸入報廢原因！')
@@ -164,7 +188,7 @@ async function submit() {
       supplierInfo +
       `共 ${cartCount.value} 筆商品，總數量 ${cartTotalQty.value} 件\n` +
       `合計金額：NT$${cartTotalAmount.value.toLocaleString()}\n\n` +
-      `確認後庫存將自動更新，無法撤銷。`,
+      `確認後庫存將自動更新。`,
   )
   if (!confirmed) return
 
@@ -232,8 +256,13 @@ onMounted(async () => {
         <label class="text-xs text-gray-400 mb-1 block">廠商</label>
         <select
           v-model="purchaseForm.fSupplier"
-          :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          :class="[
+            'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none bg-white',
+            !purchaseForm.fSupplier &&
+            !['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
+              ? 'border-red-400 bg-red-50'
+              : 'border-gray-200 focus:border-indigo-400',
+          ]"
         >
           >
 
@@ -307,6 +336,12 @@ onMounted(async () => {
         <input
           v-model="purchaseForm.fNote"
           type="text"
+          :class="[
+            'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none',
+            purchaseForm.fType === '報廢' && !purchaseForm.fNote?.trim()
+              ? 'border-red-400 bg-red-50'
+              : 'border-gray-200 focus:border-indigo-400',
+          ]"
           :placeholder="
             purchaseForm.fType === '報廢' ? '請務必輸入報廢原因（例如：沾染污漬/樣品銷毀）' : '選填'
           "
@@ -366,7 +401,7 @@ onMounted(async () => {
                   <th
                     class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
                   >
-                    貨號
+                    規格編號
                   </th>
                   <th
                     class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-16"
@@ -398,9 +433,9 @@ onMounted(async () => {
                     <p class="text-gray-400 mt-0.5">
                       {{ item.variant.fColor }} / {{ item.variant.fSize }}
                     </p>
-                    <p class="text-gray-300 mt-0.5 font-mono text-xs">
-                      {{ item.product.fProduct }}
-                    </p>
+                  </td>
+                  <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">
+                    {{ item.variant.fSkuCode }}
                   </td>
                   <td
                     class="px-3 py-2.5 font-medium"
@@ -498,14 +533,19 @@ onMounted(async () => {
                     <p class="font-medium text-gray-700">{{ item.fProductName }}</p>
                     <p class="text-gray-300 text-xs mt-0.5">目前庫存：{{ item.fStock }} 件</p>
                   </td>
-                  <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">{{ item.fProduct }}</td>
+                  <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">{{ item.fSkuCode }}</td>
                   <td class="px-3 py-2.5 text-gray-500">{{ item.fColor }} / {{ item.fSize }}</td>
                   <td class="px-3 py-2.5">
                     <input
                       v-model="cartItems[item.fVariantId].fQuantity"
                       type="number"
                       min="1"
-                      class="w-14 px-2 py-1 border border-gray-200 rounded text-center focus:outline-none focus:border-indigo-400"
+                      :class="[
+                        'w-14 px-2 py-1 border rounded text-center focus:outline-none',
+                        Number(cartItems[item.fVariantId].fQuantity) <= 0
+                          ? 'border-red-400 bg-red-50'
+                          : 'border-gray-200 focus:border-indigo-400',
+                      ]"
                     />
                   </td>
                   <td class="px-3 py-2.5">

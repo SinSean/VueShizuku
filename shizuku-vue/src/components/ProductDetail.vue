@@ -4,6 +4,7 @@ import { ref, onMounted, computed } from 'vue'
 import { productApi } from '@/api/Product.js'
 import { useProductCart } from '@/composables/useProductCart'
 
+const baseUrl = 'https://localhost:7197'
 const relatedProducts = ref([])
 const route = useRoute()
 const product = ref(null)
