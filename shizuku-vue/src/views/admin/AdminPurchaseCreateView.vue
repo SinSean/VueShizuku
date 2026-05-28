@@ -46,14 +46,14 @@ const searchResults = computed(() => {
 
   inventory.value.forEach((p) => {
     console.log('fProduct:', p.fProduct)
-    ;(p.fVariants ?? []).forEach((v) => {
-      const match =
-        !kw ||
-        p.fProductName?.toLowerCase().includes(kw) ||
-        p.fProduct?.toLowerCase().includes(kw) ||
-        v.fSkuCode?.toLowerCase().includes(kw) // ← 加貨號搜尋
-      if (match) results.push({ product: p, variant: v })
-    })
+      ; (p.fVariants ?? []).forEach((v) => {
+        const match =
+          !kw ||
+          p.fProductName?.toLowerCase().includes(kw) ||
+          p.fProduct?.toLowerCase().includes(kw) ||
+          v.fSkuCode?.toLowerCase().includes(kw) // ← 加貨號搜尋
+        if (match) results.push({ product: p, variant: v })
+      })
   })
   return results
 })
@@ -185,10 +185,10 @@ async function submit() {
   // ▶【改動 5】修改 confirm 彈窗：主標題與內文資訊全部改為變數動態帶入
   const confirmed = confirm(
     `確認${actionName}？\n\n` +
-      supplierInfo +
-      `共 ${cartCount.value} 筆商品，總數量 ${cartTotalQty.value} 件\n` +
-      `合計金額：NT$${cartTotalAmount.value.toLocaleString()}\n\n` +
-      `確認後庫存將自動更新。`,
+    supplierInfo +
+    `共 ${cartCount.value} 筆商品，總數量 ${cartTotalQty.value} 件\n` +
+    `合計金額：NT$${cartTotalAmount.value.toLocaleString()}\n\n` +
+    `確認後庫存將自動更新。`,
   )
   if (!confirmed) return
 
@@ -223,13 +223,11 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="p-6 flex flex-col" style="height: calc(130vh - 40px)">
+  <div class="p-6 flex flex-col" style="height: calc(110vh - 40px)">
     <!-- 標題列 -->
     <div class="flex items-center gap-3 mb-4 shrink-0">
-      <button
-        @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
-        class="text-gray-400 hover:text-gray-600"
-      >
+      <button @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
+        class="text-gray-400 hover:text-gray-600">
         <i class="pi pi-arrow-left"></i>
       </button>
       <h1 class="text-xl font-medium">新增庫存異動單</h1>
@@ -239,31 +237,24 @@ onMounted(async () => {
     </div>
 
     <!-- 廠商資訊 -->
-    <div
-      class="grid grid-cols-5 gap-3 p-4 bg-white rounded-xl border border-gray-100 mb-4 shrink-0"
-    >
+    <div class="grid grid-cols-5 gap-3 p-4 bg-white rounded-xl border border-gray-100 mb-4 shrink-0">
       <div>
         <label class="text-xs text-gray-400 mb-1 block">異動類型</label>
-        <select
-          v-model="purchaseForm.fType"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white"
-        >
+        <select v-model="purchaseForm.fType"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white">
           <option v-for="t in orderTypes" :key="t">{{ t }}</option>
         </select>
       </div>
 
       <div>
         <label class="text-xs text-gray-400 mb-1 block">廠商</label>
-        <select
-          v-model="purchaseForm.fSupplier"
-          :class="[
-            'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none bg-white',
-            !purchaseForm.fSupplier &&
+        <select v-model="purchaseForm.fSupplier" :class="[
+          'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none bg-white',
+          !purchaseForm.fSupplier &&
             !['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
-              ? 'border-red-400 bg-red-50'
-              : 'border-gray-200 focus:border-indigo-400',
-          ]"
-        >
+            ? 'border-red-400 bg-red-50'
+            : 'border-gray-200 focus:border-indigo-400',
+        ]">
           >
 
           <option v-for="supplier in suppliers" :key="supplier">{{ supplier }}</option>
@@ -272,88 +263,61 @@ onMounted(async () => {
 
       <div>
         <label class="text-xs text-gray-400 mb-1 block">付款方式</label>
-        <select
-          v-model="purchaseForm.fPaymentMethod"
+        <select v-model="purchaseForm.fPaymentMethod"
           :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        >
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
           <option v-for="m in paymentMethods" :key="m">{{ m }}</option>
         </select>
       </div>
       <div>
         <label class="text-xs text-gray-400 mb-1 block">課稅別</label>
-        <select
-          v-model="purchaseForm.fTaxType"
-          :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        >
+        <select v-model="purchaseForm.fTaxType" :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
           <option v-for="t in taxTypes" :key="t">{{ t }}</option>
         </select>
       </div>
 
       <div>
         <label class="text-xs text-gray-400 mb-1 block">發票號碼</label>
-        <input
-          v-model="purchaseForm.fInvoiceNo"
-          type="text"
-          :disabled="
-            purchaseForm.fType === '報廢' ||
-            purchaseForm.fType === '調整進' ||
-            purchaseForm.fType === '調整出'
-          "
-          :placeholder="
-            purchaseForm.fType === '報廢' ||
-            purchaseForm.fType === '調整進' ||
-            purchaseForm.fType === '調整出'
+        <input v-model="purchaseForm.fInvoiceNo" type="text" :disabled="purchaseForm.fType === '報廢' ||
+          purchaseForm.fType === '調整進' ||
+          purchaseForm.fType === '調整出'
+          " :placeholder="purchaseForm.fType === '報廢' ||
+              purchaseForm.fType === '調整進' ||
+              purchaseForm.fType === '調整出'
               ? '無須填寫'
               : purchaseForm.fType === '銷售退回'
                 ? '請輸入原消費發票號碼'
                 : purchaseForm.fType === '進貨退出'
                   ? '請輸入折讓單號或原進貨發票'
                   : '選填（一般進貨）'
-          "
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        />
+            "
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed" />
       </div>
       <div>
         <label class="text-xs text-gray-400 mb-1 block">發票日期</label>
-        <input
-          v-model="purchaseForm.fInvoiceDate"
-          :disabled="
-            purchaseForm.fType === '報廢' ||
-            purchaseForm.fType === '調整進' ||
-            purchaseForm.fType === '調整出'
-          "
-          :placeholder="
-            ['報廢', '調整進', '調整出'].includes(purchaseForm.fType) ? '無須填寫' : '選填'
-          "
-          type="date"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-        />
+        <input v-model="purchaseForm.fInvoiceDate" :disabled="purchaseForm.fType === '報廢' ||
+          purchaseForm.fType === '調整進' ||
+          purchaseForm.fType === '調整出'
+          " :placeholder="['報廢', '調整進', '調整出'].includes(purchaseForm.fType) ? '無須填寫' : '選填'
+            " type="date"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed" />
       </div>
       <div class="col-span-3">
         <label class="text-xs text-gray-400 mb-1 block">備註</label>
-        <input
-          v-model="purchaseForm.fNote"
-          type="text"
-          :class="[
-            'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none',
-            purchaseForm.fType === '報廢' && !purchaseForm.fNote?.trim()
-              ? 'border-red-400 bg-red-50'
-              : 'border-gray-200 focus:border-indigo-400',
-          ]"
-          :placeholder="
-            purchaseForm.fType === '報廢' ? '請務必輸入報廢原因（例如：沾染污漬/樣品銷毀）' : '選填'
-          "
-          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400"
-        />
+        <input v-model="purchaseForm.fNote" type="text" :class="[
+          'w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none',
+          purchaseForm.fType === '報廢' && !purchaseForm.fNote?.trim()
+            ? 'border-red-400 bg-red-50'
+            : 'border-gray-200 focus:border-indigo-400',
+        ]" :placeholder="purchaseForm.fType === '報廢' ? '請務必輸入報廢原因（例如：沾染污漬/樣品銷毀）' : '選填'
+            "
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 placeholder-gray-400" />
       </div>
       <div>
         <label class="text-xs text-gray-400 mb-1 block">狀態</label>
-        <select
-          v-model="purchaseForm.fStatus"
-          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white"
-        >
+        <select v-model="purchaseForm.fStatus"
+          class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-400 bg-white">
           <option v-for="s in statusTypes" :key="s">{{ s }}</option>
         </select>
       </div>
@@ -364,69 +328,42 @@ onMounted(async () => {
       <!-- 左右分欄 -->
       <div class="grid grid-cols-12 gap-4 flex-1 overflow-hidden">
         <!-- 左側：商品挑選 -->
-        <div
-          class="col-span-5 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
-        >
-          <div
-            class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0"
-          >
+        <div class="col-span-5 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
             <span class="text-sm font-medium">商品挑選</span>
             <span class="text-xs text-gray-400">點擊列加入右側</span>
           </div>
           <div class="px-4 py-2 border-b border-gray-100 shrink-0">
-            <input
-              v-model="purchaseSearch"
-              type="text"
-              placeholder="搜尋商品名稱或貨號..."
-              class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400"
-            />
+            <input v-model="purchaseSearch" type="text" placeholder="搜尋商品名稱或貨號..."
+              class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-indigo-400" />
           </div>
           <div class="overflow-y-auto flex-1">
             <table class="w-full text-xs">
               <thead>
                 <tr class="bg-gray-50">
                   <th class="px-3 py-2 border-b border-gray-100 w-8">
-                    <input
-                      type="checkbox"
-                      :checked="isAllChecked"
-                      @change="(e) => toggleAll(e.target.checked)"
-                      aria-label="全選"
-                    />
+                    <input type="checkbox" :checked="isAllChecked" @change="(e) => toggleAll(e.target.checked)"
+                      aria-label="全選" />
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                     商品規格
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                     規格編號
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-16"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-16">
                     庫存
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="item in searchResults"
-                  :key="item.variant.fVariantId"
-                  :class="[
-                    'border-b border-gray-50 last:border-0 cursor-pointer',
-                    isInCart(item.variant.fVariantId) ? 'bg-indigo-50/50' : 'hover:bg-gray-50',
-                  ]"
-                  @click="toggleVariant(item)"
-                >
+                <tr v-for="item in searchResults" :key="item.variant.fVariantId" :class="[
+                  'border-b border-gray-50 last:border-0 cursor-pointer',
+                  isInCart(item.variant.fVariantId) ? 'bg-indigo-50/50' : 'hover:bg-gray-50',
+                ]" @click="toggleVariant(item)">
                   <td class="px-3 py-2.5" @click.stop>
-                    <input
-                      type="checkbox"
-                      :checked="isInCart(item.variant.fVariantId)"
-                      @change="toggleVariant(item)"
-                      aria-label="勾選商品"
-                    />
+                    <input type="checkbox" :checked="isInCart(item.variant.fVariantId)" @change="toggleVariant(item)"
+                      aria-label="勾選商品" />
                   </td>
                   <td class="px-3 py-2.5">
                     <p class="font-medium text-gray-700">{{ item.product.fProductName }}</p>
@@ -437,16 +374,12 @@ onMounted(async () => {
                   <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">
                     {{ item.variant.fSkuCode }}
                   </td>
-                  <td
-                    class="px-3 py-2.5 font-medium"
-                    :class="
-                      item.variant.fStock === 0
-                        ? 'text-red-400'
-                        : item.variant.fStock <= 5
-                          ? 'text-amber-500'
-                          : 'text-gray-500'
-                    "
-                  >
+                  <td class="px-3 py-2.5 font-medium" :class="item.variant.fStock === 0
+                      ? 'text-red-400'
+                      : item.variant.fStock <= 5
+                        ? 'text-amber-500'
+                        : 'text-gray-500'
+                    ">
                     {{ item.variant.fStock }}
                   </td>
                 </tr>
@@ -455,10 +388,8 @@ onMounted(async () => {
                   <td colspan="4" class="px-4 py-8 text-center">
                     <p class="text-gray-400 text-sm mb-3">查無符合商品</p>
                     <p class="text-gray-300 text-xs mb-4">請先至商品管理建立商品後再進行庫存異動</p>
-                    <button
-                      @click="router.push({ name: 'admin-products-create' })"
-                      class="px-4 py-2 text-sm border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
-                    >
+                    <button @click="router.push({ name: 'admin-products-create' })"
+                      class="px-4 py-2 text-sm border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors">
                       前往新增商品
                     </button>
                   </td>
@@ -469,66 +400,44 @@ onMounted(async () => {
         </div>
 
         <!-- 右側：已選商品 -->
-        <div
-          class="col-span-7 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden"
-        >
-          <div
-            class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0"
-          >
+        <div class="col-span-7 bg-white rounded-xl border border-gray-100 flex flex-col overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
             <span class="text-sm font-medium">已選商品</span>
             <span class="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-xs font-medium">
               {{ cartCount }} 筆
             </span>
           </div>
           <div class="overflow-y-auto flex-1">
-            <div
-              v-if="cartCount === 0"
-              class="flex items-center justify-center h-full text-gray-300 text-sm"
-            >
+            <div v-if="cartCount === 0" class="flex items-center justify-center h-full text-gray-300 text-sm">
               請從左側勾選商品
             </div>
             <table v-else class="w-full text-xs">
               <thead class="sticky top-0">
                 <tr class="bg-gray-50">
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                     品名
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                     品號
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100">
                     顏色/尺寸
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-14"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-14">
                     數量
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20">
                     成本(NT$)
                   </th>
-                  <th
-                    class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20"
-                  >
+                  <th class="px-3 py-2 text-left text-gray-500 font-medium border-b border-gray-100 w-20">
                     小計
                   </th>
                   <th class="px-3 py-2 border-b border-gray-100 w-6"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="item in cartList"
-                  :key="item.fVariantId"
-                  class="border-b border-gray-50 last:border-0 hover:bg-gray-50"
-                >
+                <tr v-for="item in cartList" :key="item.fVariantId"
+                  class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                   <td class="px-3 py-2.5">
                     <p class="font-medium text-gray-700">{{ item.fProductName }}</p>
                     <p class="text-gray-300 text-xs mt-0.5">目前庫存：{{ item.fStock }} 件</p>
@@ -536,43 +445,27 @@ onMounted(async () => {
                   <td class="px-3 py-2.5 font-mono text-gray-400 text-xs">{{ item.fSkuCode }}</td>
                   <td class="px-3 py-2.5 text-gray-500">{{ item.fColor }} / {{ item.fSize }}</td>
                   <td class="px-3 py-2.5">
-                    <input
-                      v-model="cartItems[item.fVariantId].fQuantity"
-                      type="number"
-                      min="1"
-                      :class="[
-                        'w-14 px-2 py-1 border rounded text-center focus:outline-none',
-                        Number(cartItems[item.fVariantId].fQuantity) <= 0
-                          ? 'border-red-400 bg-red-50'
-                          : 'border-gray-200 focus:border-indigo-400',
-                      ]"
-                    />
+                    <input v-model="cartItems[item.fVariantId].fQuantity" type="number" min="1" :class="[
+                      'w-14 px-2 py-1 border rounded text-center focus:outline-none',
+                      Number(cartItems[item.fVariantId].fQuantity) <= 0
+                        ? 'border-red-400 bg-red-50'
+                        : 'border-gray-200 focus:border-indigo-400',
+                    ]" />
                   </td>
                   <td class="px-3 py-2.5">
-                    <input
-                      v-model="cartItems[item.fVariantId].fCostPrice"
-                      :disabled="
-                        ['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
-                      "
-                      type="number"
-                      min="0"
-                      :placeholder="
-                        ['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
+                    <input v-model="cartItems[item.fVariantId].fCostPrice" :disabled="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
+                      " type="number" min="0" :placeholder="['報廢', '銷售退回', '調整進', '調整出'].includes(purchaseForm.fType)
                           ? '無須填寫'
                           : '輸入成本價'
-                      "
-                      class="w-20 px-2 py-1 border border-gray-200 rounded text-right focus:outline-none focus:border-indigo-400"
-                    />
+                        "
+                      class="w-20 px-2 py-1 border border-gray-200 rounded text-right focus:outline-none focus:border-indigo-400" />
                   </td>
                   <td class="px-3 py-2.5 font-medium text-indigo-600 whitespace-nowrap">
                     NT${{ subTotal(cartItems[item.fVariantId]).toLocaleString() }}
                   </td>
                   <td class="px-3 py-2.5 text-center">
-                    <button
-                      @click="removeFromCart(item.fVariantId)"
-                      class="text-gray-300 hover:text-red-400 transition-colors"
-                      aria-label="移除"
-                    >
+                    <button @click="removeFromCart(item.fVariantId)"
+                      class="text-gray-300 hover:text-red-400 transition-colors" aria-label="移除">
                       <i class="pi pi-times" style="font-size: 11px"></i>
                     </button>
                   </td>
@@ -587,42 +480,25 @@ onMounted(async () => {
       <div class="bg-white rounded-xl border border-gray-100 p-4 shrink-0">
         <div class="flex items-center justify-end">
           <div class="flex gap-6 text-xs text-gray-500">
-            <span
-              >已選：<strong class="text-gray-700">{{ cartCount }} 筆</strong></span
-            >
-            <span
-              >總數量：<strong class="text-gray-700">{{ cartTotalQty }} 件</strong></span
-            >
+            <span>已選：<strong class="text-gray-700">{{ cartCount }} 筆</strong></span>
+            <span>總數量：<strong class="text-gray-700">{{ cartTotalQty }} 件</strong></span>
 
             <!-- 只有進貨/銷售退回/進貨退出才顯示稅額 -->
             <template v-if="!['報廢', '調整進', '調整出'].includes(purchaseForm.fType)">
-              <span
-                >未稅金額：<strong class="text-gray-700"
-                  >NT${{ untaxedAmount.toLocaleString() }}</strong
-                ></span
-              >
-              <span
-                >稅額（{{ purchaseForm.fTaxType === '應稅' ? '5%' : '免稅' }}）：
+              <span>未稅金額：<strong class="text-gray-700">NT${{ untaxedAmount.toLocaleString() }}</strong></span>
+              <span>稅額（{{ purchaseForm.fTaxType === '應稅' ? '5%' : '免稅' }}）：
                 <strong class="text-gray-700">NT${{ taxAmount.toLocaleString() }}</strong>
               </span>
-              <span
-                >含稅總計：<strong class="text-indigo-600 text-sm"
-                  >NT${{ totalWithTax.toLocaleString() }}</strong
-                ></span
-              >
+              <span>含稅總計：<strong class="text-indigo-600 text-sm">NT${{ totalWithTax.toLocaleString() }}</strong></span>
             </template>
           </div>
           <div class="flex gap-2 shrink-0 ml-6">
-            <button
-              @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
-              class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
-            >
+            <button @click="router.push({ name: 'admin-inventory', query: { tab: 'records' } })"
+              class="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
               取消
             </button>
-            <button
-              @click="submit"
-              class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-            >
+            <button @click="submit"
+              class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
               確認{{ purchaseForm.fType || '進貨' }}
             </button>
           </div>
